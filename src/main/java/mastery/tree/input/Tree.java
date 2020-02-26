@@ -1,6 +1,8 @@
-package mastery.tree;
+package mastery.tree.input;
 
 import com.google.gson.JsonParser;
+import mastery.tree.Revision;
+import mastery.tree.TraverseUtil;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;

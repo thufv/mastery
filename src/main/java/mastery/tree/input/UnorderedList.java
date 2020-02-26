@@ -1,9 +1,9 @@
-package mastery.tree;
+package mastery.tree.input;
 
 import java.util.List;
 
-public class OrderedList extends Node {
-    public OrderedList(int label, String name, List<Node> children) {
+public class UnorderedList extends ListNode {
+    public UnorderedList(int label, String name, List<Node> children) {
         super(label, name, children);
     }
 
@@ -19,6 +19,6 @@ public class OrderedList extends Node {
 
     @Override
     public String toString() {
-        return name + " [ordered]";
+        return name + " [unordered]";
     }
 }

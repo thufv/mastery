@@ -1,4 +1,4 @@
-package mastery.tree;
+package mastery.tree.input;
 
 import java.util.Collections;
 

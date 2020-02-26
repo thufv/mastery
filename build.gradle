@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 
-group 'org.example'
+group 'mastery'
 version '1.0-SNAPSHOT'
 
 sourceCompatibility = 11
@@ -21,6 +21,6 @@ dependencies {
 
 task runMain(type: JavaExec) {
     classpath sourceSets.main.runtimeClasspath
-    main = "quick.merge.Main"
+    main = "mastery.Main"
     args += '-ea'
 }

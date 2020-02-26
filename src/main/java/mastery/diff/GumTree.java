@@ -1,7 +1,7 @@
 package mastery.diff;
 
-import mastery.tree.Node;
-import mastery.tree.Tree;
+import mastery.tree.input.Node;
+import mastery.tree.input.Tree;
 import mastery.util.MultiMap;
 import mastery.util.Pair;
 import mastery.util.WeightedQueue;

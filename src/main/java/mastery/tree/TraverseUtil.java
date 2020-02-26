@@ -1,5 +1,7 @@
 package mastery.tree;
 
+import mastery.tree.input.Node;
+
 import java.util.*;
 
 public class TraverseUtil {

@@ -1,4 +1,4 @@
-package mastery.tree;
+package mastery.tree.input;
 
 import com.google.gson.JsonObject;
 import org.jetbrains.annotations.Nullable;
@@ -22,6 +22,8 @@ public abstract class Node {
     public List<Node> children;
 
     public final int treeHash;
+
+    public Node parent;
 
     public boolean matched = false;
 

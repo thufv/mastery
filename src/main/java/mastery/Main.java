@@ -1,6 +1,6 @@
 package mastery;
 
-import mastery.tree.Tree;
+import mastery.tree.input.Tree;
 import mastery.diff.Diff;
 
 import java.io.FileNotFoundException;

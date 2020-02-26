@@ -1,6 +1,6 @@
 package mastery.diff;
 
-import mastery.tree.Node;
+import mastery.tree.input.Node;
 
 public class Diff extends GumTree {
     public Diff() {
