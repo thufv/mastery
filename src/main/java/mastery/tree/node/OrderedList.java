@@ -4,18 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OrderedList extends ListNode {
-    public OrderedList(int label, String name, List<Node> children, int depth) {
-        super(label, name, children, depth);
-    }
-
-    @Override
-    public boolean isLeaf() {
-        return false;
-    }
-
-    @Override
-    public boolean isConstructor() {
-        return false;
+    public OrderedList(int label, String name, List<Node> children) {
+        super(label, name, children);
     }
 
     @Override
@@ -41,7 +31,7 @@ public class OrderedList extends ListNode {
         for (var child : children) {
             cs.add(child.updated(target, replacement));
         }
-        return new OrderedList(label, name, cs, depth);
+        return new OrderedList(label, name, cs);
     }
 
     @Override

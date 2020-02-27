@@ -56,7 +56,7 @@ public class MatchingSet {
             if (u == variant) {
                 return true;
             }
-            u = u.parent;
+            u = u.getParent();
         }
 
         u = rightMatches.get(base);
@@ -64,7 +64,7 @@ public class MatchingSet {
             if (u == variant) {
                 return true;
             }
-            u = u.parent;
+            u = u.getParent();
         }
 
         return false;

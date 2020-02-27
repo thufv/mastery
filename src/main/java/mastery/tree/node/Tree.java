@@ -6,6 +6,7 @@ import mastery.tree.TraverseUtil;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 
+// TODO: do we really need this wrapper?
 public class Tree {
     public final Node root;
 
@@ -24,7 +25,7 @@ public class Tree {
     public static Tree fromJSON(String json) throws FileNotFoundException {
         FileReader reader = new FileReader(json);
         var object = JsonParser.parseReader(reader).getAsJsonObject();
-        return new Tree(Node.fromJSon(object, 0));
+        return new Tree(Node.fromJSon(object));
     }
 
     public String prettyPrint() {
@@ -35,7 +36,7 @@ public class Tree {
         var sb = new StringBuilder();
         for (var node : preOrder()) {
             if (node.isLeaf()) {
-                var leaf = (Leaf)node;
+                var leaf = (Leaf) node;
                 sb.append(leaf.value);
                 sb.append(' ');
             }

@@ -65,7 +65,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Node> {
             targets.add(twoWay(l, r));
         }
 
-        return new Constructor(base.label, base.name, targets, -1);
+        return new Constructor(base.label, base.name, targets);
     }
 
     @Override
@@ -73,7 +73,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Node> {
         Log.finest("merging ordered list %s", base.name);
 
         var targets = ordered.apply(left, right, establishMappings(base, left, right));
-        return new OrderedList(base.label, base.name, targets, -1);
+        return new OrderedList(base.label, base.name, targets);
     }
 
     @Override
@@ -81,7 +81,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Node> {
         Log.finest("merging unordered list %s", base.name);
 
         var targets = unordered.apply(left, right, establishMappings(base, left, right));
-        return new UnorderedList(base.label, base.name, targets, -1);
+        return new UnorderedList(base.label, base.name, targets);
     }
 
     // read-only contexts
@@ -155,7 +155,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Node> {
     private Node leftDelete(Node base, Node right) {
         if (m.matched(base, right) && m.treesEqual(base, right)) {
             Log.fine("delete by left: %s", base);
-            return Node.NOTHING;
+            return new Nothing(); // TODO: is optional suitable here?
         }
 
         return Conflict.ofRight(base, right);
@@ -173,8 +173,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Node> {
     private Node rightDelete(Node base, Node left) {
         if (m.matched(base, left) && m.treesEqual(base, left)) {
             Log.fine("delete by right: %s", base);
-            return Node.NOTHING;
-
+            return new Nothing();
         }
 
         return Conflict.ofLeft(base, left);
@@ -239,16 +238,16 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Node> {
 
             if (m.hasLeftMatch(base)) {
                 left = m.getLeftMatch(base);
-                while (left.parent != leftList) {
-                    left = left.parent;
+                while (left.getParent() != leftList) {
+                    left = left.getParent();
                 }
                 Objects.requireNonNull(left);
             }
 
             if (m.hasRightMatch(base)) {
                 right = m.getRightMatch(base);
-                while (right.parent != rightList) {
-                    right = right.parent;
+                while (right.getParent() != rightList) {
+                    right = right.getParent();
                 }
                 Objects.requireNonNull(right);
             }

@@ -15,7 +15,7 @@ public class Conflict extends Node {
     public final Node right;
 
     private Conflict(@Nullable Node base, @Nullable Node left, @Nullable Node right) {
-        super(-1, "?", List.of(base, left, right), -1);
+        super(-1, "?", List.of(base, left, right));
         this.base = base;
         this.left = left;
         this.right = right;
@@ -55,6 +55,11 @@ public class Conflict extends Node {
     @Override
     public boolean isUnorderedList() {
         return false;
+    }
+
+    @Override
+    public boolean isConflict() {
+        return true;
     }
 
     @Override

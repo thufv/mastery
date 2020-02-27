@@ -41,7 +41,6 @@ public class OrderedListMerger extends ListMerger<OrderedList> {
         });
 
         // TODO: shall we use something else to record these two lists?
-        targets.add(Conflict.ofTwoWay(new OrderedList(label, name, left, -1),
-                new OrderedList(label, name, right, -1)));
+        targets.add(Conflict.ofTwoWay(new OrderedList(label, name, left), new OrderedList(label, name, right)));
     }
 }

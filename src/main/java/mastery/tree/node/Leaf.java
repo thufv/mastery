@@ -5,8 +5,8 @@ import java.util.Collections;
 public class Leaf extends Node {
     public final String value;
 
-    public Leaf(int label, String name, String value, int depth) {
-        super(label, name, Collections.emptyList(), depth);
+    public Leaf(int label, String name, String value) {
+        super(label, name, Collections.emptyList());
         this.value = value;
     }
 
@@ -27,6 +27,11 @@ public class Leaf extends Node {
 
     @Override
     public boolean isUnorderedList() {
+        return false;
+    }
+
+    @Override
+    public boolean isConflict() {
         return false;
     }
 

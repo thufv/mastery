@@ -6,8 +6,8 @@ import java.util.List;
 public class Constructor extends Node {
     public final int arity;
 
-    public Constructor(int label, String name, List<Node> children, int depth) {
-        super(label, name, children, depth);
+    public Constructor(int label, String name, List<Node> children) {
+        super(label, name, children);
         this.arity = children.size();
     }
 
@@ -32,6 +32,11 @@ public class Constructor extends Node {
     }
 
     @Override
+    public boolean isConflict() {
+        return false;
+    }
+
+    @Override
     public String toString() {
         return name + " (" + arity + "-ary)";
     }
@@ -44,7 +49,7 @@ public class Constructor extends Node {
         for (var child : children) {
             cs.add(child.updated(target, replacement));
         }
-        return new Constructor(label, name, cs, depth);
+        return new Constructor(label, name, cs);
     }
 
     @Override

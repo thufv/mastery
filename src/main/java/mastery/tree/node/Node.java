@@ -1,9 +1,9 @@
 package mastery.tree.node;
 
 import com.google.gson.JsonObject;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -12,8 +12,6 @@ public abstract class Node {
     public int id; // TODO: do we really need this?
 
     public final int height;
-
-    public final int depth;
 
     public final int size;
 
@@ -26,15 +24,16 @@ public abstract class Node {
     // TODO: we don't need hash once we precomputed the isomorphic mappings by other methods (radix sort)
     public final int treeHash;
 
-    public Node parent = null;
+    private Node parent;
 
-    public boolean merged = false; // TODO: remove this
+    public final @Nullable Node getParent() {
+        return parent;
+    }
 
-    protected Node(int label, String name, List<Node> children, int depth) {
+    protected Node(int label, String name, List<Node> children) {
         this.label = label;
         this.name = name;
         this.children = children;
-        this.depth = depth;
 
         // compute height
         if (children.isEmpty()) {
@@ -61,6 +60,7 @@ public abstract class Node {
         }
         this.size = size;
         this.treeHash = hash;
+        this.parent = null;
     }
 
     private final int[] PRIMES = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, 509, 521, 523, 541, 547, 557, 563, 569, 571, 577, 587, 593, 599, 601, 607, 613, 617, 619, 631, 641, 643, 647, 653, 659, 661, 673, 677, 683, 691, 701, 709, 719, 727, 733, 739, 743, 751, 757, 761, 769, 773, 787, 797, 809, 811, 821, 823, 827, 829, 839, 853, 857, 859, 863, 877, 881, 883, 887, 907, 911, 919, 929, 937, 941, 947, 953, 967, 971, 977, 983, 991, 997};
@@ -73,70 +73,34 @@ public abstract class Node {
 
     public abstract boolean isUnorderedList();
 
+    public abstract boolean isConflict();
+
     public abstract String toString();
 
-    // FIXME: `NOTHING`s may be located at different depths
-    public static Node NOTHING = new Node(0, "ε", Collections.emptyList(), -1) {
-        @Override
-        public boolean isLeaf() {
-            return false;
-        }
-
-        @Override
-        public boolean isConstructor() {
-            return false;
-        }
-
-        @Override
-        public boolean isOrderedList() {
-            return false;
-        }
-
-        @Override
-        public boolean isUnorderedList() {
-            return false;
-        }
-
-        @Override
-        public String toString() {
-            return "ε";
-        }
-
-        @Override
-        public Node updated(Node target, Node replacement) {
-            return this;
-        }
-
-        @Override
-        public <T> T accept(Visitor<T> visitor) {
-            return visitor.visitNothing();
-        }
-    };
-
-    public static Node fromJSon(JsonObject object, int depth) {
+    public static Node fromJSon(JsonObject object) {
         int label = object.get("label").getAsInt();
         String name = object.get("name").getAsString();
         String kind = object.get("kind").getAsString();
         if (kind.equals("leaf")) {
-            return new Leaf(label, name, object.get("code").getAsString(), depth);
+            return new Leaf(label, name, object.get("code").getAsString());
         }
 
         var children = new ArrayList<Node>();
         for (var o : object.get("children").getAsJsonArray()) {
-            children.add(Node.fromJSon(o.getAsJsonObject(), depth + 1));
+            children.add(Node.fromJSon(o.getAsJsonObject()));
         }
 
         Node self = null;
         if (kind.equals("node")) {
-            self = children.isEmpty() ? NOTHING : new Constructor(label, name, children, depth);
+            self = children.isEmpty() ? new Nothing() : new Constructor(label, name, children);
         }
 
         if (kind.equals("orderedlist")) {
-            self = new OrderedList(label, name, children, depth);
+            self = new OrderedList(label, name, children);
         }
 
         if (kind.equals("unorderedlist")) {
-            self = new UnorderedList(label, name, children, depth);
+            self = new UnorderedList(label, name, children);
         }
 
         Objects.requireNonNull(self);
@@ -193,8 +157,6 @@ public abstract class Node {
         T visitOrderedList(OrderedList node);
 
         T visitUnorderedList(UnorderedList node);
-
-        T visitNothing();
 
         default T visitConflict(Conflict node) {
             throw new UnsupportedOperationException("this tree must not have conflict nodes");

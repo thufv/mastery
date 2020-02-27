@@ -4,20 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UnorderedList extends ListNode {
-    public UnorderedList(int label, String name, List<Node> children, int depth) {
-        super(label, name, children, depth);
+    public UnorderedList(int label, String name, List<Node> children) {
+        super(label, name, children);
     }
-
-    @Override
-    public boolean isLeaf() {
-        return false;
-    }
-
-    @Override
-    public boolean isConstructor() {
-        return false;
-    }
-
+    
     @Override
     public boolean isOrderedList() {
         return false;
@@ -41,7 +31,7 @@ public class UnorderedList extends ListNode {
         for (var child : children) {
             cs.add(child.updated(target, replacement));
         }
-        return new UnorderedList(label, name, cs, depth);
+        return new UnorderedList(label, name, cs);
     }
 
     @Override
