@@ -135,7 +135,7 @@ public class Log {
      * logger, right now.
      *
      * @param level  log level
-     * @param action input an indent printer, do the actual logging
+     * @param action node an indent printer, do the actual logging
      */
     public static void ifLoggable(Level level, Consumer<IndentPrinter> action) {
         if (L.isLoggable(level)) {

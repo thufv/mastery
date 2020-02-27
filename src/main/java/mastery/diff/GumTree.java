@@ -1,10 +1,11 @@
 package mastery.diff;
 
-import mastery.tree.input.Node;
-import mastery.tree.input.Tree;
+import mastery.tree.node.Node;
+import mastery.tree.node.Tree;
 import mastery.util.MultiMap;
 import mastery.util.Pair;
 import mastery.util.WeightedQueue;
+import mastery.util.log.Log;
 
 import java.util.*;
 
@@ -19,7 +20,10 @@ public abstract class GumTree {
         this.minDice = minDice;
     }
 
-    public void apply(Tree tree1, Tree tree2) {
+    public final Map<Node, Node> apply(Tree tree1, Tree tree2) {
+        m = new HashMap<>();
+        matched.clear();
+
         var nodesByHash = new MultiMap<Integer, Node>();
         for (var node : tree2.preOrder()) {
             nodesByHash.put(node.treeHash, node);
@@ -70,7 +74,7 @@ public abstract class GumTree {
                         match(source, targets.get(0), MappingType.isomorphic);
                     } else {
                         for (var target : targets) {
-                            System.out.println("suspend " + source + " <-> " + target);
+                            Log.finest("suspend " + source + " <-> " + target);
                             suspended.add(Pair.of(Pair.of(source, target), dice(source, target)));
                         }
                     }
@@ -80,7 +84,7 @@ public abstract class GumTree {
             // push their children (if not handled) into queue
             for (var node : nodes1) {
                 for (var child : node.children) {
-                    if (!child.matched) {
+                    if (!matched.contains(child)) {
                         queue1.add(child);
                     }
                 }
@@ -88,41 +92,34 @@ public abstract class GumTree {
 
             for (var node : nodes2) {
                 for (var child : node.children) {
-                    if (!child.matched) {
+                    if (!matched.contains(child)) {
                         queue2.add(child);
                     }
                 }
             }
         }
 
-        System.out.println("handle suspended " + suspended.size());
+        Log.finer("handle suspended " + suspended.size());
 
         // handle suspended
         suspended.sort(Collections.reverseOrder(Comparator.comparing(p -> p.second)));
-        while (!suspended.isEmpty()) {
-            var it = suspended.iterator();
-            var q = it.next().first;
-            match(q.first, q.second, MappingType.isomorphic);
-            it.remove();
-
-            while (it.hasNext()) {
-                var p = it.next().first;
-                if (p.first == q.first || p.second == q.second) {
-                    it.remove();
-                }
+        for (var p : suspended) {
+            var q = p.first;
+            if (!matched.contains(q.first) && !matched.contains(q.second)) {
+                match(q.first, q.second, MappingType.isomorphic);
             }
         }
 
         // bottom-up pass
         var unmatchedNodesByLabel = new MultiMap<Integer, Node>();
         for (var node : tree2.preOrder()) {
-            if (!node.matched) {
+            if (!matched.contains(node)) {
                 unmatchedNodesByLabel.put(node.label, node);
             }
         }
 
         for (var node : tree1.postOrder()) {
-            if (!node.children.isEmpty() && !node.matched) {
+            if (!node.children.isEmpty() && !matched.contains(node)) {
                 var candidates = unmatchedNodesByLabel.get(node.label);
                 if (candidates.isEmpty()) continue;
 
@@ -154,7 +151,7 @@ public abstract class GumTree {
                             var u = node.children.get(i);
                             var v = bestCandidate.children.get(i);
 
-                            if (!u.matched && !v.matched) {
+                            if (!matched.contains(u) && !matched.contains(v)) {
                                 match(u, v, MappingType.recovery);
                             }
                         }
@@ -162,6 +159,8 @@ public abstract class GumTree {
                 }
             }
         }
+
+        return m;
     }
 
     private enum MappingType {
@@ -170,11 +169,15 @@ public abstract class GumTree {
         recovery
     }
 
-    private void match(Node node1, Node node2, MappingType type) {
-        node1.matched = true;
-        node2.matched = true;
+    private Map<Node, Node> m;
+    protected Set<Node> matched = new HashSet<>();
 
-        System.out.println(type + " mapping: " + node1 + " <-> " + node2);
+    private void match(Node node1, Node node2, MappingType type) {
+        m.put(node1, node2);
+        matched.add(node1);
+        matched.add(node2);
+
+        Log.finer("%s mapping: %s <-> %s", type, node1, node2);
     }
 
     public abstract double dice(Node node1, Node node2);

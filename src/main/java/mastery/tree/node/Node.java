@@ -1,17 +1,19 @@
-package mastery.tree.input;
+package mastery.tree.node;
 
 import com.google.gson.JsonObject;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class Node {
 
-    public int id;
+    public int id; // TODO: do we really need this?
 
     public final int height;
+
+    public final int depth;
 
     public final int size;
 
@@ -21,27 +23,18 @@ public abstract class Node {
 
     public List<Node> children;
 
+    // TODO: we don't need hash once we precomputed the isomorphic mappings by other methods (radix sort)
     public final int treeHash;
 
-    public Node parent;
+    public Node parent = null;
 
-    public boolean matched = false;
+    public boolean merged = false; // TODO: remove this
 
-    @Nullable
-    public Node baseMatch; // null if not exist
-
-    @Nullable
-    public Node leftMatch; // null if not exist
-
-    @Nullable
-    public Node rightMatch; // null if not exist
-
-    public boolean merged = false;
-
-    protected Node(int label, String name, List<Node> children) {
+    protected Node(int label, String name, List<Node> children, int depth) {
         this.label = label;
         this.name = name;
         this.children = children;
+        this.depth = depth;
 
         // compute height
         if (children.isEmpty()) {
@@ -76,17 +69,14 @@ public abstract class Node {
 
     public abstract boolean isConstructor();
 
-    public boolean isOrderedList() {
-        return false;
-    }
+    public abstract boolean isOrderedList();
 
-    public boolean isUnorderedList() {
-        return false;
-    }
+    public abstract boolean isUnorderedList();
 
     public abstract String toString();
 
-    public static Node NOTHING = new Node(0, "ε", Collections.emptyList()) {
+    // FIXME: `NOTHING`s may be located at different depths
+    public static Node NOTHING = new Node(0, "ε", Collections.emptyList(), -1) {
         @Override
         public boolean isLeaf() {
             return false;
@@ -98,37 +88,72 @@ public abstract class Node {
         }
 
         @Override
+        public boolean isOrderedList() {
+            return false;
+        }
+
+        @Override
+        public boolean isUnorderedList() {
+            return false;
+        }
+
+        @Override
         public String toString() {
             return "ε";
         }
+
+        @Override
+        public Node updated(Node target, Node replacement) {
+            return this;
+        }
+
+        @Override
+        public <T> T accept(Visitor<T> visitor) {
+            return visitor.visitNothing();
+        }
     };
 
-    public static Node fromJSon(JsonObject object) {
+    public static Node fromJSon(JsonObject object, int depth) {
         int label = object.get("label").getAsInt();
         String name = object.get("name").getAsString();
         String kind = object.get("kind").getAsString();
         if (kind.equals("leaf")) {
-            return new Leaf(label, name, object.get("code").getAsString());
+            return new Leaf(label, name, object.get("code").getAsString(), depth);
         }
 
         var children = new ArrayList<Node>();
         for (var o : object.get("children").getAsJsonArray()) {
-            children.add(Node.fromJSon(o.getAsJsonObject()));
+            children.add(Node.fromJSon(o.getAsJsonObject(), depth + 1));
         }
 
+        Node self = null;
         if (kind.equals("node")) {
-            return children.isEmpty() ? NOTHING : new Constructor(label, name, children);
+            self = children.isEmpty() ? NOTHING : new Constructor(label, name, children, depth);
         }
 
         if (kind.equals("orderedlist")) {
-            return new OrderedList(label, name, children);
+            self = new OrderedList(label, name, children, depth);
         }
 
         if (kind.equals("unorderedlist")) {
-            return new UnorderedList(label, name, children);
+            self = new UnorderedList(label, name, children, depth);
         }
 
-        throw new IllegalStateException("Unexpected type: " + object.get("kind").getAsString());
+        Objects.requireNonNull(self);
+
+        for (var child : self.children) {
+            child.parent = self;
+        }
+
+        return self;
+    }
+
+    public abstract Node updated(Node target, Node replacement);
+
+    public String prettyPrint() {
+        var sb = new StringBuilder();
+        prettyPrintTo(sb, "", "");
+        return sb.toString();
     }
 
     private static final String CONSECUTIVE_PROMPT = "├── ";
@@ -155,6 +180,24 @@ public abstract class Node {
                 it.next().prettyPrintTo(sb, prefix, CONSECUTIVE_PROMPT);
             }
             it.next().prettyPrintTo(sb, prefix, LAST_PROMPT);
+        }
+    }
+
+    public abstract <T> T accept(Visitor<T> visitor);
+
+    public interface Visitor<T> {
+        T visitLeaf(Leaf node);
+
+        T visitConstructor(Constructor node);
+
+        T visitOrderedList(OrderedList node);
+
+        T visitUnorderedList(UnorderedList node);
+
+        T visitNothing();
+
+        default T visitConflict(Conflict node) {
+            throw new UnsupportedOperationException("this tree must not have conflict nodes");
         }
     }
 }

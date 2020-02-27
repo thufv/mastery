@@ -1,7 +1,10 @@
 package mastery.diff;
 
-import mastery.tree.input.Node;
-import mastery.tree.input.Tree;
+import mastery.tree.node.Node;
+import mastery.tree.node.Tree;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MatchingSet {
 
@@ -15,28 +18,28 @@ public class MatchingSet {
         this.right = right;
     }
 
-    public final boolean treesEqual(Node tree1, Node tree2) {
-        return tree1.treeHash == tree2.treeHash;
+    public final boolean treesEqual(Node root1, Node root2) {
+        return root1.treeHash == root2.treeHash;
     }
 
-    public final boolean hasLeftMatch(Node node) {
-        return false;
+    public final boolean hasLeftMatch(Node base) {
+        return leftMatches.containsKey(base);
     }
 
-    public final boolean hasRightMatch(Node node) {
-        return false;
+    public final boolean hasRightMatch(Node base) {
+        return rightMatches.containsKey(base);
     }
 
-    public final <E extends Node> E getLeftMatch(E node) {
-        return (E) null;
+    public final <E extends Node> E getLeftMatch(E base) {
+        return (E) leftMatches.get(base);
     }
 
-    public final <E extends Node> E getRightMatch(E node) {
-        return null;
+    public final <E extends Node> E getRightMatch(E base) {
+        return (E) rightMatches.get(base);
     }
 
     public final boolean matched(Node base, Node variant) {
-        return false;
+        return leftMatches.get(base) == variant || rightMatches.get(base) == variant;
     }
 
     /**
@@ -48,6 +51,37 @@ public class MatchingSet {
      * @return if they are relevant
      */
     public final boolean relevant(Node base, Node variant) {
+        var u = leftMatches.get(base);
+        while (u != null) {
+            if (u == variant) {
+                return true;
+            }
+            u = u.parent;
+        }
+
+        u = rightMatches.get(base);
+        while (u != null) {
+            if (u == variant) {
+                return true;
+            }
+            u = u.parent;
+        }
+
         return false;
     }
+
+    public final int size() {
+        return leftMatches.size() + rightMatches.size();
+    }
+
+    final void setLeftMatch(Node base, Node left) {
+        leftMatches.put(base, left);
+    }
+
+    final void setRightMatch(Node base, Node right) {
+        rightMatches.put(base, right);
+    }
+
+    private Map<Node, Node> leftMatches = new HashMap<>();
+    private Map<Node, Node> rightMatches = new HashMap<>();
 }

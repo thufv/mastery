@@ -1,16 +1,16 @@
 package mastery.tree;
 
-import mastery.tree.input.Node;
+import mastery.tree.node.Node;
 
 import java.util.*;
 
 public class TraverseUtil {
-    public static Iterator<Node> preOrderIterator(Node tree) {
+    public static Iterator<Node> preOrderIterator(Node root) {
         return new Iterator<>() {
             private Stack<Iterator<Node>> stack = new Stack<>();
 
             {
-                stack.push(Collections.singletonList(tree).iterator());
+                stack.push(Collections.singletonList(root).iterator());
             }
 
             @Override

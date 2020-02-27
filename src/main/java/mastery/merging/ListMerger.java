@@ -1,22 +1,23 @@
 package mastery.merging;
 
-import mastery.tree.input.Node;
-import mastery.tree.target.Insertion;
-import mastery.tree.target.TargetNode;
+import mastery.tree.node.ListNode;
+import mastery.tree.node.Node;
 import mastery.util.Pair;
+import mastery.util.WeightedQueue;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.PriorityQueue;
-import java.util.stream.Collectors;
 
-public abstract class ListMerger {
-    public List<TargetNode> apply(List<Node> left, List<Node> right, List<Pair<Pair<Node, Node>, TargetNode>> mappings) {
-        targets.clear();
+public abstract class ListMerger<L extends ListNode> {
+    public List<Node> apply(L left, L right, List<Pair<Pair<Node, Node>, Node>> mappings) {
+        var targets = new ArrayList<Node>();
+        label = left.label;
+        name = left.name;
 
-        var leftIt = left.iterator();
-        var rightIt = right.iterator();
+        var leftIt = left.children.iterator();
+        var rightIt = right.children.iterator();
 
         for (var tuple : mappings) {
             var l = tuple.first.first;
@@ -28,7 +29,7 @@ public abstract class ListMerger {
                 addRightInsert(takeWhileNotEquals(rightIt, r));
 
                 // first handle queued
-                handleQueued();
+                handleQueued(targets);
 
                 // then handle the 3-way scenario
                 targets.add(merged);
@@ -37,13 +38,13 @@ public abstract class ListMerger {
 
             if (l != null) { // Case 2: `b` will be deleted by right version
                 addLeftInsert(takeWhileNotEquals(leftIt, l));
-                addRightDelete(merged);
+                addRightDelete(l, merged);
                 continue;
             }
 
             if (r != null) { // Case 3: `b` will be deleted by left version
                 addRightInsert(takeWhileNotEquals(rightIt, r));
-                addLeftDelete(merged);
+                addLeftDelete(r, merged);
                 continue;
             }
 
@@ -53,7 +54,7 @@ public abstract class ListMerger {
         // there may exist some trailing elements that are unmatched with base
         addLeftInsert(takeWhileNotEquals(leftIt, null));
         addRightInsert(takeWhileNotEquals(rightIt, null));
-        handleQueued();
+        handleQueued(targets);
 
         return targets;
     }
@@ -71,29 +72,33 @@ public abstract class ListMerger {
         return collected;
     }
 
-    void addLeftDelete(TargetNode target) {
+    void addLeftDelete(Node right, Node target) {
         time++;
-        tasks.add(new Task(time, time, true, true, List.of(target)));
-        leftTime = time;
-    }
-
-    void addRightDelete(TargetNode target) {
-        time++;
-        tasks.add(new Task(time, time, false, true, List.of(target)));
+        tasks.add(new Task(time, time, true, true, List.of(target), List.of(right)));
         rightTime = time;
     }
 
+    void addRightDelete(Node left, Node target) {
+        time++;
+        tasks.add(new Task(time, time, false, true, List.of(target), List.of(left)));
+        leftTime = time;
+    }
+
     void addLeftInsert(List<Node> nodes) {
+        if (nodes.isEmpty()) return;
+
         tasks.add(new Task(leftTime, time + 1, true, false,
-                nodes.stream().map(Insertion::fromLeft).collect(Collectors.toList())));
+                nodes, nodes));
     }
 
     void addRightInsert(List<Node> nodes) {
+        if (nodes.isEmpty()) return;
+
         tasks.add(new Task(rightTime, time + 1, false, false,
-                nodes.stream().map(Insertion::fromRight).collect(Collectors.toList())));
+                nodes, nodes));
     }
 
-    void handleQueued() {
+    void handleQueued(List<Node> targets) {
         while (!tasks.isEmpty()) {
             var suspended = new ArrayList<Task>();
             boolean leftInserted = false;
@@ -116,36 +121,46 @@ public abstract class ListMerger {
             }
 
             if (leftInserted && rightInserted) { // conflict
-                handleConflict(suspended);
+                handleConflict(suspended, targets);
                 continue;
             }
 
-            suspended.forEach(t -> targets.addAll(t.nodes));
+            suspended.forEach(t -> targets.addAll(t.targetNodes));
         }
     }
 
-    protected abstract void handleConflict(List<Task> suspended);
+    protected abstract void handleConflict(List<Task> suspended, List<Node> targets);
 
-    protected List<TargetNode> targets = new ArrayList<>();
+    protected int label;
+    protected String name;
 
     private int time = 0;
     private int leftTime = 0;
     private int rightTime = 0;
-    private PriorityQueue<Task> tasks = new PriorityQueue<>();
+    private PriorityQueue<Task> tasks = new WeightedQueue<>(task -> task.beginTime);
 
     protected static class Task {
         final int beginTime;
         final int endTime;
         final boolean left;
         final boolean delete;
-        final List<TargetNode> nodes;
+        final List<Node> targetNodes;
+        final List<Node> inputNodes;
 
-        Task(int beginTime, int endTime, boolean left, boolean delete, List<TargetNode> nodes) {
+        Task(int beginTime, int endTime, boolean left, boolean delete,
+             List<Node> targetNodes, List<Node> inputNodes) {
             this.beginTime = beginTime;
             this.endTime = endTime;
             this.left = left;
             this.delete = delete;
-            this.nodes = nodes;
+            this.targetNodes = targetNodes;
+            this.inputNodes = inputNodes;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s %s @(%d, %d)", left ? "left" : "right",
+                    delete ? "delete" : "insert", beginTime, endTime);
         }
     }
 }

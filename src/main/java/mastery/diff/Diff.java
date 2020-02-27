@@ -1,6 +1,6 @@
 package mastery.diff;
 
-import mastery.tree.input.Node;
+import mastery.tree.node.Node;
 
 public class Diff extends GumTree {
     public Diff() {
@@ -11,7 +11,7 @@ public class Diff extends GumTree {
     public double dice(Node node1, Node node2) {
         int matchedCount = 0;
         for (var child : node1.children) {
-            if (child.matched) {
+            if (!matched.contains(child)) {
                 matchedCount++;
             }
         }
@@ -20,7 +20,7 @@ public class Diff extends GumTree {
             for (int i = 0; i < node1.children.size(); i++) {
                 var u = node1.children.get(i);
                 var v = node1.children.get(i);
-                if (u.treeHash == v.treeHash && !u.matched && !v.matched) {
+                if (u.treeHash == v.treeHash && !matched.contains(u) && !matched.contains(v)) {
                     matchedCount++;
                 }
             }

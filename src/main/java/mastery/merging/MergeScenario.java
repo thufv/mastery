@@ -1,6 +1,6 @@
 package mastery.merging;
 
-import mastery.tree.input.*;
+import mastery.tree.node.*;
 
 public abstract class MergeScenario {
     public static MergeScenario of(Leaf base, Leaf left, Leaf right) {

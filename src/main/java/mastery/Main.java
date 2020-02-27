@@ -1,23 +1,36 @@
 package mastery;
 
-import mastery.tree.input.Tree;
-import mastery.diff.Diff;
+import mastery.diff.Matcher;
+import mastery.merging.Merger;
+import mastery.tree.node.Tree;
+import mastery.util.log.Log;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.logging.Level;
 
 public class Main {
-    public static void main(String[] args) throws FileNotFoundException {
-        Tree tree1 = Tree.fromJSON("GumTree1.json");
-        Tree tree2 = Tree.fromJSON("GumTree2.json");
+    public static void main(String[] args) throws IOException {
+        // set up logger
+        Log.setup(Level.ALL, false);
 
-        System.out.println(tree1.prettyPrint());
+        var base = Tree.fromJSON("sample/base.json");
+        var left = Tree.fromJSON("sample/left.json");
+        var right = Tree.fromJSON("sample/right.json");
 
-//        System.out.println(tree1.prettyPrint());
-//        System.out.println(":: tree2");
-        System.out.println(tree2.prettyPrint());
-//        System.out.flush();
+        Log.ifLoggable(Level.FINEST, printer -> {
+            printer.println("base");
+            printer.println(base.prettyPrint());
+            printer.println("left");
+            printer.println(left.prettyPrint());
+            printer.println("right");
+            printer.println(right.prettyPrint());
+        });
 
-        var diff = new Diff();
-        diff.apply(tree1, tree2);
+        var matcher = new Matcher();
+        var merger = new Merger();
+
+        var matching = matcher.apply(base, left, right);
+        var target = merger.apply(matching);
+        Log.info("%s", target.getRawCodeString());
     }
 }
