@@ -15,6 +15,7 @@ repositories {
 
 dependencies {
     compile group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
+    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
     testCompile group: 'junit', name: 'junit', version: '4.12'
     implementation 'org.jetbrains:annotations:15.0'
 }
@@ -22,5 +23,16 @@ dependencies {
 task runMain(type: JavaExec) {
     classpath sourceSets.main.runtimeClasspath
     main = "mastery.Main"
-    args += '-ea'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'mastery.Main'
+    }
+
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
 }

@@ -1,0 +1,122 @@
+package mastery.driver;
+
+import org.apache.commons.cli.*;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.List;
+import java.util.logging.Level;
+
+public final class CLIParser {
+    static final String OUTPUT = "o";
+    final Option output = Option.builder(OUTPUT)
+            .longOpt("output")
+            .required()
+            .hasArg()
+            .argName("file")
+            .desc("output file/directory")
+            .build();
+
+    static final String EXPECTED = "e";
+    final Option expected = Option.builder(EXPECTED)
+            .longOpt("expected")
+            .hasArg()
+            .argName("file")
+            .desc("expected file/directory (enables auto check)")
+            .build();
+
+    static final String LOG_LEVEL = "log-level";
+    final Option logLevel = Option
+            .builder(null)
+            .longOpt(LOG_LEVEL)
+            .hasArg()
+            .argName("level")
+            // TODO: in production, info
+            .desc("log level: all (default), severe, warning, info, config, fine, finer, finest, off")
+            .build();
+
+    static final String LOG_COLORFUL = "log-color";
+    final Option logColorful = Option
+            .builder(null)
+            .longOpt(LOG_COLORFUL)
+            .hasArg(false)
+            .desc("enable colorful log (default plain)")
+            .build();
+
+    static final String LOG_FILE = "log-file";
+    final Option logFile = Option
+            .builder(null)
+            .longOpt(LOG_FILE)
+            .hasArg()
+            .argName("file")
+            .desc("also dump log to a file")
+            .build();
+
+    static final String HELP = "h";
+    final Option help = Option
+            .builder(HELP)
+            .longOpt("help")
+            .hasArg(false)
+            .desc("prints this usage text")
+            .build();
+
+    public CLIParser() {
+        options = new Options();
+        options.addOption(output);
+        options.addOption(expected);
+        // log related
+        options.addOption(logLevel);
+        options.addOption(logColorful);
+        options.addOption(logFile);
+        options.addOption(help);
+    }
+
+    public void printHelp() {
+        String header = "\noptions:\n";
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("mastery [options] <base> <left> <right>\n" +
+                "  arguments should be all files or directories", header, options, "");
+    }
+
+    public Config parse(String[] args) throws ParseException, FileNotFoundException {
+        if (args.length == 0 || List.of(args).contains("-h") || List.of(args).contains("--help")) {
+            printHelp();
+            System.exit(0);
+        }
+
+        DefaultParser parser = new DefaultParser();
+        CommandLine cli = parser.parse(options, args);
+
+        String[] arguments = cli.getArgs();
+        if (arguments.length < 3) {
+            throw new ParseException("Please provide 3 files/directories as arguments.");
+        }
+
+        File base = new File(arguments[0]);
+        File left = new File(arguments[1]);
+        File right = new File(arguments[2]);
+        File output = new File(cli.getOptionValue(OUTPUT));
+        var builder = Config.builder(base, left, right, output);
+
+        if (cli.hasOption(EXPECTED)) {
+            builder.expected(new File(cli.getOptionValue(EXPECTED)));
+        }
+
+        if (cli.hasOption(LOG_LEVEL)) {
+            Level level = Level.parse(cli.getOptionValue(LOG_LEVEL).toUpperCase());
+            builder.logLevel(level);
+        }
+
+        if (cli.hasOption(LOG_COLORFUL)) {
+            builder.enableLogColor();
+        }
+
+        if (cli.hasOption(LOG_FILE)) {
+            builder.logDump(new File(cli.getOptionValue(LOG_FILE)));
+        }
+
+        return builder.build();
+    }
+
+    private Options options;
+}

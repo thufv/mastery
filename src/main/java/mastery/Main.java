@@ -10,7 +10,16 @@ import java.io.IOException;
 import java.util.logging.Level;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
+//        Driver.fromCLI(args);
+        try {
+            testMain();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void testMain() throws IOException {
         // set up logger
         Log.setup(Level.ALL, false);
 
