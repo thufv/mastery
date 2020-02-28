@@ -1,4 +1,4 @@
-package mastery.tree.node;
+package mastery.tree;
 
 public class Nothing extends Leaf {
     public Nothing() {

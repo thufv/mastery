@@ -1,12 +1,15 @@
-package mastery.tree.node;
+package mastery.tree;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Constructor extends Node {
+/**
+ * A constructor, i.e. an internal node that has a fixed number of children.
+ */
+public class Constructor extends Tree {
     public final int arity;
 
-    public Constructor(int label, String name, List<Node> children) {
+    public Constructor(int label, String name, List<Tree> children) {
         super(label, name, children);
         this.arity = children.size();
     }
@@ -37,24 +40,26 @@ public class Constructor extends Node {
     }
 
     @Override
-    public String toString() {
-        return name + " (" + arity + "-ary)";
-    }
-
-    @Override
-    public Node updated(Node target, Node replacement) {
-        if (this == target) return replacement;
-
-        var cs = new ArrayList<Node>();
+    public Tree deepCopy() {
+        var copied = new ArrayList<Tree>();
         for (var child : children) {
-            cs.add(child.updated(target, replacement));
+            copied.add(child.deepCopy());
         }
-        return new Constructor(label, name, cs);
+        return new Constructor(label, name, copied);
     }
 
     @Override
-    public <T> T accept(Visitor<T> visitor) {
+    public void accept(Visitor visitor) {
+        visitor.visitConstructor(this);
+    }
+
+    @Override
+    public <T> T accept(RichVisitor<T> visitor) {
         return visitor.visitConstructor(this);
     }
 
+    @Override
+    public String toString() {
+        return name + " (" + arity + "-ary)";
+    }
 }

@@ -1,7 +1,7 @@
 package mastery.merging;
 
-import mastery.tree.node.ListNode;
-import mastery.tree.node.Node;
+import mastery.tree.ListNode;
+import mastery.tree.Tree;
 import mastery.util.Pair;
 import mastery.util.WeightedQueue;
 
@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.PriorityQueue;
 
 public abstract class ListMerger<L extends ListNode> {
-    public List<Node> apply(L left, L right, List<Pair<Pair<Node, Node>, Node>> mappings) {
-        var targets = new ArrayList<Node>();
+    public List<Tree> apply(L left, L right, List<Pair<Pair<Tree, Tree>, Tree>> mappings) {
+        var targets = new ArrayList<Tree>();
         label = left.label;
         name = left.name;
 
@@ -59,8 +59,8 @@ public abstract class ListMerger<L extends ListNode> {
         return targets;
     }
 
-    private static List<Node> takeWhileNotEquals(Iterator<Node> it, Node target) {
-        var collected = new ArrayList<Node>();
+    private static List<Tree> takeWhileNotEquals(Iterator<Tree> it, Tree target) {
+        var collected = new ArrayList<Tree>();
         while (it.hasNext()) {
             var e = it.next();
             if (e == target) {
@@ -72,33 +72,33 @@ public abstract class ListMerger<L extends ListNode> {
         return collected;
     }
 
-    void addLeftDelete(Node right, Node target) {
+    void addLeftDelete(Tree right, Tree target) {
         time++;
         tasks.add(new Task(time, time, true, true, List.of(target), List.of(right)));
         rightTime = time;
     }
 
-    void addRightDelete(Node left, Node target) {
+    void addRightDelete(Tree left, Tree target) {
         time++;
         tasks.add(new Task(time, time, false, true, List.of(target), List.of(left)));
         leftTime = time;
     }
 
-    void addLeftInsert(List<Node> nodes) {
-        if (nodes.isEmpty()) return;
+    void addLeftInsert(List<Tree> Trees) {
+        if (Trees.isEmpty()) return;
 
         tasks.add(new Task(leftTime, time + 1, true, false,
-                nodes, nodes));
+                Trees, Trees));
     }
 
-    void addRightInsert(List<Node> nodes) {
-        if (nodes.isEmpty()) return;
+    void addRightInsert(List<Tree> Trees) {
+        if (Trees.isEmpty()) return;
 
         tasks.add(new Task(rightTime, time + 1, false, false,
-                nodes, nodes));
+                Trees, Trees));
     }
 
-    void handleQueued(List<Node> targets) {
+    void handleQueued(List<Tree> targets) {
         while (!tasks.isEmpty()) {
             var suspended = new ArrayList<Task>();
             boolean leftInserted = false;
@@ -125,11 +125,11 @@ public abstract class ListMerger<L extends ListNode> {
                 continue;
             }
 
-            suspended.forEach(t -> targets.addAll(t.targetNodes));
+            suspended.forEach(t -> targets.addAll(t.targetTrees));
         }
     }
 
-    protected abstract void handleConflict(List<Task> suspended, List<Node> targets);
+    protected abstract void handleConflict(List<Task> suspended, List<Tree> targets);
 
     protected int label;
     protected String name;
@@ -144,17 +144,17 @@ public abstract class ListMerger<L extends ListNode> {
         final int endTime;
         final boolean left;
         final boolean delete;
-        final List<Node> targetNodes;
-        final List<Node> inputNodes;
+        final List<Tree> targetTrees;
+        final List<Tree> inputTrees;
 
         Task(int beginTime, int endTime, boolean left, boolean delete,
-             List<Node> targetNodes, List<Node> inputNodes) {
+             List<Tree> targetTrees, List<Tree> inputTrees) {
             this.beginTime = beginTime;
             this.endTime = endTime;
             this.left = left;
             this.delete = delete;
-            this.targetNodes = targetNodes;
-            this.inputNodes = inputNodes;
+            this.targetTrees = targetTrees;
+            this.inputTrees = inputTrees;
         }
 
         @Override

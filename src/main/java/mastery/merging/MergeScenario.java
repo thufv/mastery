@@ -1,6 +1,6 @@
 package mastery.merging;
 
-import mastery.tree.node.*;
+import mastery.tree.*;
 
 public abstract class MergeScenario {
     public static MergeScenario of(Leaf base, Leaf left, Leaf right) {
@@ -19,11 +19,11 @@ public abstract class MergeScenario {
         return new UnorderedLists(base, left, right);
     }
 
-    public abstract Node getBase();
+    public abstract Tree getBase();
 
-    public abstract Node getLeft();
+    public abstract Tree getLeft();
 
-    public abstract Node getRight();
+    public abstract Tree getRight();
 
     public abstract <T> T accept(Visitor<T> visitor);
 
@@ -49,17 +49,17 @@ public abstract class MergeScenario {
         }
 
         @Override
-        public final Node getBase() {
+        public final Tree getBase() {
             return base;
         }
 
         @Override
-        public final Node getLeft() {
+        public final Tree getLeft() {
             return left;
         }
 
         @Override
-        public final Node getRight() {
+        public final Tree getRight() {
             return right;
         }
 
@@ -81,17 +81,17 @@ public abstract class MergeScenario {
         }
 
         @Override
-        public final Node getBase() {
+        public final Tree getBase() {
             return base;
         }
 
         @Override
-        public final Node getLeft() {
+        public final Tree getLeft() {
             return left;
         }
 
         @Override
-        public final Node getRight() {
+        public final Tree getRight() {
             return right;
         }
 
@@ -113,17 +113,17 @@ public abstract class MergeScenario {
         }
 
         @Override
-        public final Node getBase() {
+        public final Tree getBase() {
             return base;
         }
 
         @Override
-        public final Node getLeft() {
+        public final Tree getLeft() {
             return left;
         }
 
         @Override
-        public final Node getRight() {
+        public final Tree getRight() {
             return right;
         }
 
@@ -145,17 +145,17 @@ public abstract class MergeScenario {
         }
 
         @Override
-        public final Node getBase() {
+        public final Tree getBase() {
             return base;
         }
 
         @Override
-        public final Node getLeft() {
+        public final Tree getLeft() {
             return left;
         }
 
         @Override
-        public final Node getRight() {
+        public final Tree getRight() {
             return right;
         }
 

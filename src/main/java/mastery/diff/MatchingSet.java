@@ -1,7 +1,6 @@
 package mastery.diff;
 
-import mastery.tree.node.Node;
-import mastery.tree.node.Tree;
+import mastery.tree.Tree;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,27 +17,27 @@ public class MatchingSet {
         this.right = right;
     }
 
-    public final boolean treesEqual(Node root1, Node root2) {
+    public final boolean treesEqual(Tree root1, Tree root2) {
         return root1.treeHash == root2.treeHash;
     }
 
-    public final boolean hasLeftMatch(Node base) {
+    public final boolean hasLeftMatch(Tree base) {
         return leftMatches.containsKey(base);
     }
 
-    public final boolean hasRightMatch(Node base) {
+    public final boolean hasRightMatch(Tree base) {
         return rightMatches.containsKey(base);
     }
 
-    public final <E extends Node> E getLeftMatch(E base) {
+    public final <E extends Tree> E getLeftMatch(E base) {
         return (E) leftMatches.get(base);
     }
 
-    public final <E extends Node> E getRightMatch(E base) {
+    public final <E extends Tree> E getRightMatch(E base) {
         return (E) rightMatches.get(base);
     }
 
-    public final boolean matched(Node base, Node variant) {
+    public final boolean matched(Tree base, Tree variant) {
         return leftMatches.get(base) == variant || rightMatches.get(base) == variant;
     }
 
@@ -46,11 +45,11 @@ public class MatchingSet {
      * Check if `variant` is <em>relevant</em> to `base`, i.e. it has a descendant (could be itself) `u` such that
      * `u` and `base` are matched.
      *
-     * @param base    base node
-     * @param variant node from left or right
+     * @param base    base Tree
+     * @param variant Tree from left or right
      * @return if they are relevant
      */
-    public final boolean relevant(Node base, Node variant) {
+    public final boolean relevant(Tree base, Tree variant) {
         var u = leftMatches.get(base);
         while (u != null) {
             if (u == variant) {
@@ -74,14 +73,14 @@ public class MatchingSet {
         return leftMatches.size() + rightMatches.size();
     }
 
-    final void setLeftMatch(Node base, Node left) {
+    final void setLeftMatch(Tree base, Tree left) {
         leftMatches.put(base, left);
     }
 
-    final void setRightMatch(Node base, Node right) {
+    final void setRightMatch(Tree base, Tree right) {
         rightMatches.put(base, right);
     }
 
-    private Map<Node, Node> leftMatches = new HashMap<>();
-    private Map<Node, Node> rightMatches = new HashMap<>();
+    private Map<Tree, Tree> leftMatches = new HashMap<>();
+    private Map<Tree, Tree> rightMatches = new HashMap<>();
 }

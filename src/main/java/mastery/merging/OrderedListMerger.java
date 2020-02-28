@@ -1,8 +1,8 @@
 package mastery.merging;
 
-import mastery.tree.node.Conflict;
-import mastery.tree.node.Node;
-import mastery.tree.node.OrderedList;
+import mastery.tree.Conflict;
+import mastery.tree.OrderedList;
+import mastery.tree.Tree;
 import mastery.util.log.Log;
 
 import java.util.ArrayList;
@@ -11,15 +11,15 @@ import java.util.logging.Level;
 
 public class OrderedListMerger extends ListMerger<OrderedList> {
     @Override
-    protected void handleConflict(List<Task> suspended, List<Node> targets) {
-        var left = new ArrayList<Node>();
-        var right = new ArrayList<Node>();
+    protected void handleConflict(List<Task> suspended, List<Tree> targets) {
+        var left = new ArrayList<Tree>();
+        var right = new ArrayList<Tree>();
 
         for (var task : suspended) {
             if (task.left) {
-                left.addAll(task.inputNodes);
+                left.addAll(task.inputTrees);
             } else {
-                right.addAll(task.inputNodes);
+                right.addAll(task.inputTrees);
             }
         }
 
@@ -27,16 +27,12 @@ public class OrderedListMerger extends ListMerger<OrderedList> {
         Log.ifLoggable(Level.FINEST, printer -> {
             printer.println("left");
             printer.incIndent();
-            for (var u : left) {
-                printer.println(u.prettyPrint());
-            }
+            left.forEach(x -> x.prettyPrintTo(printer));
             printer.decIndent();
 
             printer.println("right");
             printer.incIndent();
-            for (var u : right) {
-                printer.println(u.prettyPrint());
-            }
+            left.forEach(x -> x.prettyPrintTo(printer));
             printer.decIndent();
         });
 

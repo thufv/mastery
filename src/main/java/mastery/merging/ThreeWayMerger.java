@@ -1,7 +1,7 @@
 package mastery.merging;
 
 import mastery.diff.MatchingSet;
-import mastery.tree.node.*;
+import mastery.tree.*;
 import mastery.util.Pair;
 import mastery.util.log.Log;
 
@@ -11,37 +11,26 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 
-public final class ThreeWayMerger implements MergeScenario.Visitor<Node> {
-    public ThreeWayMerger(MatchingSet m, Map<Node, Node> t) {
+public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
+    public ThreeWayMerger(MatchingSet m, Map<Tree, Tree> t) {
         this.m = m;
         this.t = t;
     }
 
     @Override
-    public Node visitLeaves(Leaf base, Leaf left, Leaf right) {
-        Log.finest("merging leaf %s", base.name);
-
-        if (m.treesEqual(base, left)) {
-            return right;
-        }
-
-        if (m.treesEqual(base, right)) {
-            return left;
-        }
-
-        if (m.treesEqual(left, right)) {
-            return left;
-        }
-
+    public Tree visitLeaves(Leaf base, Leaf left, Leaf right) {
+        // realizing that the following trivial cases have already been checked
+        assert !m.treesEqual(base, left) && !m.treesEqual(base, right) && !m.treesEqual(left, right);
+        // the only possibility is conflict
         Log.finest("conflict: %s <-> %s", left, right);
         return Conflict.of(base, left, right);
     }
 
     @Override
-    public Node visitConstructors(Constructor base, Constructor left, Constructor right) {
+    public Tree visitConstructors(Constructor base, Constructor left, Constructor right) {
         Log.finest("merging constructor %s", base.name);
 
-        var targets = new ArrayList<Node>();
+        var targets = new ArrayList<Tree>();
         for (int i = 0; i < base.arity; i++) {
             var b = base.children.get(i);
             var l = left.children.get(i);
@@ -69,7 +58,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Node> {
     }
 
     @Override
-    public Node visitOrderedLists(OrderedList base, OrderedList left, OrderedList right) {
+    public Tree visitOrderedLists(OrderedList base, OrderedList left, OrderedList right) {
         Log.finest("merging ordered list %s", base.name);
 
         var targets = ordered.apply(left, right, establishMappings(base, left, right));
@@ -77,7 +66,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Node> {
     }
 
     @Override
-    public Node visitUnorderedLists(UnorderedList base, UnorderedList left, UnorderedList right) {
+    public Tree visitUnorderedLists(UnorderedList base, UnorderedList left, UnorderedList right) {
         Log.finest("merging unordered list %s", base.name);
 
         var targets = unordered.apply(left, right, establishMappings(base, left, right));
@@ -86,7 +75,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Node> {
 
     // read-only contexts
     private MatchingSet m;
-    private Map<Node, Node> t;
+    private Map<Tree, Tree> t;
 
     // helper mergers for lists
     private OrderedListMerger ordered = new OrderedListMerger();
@@ -101,7 +90,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Node> {
      * @param right right version
      * @return merge result
      */
-    private Node twoWay(Node left, Node right) {
+    private Tree twoWay(Tree left, Tree right) {
         Log.finest("two way: %s <-> %s", left, right);
         return m.treesEqual(left, right) ? left : Conflict.ofTwoWay(left, right);
     }
@@ -116,7 +105,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Node> {
      * @param right right version
      * @return merge result
      */
-    private Node threeWay(Node base, Node left, Node right) {
+    private Tree threeWay(Tree base, Tree left, Tree right) {
         var l = m.getLeftMatch(base);
         var r = m.getRightMatch(base);
 
@@ -129,12 +118,12 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Node> {
 
         if (l != left && r == right) { // lift left
             Log.config("lift left: %s -> %s", l, left);
-            return left.updated(l, t.get(base));
+            return TreeBuilders.fromUpdate(left, l, t.get(base));
         }
 
         if (l == left && r != right) { // lift right
             Log.config("lift right: %s -> %s", r, right);
-            return right.updated(r, t.get(base));
+            return TreeBuilders.fromUpdate(right, r, t.get(base));
         }
 
         // lift both
@@ -152,7 +141,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Node> {
      * @param right right version
      * @return merge result
      */
-    private Node leftDelete(Node base, Node right) {
+    private Tree leftDelete(Tree base, Tree right) {
         if (m.matched(base, right) && m.treesEqual(base, right)) {
             Log.fine("delete by left: %s", base);
             return new Nothing(); // TODO: is optional suitable here?
@@ -170,7 +159,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Node> {
      * @param left left version
      * @return merge result
      */
-    private Node rightDelete(Node base, Node left) {
+    private Tree rightDelete(Tree base, Tree left) {
         if (m.matched(base, left) && m.treesEqual(base, left)) {
             Log.fine("delete by right: %s", base);
             return new Nothing();
@@ -190,13 +179,13 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Node> {
      * @param right right version
      * @return merge result
      */
-    private Node leftInsert(Node base, Node left, Node right) {
+    private Tree leftInsert(Tree base, Tree left, Tree right) {
         var r = m.getRightMatch(base);
         var t = m.treesEqual(base, r) ? left : Conflict.of(base, left, r);
 
         if (r == right) return t;
 
-        return right.updated(r, t);
+        return TreeBuilders.fromUpdate(right, r, t);
     }
 
     /**
@@ -209,17 +198,17 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Node> {
      * @param right right version
      * @return merge result
      */
-    private Node rightInsert(Node base, Node left, Node right) {
+    private Tree rightInsert(Tree base, Tree left, Tree right) {
         var l = m.getLeftMatch(base);
         var t = m.treesEqual(base, l) ? right : Conflict.of(base, l, right);
 
         if (l == left) return t;
 
-        return left.updated(l, t);
+        return TreeBuilders.fromUpdate(left, l, t);
     }
 
     /**
-     * Establish mappings among three list nodes, and produce the merge result for each mapping.
+     * Establish mappings among three list Trees, and produce the merge result for each mapping.
      * <p>
      * REQUIRE: the three lists are matched each other.
      *
@@ -230,17 +219,18 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Node> {
      *         * `left \in leftList` and `right \in rightList` are the matched element
      *         * `target` is the merge result
      */
-    private List<Pair<Pair<Node, Node>, Node>> establishMappings(ListNode baseList,
+    private List<Pair<Pair<Tree, Tree>, Tree>> establishMappings(ListNode baseList,
                                                                  ListNode leftList, ListNode rightList) {
-        var mappings = new ArrayList<Pair<Pair<Node, Node>, Node>>();
+        var mappings = new ArrayList<Pair<Pair<Tree, Tree>, Tree>>();
         for (var base : baseList.children) {
-            Node left = null, right = null;
+            Tree left = null, right = null;
 
             if (m.hasLeftMatch(base)) {
                 left = m.getLeftMatch(base);
-                while (left.getParent() != leftList) {
-                    left = left.getParent();
-                }
+                if (left.getParent() != leftList)
+                    while (left.getParent() != leftList) {
+                        left = left.getParent();
+                    }
                 Objects.requireNonNull(left);
             }
 

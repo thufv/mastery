@@ -2,7 +2,8 @@ package mastery;
 
 import mastery.diff.Matcher;
 import mastery.merging.Merger;
-import mastery.tree.node.Tree;
+import mastery.tree.TreeBuilders;
+import mastery.tree.TreePrinters;
 import mastery.util.log.Log;
 
 import java.io.IOException;
@@ -13,17 +14,17 @@ public class Main {
         // set up logger
         Log.setup(Level.ALL, false);
 
-        var base = Tree.fromJSON("sample/base.json");
-        var left = Tree.fromJSON("sample/left.json");
-        var right = Tree.fromJSON("sample/right.json");
+        var base = TreeBuilders.fromJSON("sample/base.json");
+        var left = TreeBuilders.fromJSON("sample/left.json");
+        var right = TreeBuilders.fromJSON("sample/right.json");
 
         Log.ifLoggable(Level.FINEST, printer -> {
             printer.println("base");
-            printer.println(base.prettyPrint());
+            base.prettyPrintTo(printer);
             printer.println("left");
-            printer.println(left.prettyPrint());
+            left.prettyPrintTo(printer);
             printer.println("right");
-            printer.println(right.prettyPrint());
+            right.prettyPrintTo(printer);
         });
 
         var matcher = new Matcher();
@@ -31,6 +32,7 @@ public class Main {
 
         var matching = matcher.apply(base, left, right);
         var target = merger.apply(matching);
-        Log.info("%s", target.getRawCodeString());
+        Log.fine("done");
+        Log.ifLoggable(Level.FINEST, printer -> TreePrinters.rawCode(target, printer));
     }
 }

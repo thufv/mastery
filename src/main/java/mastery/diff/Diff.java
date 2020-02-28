@@ -1,6 +1,6 @@
 package mastery.diff;
 
-import mastery.tree.node.Node;
+import mastery.tree.Tree;
 
 public class Diff extends GumTree {
     public Diff() {
@@ -8,7 +8,7 @@ public class Diff extends GumTree {
     }
 
     @Override
-    public double dice(Node node1, Node node2) {
+    public double dice(Tree node1, Tree node2) {
         int matchedCount = 0;
         for (var child : node1.children) {
             if (!matched.contains(child)) {

@@ -1,8 +1,11 @@
-package mastery.tree.node;
+package mastery.tree;
 
 import java.util.Collections;
 
-public class Leaf extends Node {
+/**
+ * A leaf node, i.e. a token.
+ */
+public class Leaf extends Tree {
     public final String value;
 
     public Leaf(int label, String name, String value) {
@@ -36,18 +39,22 @@ public class Leaf extends Node {
     }
 
     @Override
+    public Tree deepCopy() {
+        return new Leaf(label, name, value);
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitLeaf(this);
+    }
+
+    @Override
+    public <T> T accept(RichVisitor<T> visitor) {
+        return visitor.visitLeaf(this);
+    }
+
+    @Override
     public String toString() {
         return name + " '" + value + "'";
-    }
-
-    @Override
-    public Node updated(Node target, Node replacement) {
-        if (this == target) return replacement;
-        return this;
-    }
-
-    @Override
-    public <T> T accept(Visitor<T> visitor) {
-        return visitor.visitLeaf(this);
     }
 }

@@ -1,6 +1,6 @@
 package mastery.diff;
 
-import mastery.tree.node.Tree;
+import mastery.tree.Tree;
 import mastery.util.log.Log;
 
 public class Matcher {

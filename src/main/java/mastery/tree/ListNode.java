@@ -1,9 +1,12 @@
-package mastery.tree.node;
+package mastery.tree;
 
 import java.util.List;
 
-public abstract class ListNode extends Node {
-    protected ListNode(int label, String name, List<Node> children) {
+/**
+ * A list node, whose number of children is arbitrary.
+ */
+public abstract class ListNode extends Tree {
+    protected ListNode(int label, String name, List<Tree> children) {
         super(label, name, children);
     }
 

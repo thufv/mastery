@@ -1,7 +1,6 @@
 package mastery.diff;
 
-import mastery.tree.node.Node;
-import mastery.tree.node.Tree;
+import mastery.tree.Tree;
 import mastery.util.MultiMap;
 import mastery.util.Pair;
 import mastery.util.WeightedQueue;
@@ -20,56 +19,56 @@ public abstract class GumTree {
         this.minDice = minDice;
     }
 
-    public final Map<Node, Node> apply(Tree tree1, Tree tree2) {
+    public final Map<Tree, Tree> apply(Tree tree1, Tree tree2) {
         m = new HashMap<>();
         matched.clear();
 
-        var nodesByHash = new MultiMap<Integer, Node>();
-        for (var node : tree2.preOrder()) {
-            nodesByHash.put(node.treeHash, node);
+        var TreesByHash = new MultiMap<Integer, Tree>();
+        for (var Tree : tree2.preOrder()) {
+            TreesByHash.put(Tree.treeHash, Tree);
         }
 
-        var suspended = new ArrayList<Pair<Pair<Node, Node>, Double>>();
+        var suspended = new ArrayList<Pair<Pair<Tree, Tree>, Double>>();
 
         // top-down pass
 
-        var queue1 = new WeightedQueue<Node>(node -> node.height);
-        var queue2 = new WeightedQueue<Node>(node -> node.height);
-        queue1.add(tree1.root);
-        queue2.add(tree2.root);
+        var queue1 = new WeightedQueue<Tree>(Tree -> Tree.height);
+        var queue2 = new WeightedQueue<Tree>(Tree -> Tree.height);
+        queue1.add(tree1);
+        queue2.add(tree2);
 
         while (!queue1.isEmpty() && !queue2.isEmpty() &&
                 queue1.maxWeight() > minHeight && queue2.maxWeight() > minHeight) {
             // case 1: queue1 has a larger height
             if (queue1.maxWeight() > queue2.maxWeight()) {
-                for (var node : queue1.removeMax()) {
-                    queue1.addAll(node.children);
+                for (var Tree : queue1.removeMax()) {
+                    queue1.addAll(Tree.children);
                 }
                 continue;
             }
 
             // case 2: queue2.maxWeight() > queue1.maxWeight()
             if (queue2.maxWeight() > queue1.maxWeight()) {
-                for (var node : queue2.removeMax()) {
-                    queue2.addAll(node.children);
+                for (var Tree : queue2.removeMax()) {
+                    queue2.addAll(Tree.children);
                 }
                 continue;
             }
 
-            // case 3: two queues contain nodes of the same height
-            var nodes1 = queue1.removeMax();
-            var nodes2 = queue2.removeMax();
+            // case 3: two queues contain Trees of the same height
+            var Trees1 = queue1.removeMax();
+            var Trees2 = queue2.removeMax();
 
-            // collect tree hash values of all nodes from tree 2 in a set for efficient comparison
+            // collect tree hash values of all Trees from tree 2 in a set for efficient comparison
             var hashes = new HashSet<Integer>();
-            for (var node : nodes2) {
-                hashes.add(node.treeHash);
+            for (var Tree : Trees2) {
+                hashes.add(Tree.treeHash);
             }
 
-            // check if any node from tree 1 has one (directly record) or more (suspend first) match
-            for (var source : nodes1) {
+            // check if any Tree from tree 1 has one (directly record) or more (suspend first) match
+            for (var source : Trees1) {
                 if (hashes.contains(source.treeHash)) {
-                    var targets = nodesByHash.get(source.treeHash);
+                    var targets = TreesByHash.get(source.treeHash);
                     if (targets.size() == 1) {
                         match(source, targets.get(0), MappingType.isomorphic);
                     } else {
@@ -82,16 +81,16 @@ public abstract class GumTree {
             }
 
             // push their children (if not handled) into queue
-            for (var node : nodes1) {
-                for (var child : node.children) {
+            for (var Tree : Trees1) {
+                for (var child : Tree.children) {
                     if (!matched.contains(child)) {
                         queue1.add(child);
                     }
                 }
             }
 
-            for (var node : nodes2) {
-                for (var child : node.children) {
+            for (var Tree : Trees2) {
+                for (var child : Tree.children) {
                     if (!matched.contains(child)) {
                         queue2.add(child);
                     }
@@ -111,25 +110,25 @@ public abstract class GumTree {
         }
 
         // bottom-up pass
-        var unmatchedNodesByLabel = new MultiMap<Integer, Node>();
-        for (var node : tree2.preOrder()) {
-            if (!matched.contains(node)) {
-                unmatchedNodesByLabel.put(node.label, node);
+        var unmatchedTreesByLabel = new MultiMap<Integer, Tree>();
+        for (var Tree : tree2.preOrder()) {
+            if (!matched.contains(Tree)) {
+                unmatchedTreesByLabel.put(Tree.label, Tree);
             }
         }
 
-        for (var node : tree1.postOrder()) {
-            if (!node.children.isEmpty() && !matched.contains(node)) {
-                var candidates = unmatchedNodesByLabel.get(node.label);
+        for (var Tree : tree1.postOrder()) {
+            if (!Tree.children.isEmpty() && !matched.contains(Tree)) {
+                var candidates = unmatchedTreesByLabel.get(Tree.label);
                 if (candidates.isEmpty()) continue;
 
                 var it = candidates.iterator();
                 var bestCandidate = it.next();
-                double maxScore = dice(node, bestCandidate);
+                double maxScore = dice(Tree, bestCandidate);
 
                 while (it.hasNext()) {
                     var candidate = it.next();
-                    var score = dice(node, candidate);
+                    var score = dice(Tree, candidate);
                     if (score > maxScore) {
                         maxScore = score;
                         bestCandidate = candidate;
@@ -138,17 +137,17 @@ public abstract class GumTree {
 
                 Objects.requireNonNull(bestCandidate);
                 if (maxScore > minDice) { // proper match
-                    match(node, bestCandidate, MappingType.container);
+                    match(Tree, bestCandidate, MappingType.container);
                     candidates.remove(bestCandidate);
 
-                    if (node.isConstructor()) { // detect recovery matching
-                        if (node.children.size() != bestCandidate.children.size()) {
-                            throw new IllegalStateException(node + " has " + node.children.size() + " children, but " +
+                    if (Tree.isConstructor()) { // detect recovery matching
+                        if (Tree.children.size() != bestCandidate.children.size()) {
+                            throw new IllegalStateException(Tree + " has " + Tree.children.size() + " children, but " +
                                     bestCandidate + " has " + bestCandidate.children.size() + " children");
                         }
 
-                        for (int i = 0; i < node.children.size(); i++) {
-                            var u = node.children.get(i);
+                        for (int i = 0; i < Tree.children.size(); i++) {
+                            var u = Tree.children.get(i);
                             var v = bestCandidate.children.get(i);
 
                             if (!matched.contains(u) && !matched.contains(v)) {
@@ -169,16 +168,16 @@ public abstract class GumTree {
         recovery
     }
 
-    private Map<Node, Node> m;
-    protected Set<Node> matched = new HashSet<>();
+    private Map<Tree, Tree> m;
+    protected Set<Tree> matched = new HashSet<>();
 
-    private void match(Node node1, Node node2, MappingType type) {
-        m.put(node1, node2);
-        matched.add(node1);
-        matched.add(node2);
+    private void match(Tree Tree1, Tree Tree2, MappingType type) {
+        m.put(Tree1, Tree2);
+        matched.add(Tree1);
+        matched.add(Tree2);
 
-        Log.finer("%s mapping: %s <-> %s", type, node1, node2);
+        Log.finer("%s mapping: %s <-> %s", type, Tree1, Tree2);
     }
 
-    public abstract double dice(Node node1, Node node2);
+    public abstract double dice(Tree Tree1, Tree Tree2);
 }

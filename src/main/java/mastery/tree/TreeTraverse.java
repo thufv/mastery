@@ -1,13 +1,11 @@
 package mastery.tree;
 
-import mastery.tree.node.Node;
-
 import java.util.*;
 
-public class TraverseUtil {
-    public static Iterator<Node> preOrderIterator(Node root) {
+public class TreeTraverse {
+    public static Iterator<Tree> preOrderIterator(Tree root) {
         return new Iterator<>() {
-            private Stack<Iterator<Node>> stack = new Stack<>();
+            private Stack<Iterator<Tree>> stack = new Stack<>();
 
             {
                 stack.push(Collections.singletonList(root).iterator());
@@ -19,7 +17,7 @@ public class TraverseUtil {
             }
 
             @Override
-            public Node next() {
+            public Tree next() {
                 if (stack.empty()) {
                     throw new NoSuchElementException();
                 }
@@ -43,9 +41,9 @@ public class TraverseUtil {
         };
     }
 
-    public static Iterator<Node> postOrderIterator(Node tree) {
+    public static Iterator<Tree> postOrderIterator(Tree tree) {
         return new Iterator<>() {
-            private Queue<Node> queue = new ArrayDeque<>();
+            private Queue<Tree> queue = new ArrayDeque<>();
 
             {
                 push(tree);
@@ -57,7 +55,7 @@ public class TraverseUtil {
             }
 
             @Override
-            public Node next() {
+            public Tree next() {
                 if (queue.isEmpty()) {
                     throw new NoSuchElementException();
                 }
@@ -65,7 +63,7 @@ public class TraverseUtil {
                 return queue.remove();
             }
 
-            private void push(Node node) {
+            private void push(Tree node) {
                 node.children.forEach(this::push);
                 queue.add(node);
             }

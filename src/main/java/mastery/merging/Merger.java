@@ -1,7 +1,7 @@
 package mastery.merging;
 
 import mastery.diff.MatchingSet;
-import mastery.tree.node.*;
+import mastery.tree.*;
 import mastery.util.log.Log;
 
 import java.util.ArrayList;
@@ -11,41 +11,73 @@ import java.util.function.Function;
 public final class Merger implements Function<MatchingSet, Tree> {
     @Override
     public Tree apply(MatchingSet m) {
-        var targets = new HashMap<Node, Node>();
+        assert m.matched(m.base, m.left) && m.matched(m.base, m.right);
 
-        var mergeScenarios = new ArrayList<MergeScenario>();
-        for (var node : m.base.postOrder()) {
-            if (m.hasLeftMatch(node) && m.hasRightMatch(node)) {
-                if (node.isLeaf()) {
-                    Leaf b = (Leaf) node;
-                    mergeScenarios.add(MergeScenario.of(b, m.getLeftMatch(b), m.getRightMatch(b)));
-                } else if (node.isConstructor()) {
-                    Constructor b = (Constructor) node;
-                    mergeScenarios.add(MergeScenario.of(b, m.getLeftMatch(b), m.getRightMatch(b)));
-                } else if (node.isOrderedList()) {
-                    OrderedList b = (OrderedList) node;
-                    mergeScenarios.add(MergeScenario.of(b, m.getLeftMatch(b), m.getRightMatch(b)));
-                } else if (node.isUnorderedList()) {
-                    UnorderedList b = (UnorderedList) node;
-                    mergeScenarios.add(MergeScenario.of(b, m.getLeftMatch(b), m.getRightMatch(b)));
-                } else {
-                    throw new IllegalStateException("unknown type of node " + node);
+        // collect merge scenarios
+        var scenarios = new ArrayList<MergeScenario>();
+        var walker = new Tree.PostOrderWalker() {
+            @Override
+            public void visitLeaf(Leaf leaf) {
+                if (m.hasLeftMatch(leaf) && m.hasRightMatch(leaf)) {
+                    scenarios.add(MergeScenario.of(leaf, m.getLeftMatch(leaf), m.getRightMatch(leaf)));
                 }
             }
+
+            @Override
+            public void visitConstructor(Constructor constructor) {
+                if (m.hasLeftMatch(constructor) && m.hasRightMatch(constructor)) {
+                    scenarios.add(MergeScenario.of(constructor,
+                            m.getLeftMatch(constructor), m.getRightMatch(constructor)));
+                }
+            }
+
+            @Override
+            public void visitOrderedList(OrderedList ordered) {
+                if (m.hasLeftMatch(ordered) && m.hasRightMatch(ordered)) {
+                    scenarios.add(MergeScenario.of(ordered, m.getLeftMatch(ordered), m.getRightMatch(ordered)));
+                }
+            }
+
+            @Override
+            public void visitUnorderedList(UnorderedList unordered) {
+                if (m.hasLeftMatch(unordered) && m.hasRightMatch(unordered)) {
+                    scenarios.add(MergeScenario.of(unordered, m.getLeftMatch(unordered), m.getRightMatch(unordered)));
+                }
+            }
+
+            @Override
+            public void visitConflict(Conflict conflict) {
+                throw new UnsupportedOperationException("input tree cannot have conflict nodes");
+            }
+        };
+        walker.accept(m.base);
+        Log.config("%d three-way merge scenarios", scenarios.size());
+
+        // handle merge scenarios
+        var targets = new HashMap<Tree, Tree>();
+        var merger = new ThreeWayMerger(m, targets);
+        for (var scenario : scenarios) {
+            if (m.treesEqual(scenario.getBase(), scenario.getLeft())) {
+                Log.finest("trivial merge scenario: base = left, thus target = right");
+                targets.put(scenario.getBase(), scenario.getRight());
+                continue;
+            }
+
+            if (m.treesEqual(scenario.getBase(), scenario.getRight())) {
+                Log.finest("trivial merge scenario: base = right, thus target = left");
+                targets.put(scenario.getBase(), scenario.getLeft());
+                continue;
+            }
+
+            if (m.treesEqual(scenario.getLeft(), scenario.getRight())) {
+                Log.finest("trivial merge scenario: left = right, thus target is either");
+                targets.put(scenario.getBase(), scenario.getLeft());
+                continue;
+            }
+
+            targets.put(scenario.getBase(), scenario.accept(merger));
         }
 
-        Log.fine("%d three-way merge scenarios", mergeScenarios.size());
-
-        var threeWayMerger = new ThreeWayMerger(m, targets);
-        for (var scenario : mergeScenarios) {
-            var target = m.treesEqual(scenario.getBase(), scenario.getLeft()) ? scenario.getRight()
-                    : m.treesEqual(scenario.getBase(), scenario.getRight()) ? scenario.getLeft()
-                    : m.treesEqual(scenario.getLeft(), scenario.getRight()) ? scenario.getLeft()
-                    : scenario.accept(threeWayMerger);
-            targets.put(scenario.getBase(), target);
-        }
-
-        var root = targets.get(m.base.root);
-        return new Tree(root);
+        return targets.get(m.base);
     }
 }

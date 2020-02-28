@@ -1,39 +1,39 @@
-package mastery.tree.node;
+package mastery.tree;
 
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class Conflict extends Node {
+public class Conflict extends Tree {
     @Nullable
-    public final Node base;
+    public final Tree base;
 
     @Nullable
-    public final Node left;
+    public final Tree left;
 
     @Nullable
-    public final Node right;
+    public final Tree right;
 
-    private Conflict(@Nullable Node base, @Nullable Node left, @Nullable Node right) {
+    private Conflict(@Nullable Tree base, @Nullable Tree left, @Nullable Tree right) {
         super(-1, "?", List.of(base, left, right));
         this.base = base;
         this.left = left;
         this.right = right;
     }
 
-    public static Conflict of(Node base, Node left, Node right) {
+    public static Conflict of(Tree base, Tree left, Tree right) {
         return new Conflict(base, left, right);
     }
 
-    public static Conflict ofTwoWay(Node left, Node right) {
+    public static Conflict ofTwoWay(Tree left, Tree right) {
         return new Conflict(null, left, right);
     }
 
-    public static Conflict ofLeft(Node base, Node left) {
+    public static Conflict ofLeft(Tree base, Tree left) {
         return new Conflict(base, left, null);
     }
 
-    public static Conflict ofRight(Node base, Node right) {
+    public static Conflict ofRight(Tree base, Tree right) {
         return new Conflict(base, null, right);
     }
 
@@ -63,17 +63,23 @@ public class Conflict extends Node {
     }
 
     @Override
+    public Tree deepCopy() {
+        return new Conflict(base == null ? null : base.deepCopy(),
+                left == null ? null : left.deepCopy(), right == null ? null : right.deepCopy());
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitConflict(this);
+    }
+
+    @Override
+    public <T> T accept(RichVisitor<T> visitor) {
+        return visitor.visitConflict(this);
+    }
+
+    @Override
     public String toString() {
         return "<CONFLICT>";
-    }
-
-    @Override
-    public Node updated(Node target, Node replacement) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public <T> T accept(Visitor<T> visitor) {
-        return null;
     }
 }
