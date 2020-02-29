@@ -15,5 +15,15 @@ hs_err_pid*
 .idea/
 build/
 sample/
+bin/
+.classpath
+.project
 
 *.DS_Store
+
+# VS Code
+.vscode/
+.setting/
+
+# For namasikanam
+exp/
