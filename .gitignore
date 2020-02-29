@@ -23,7 +23,7 @@ bin/
 
 # VS Code
 .vscode/
-.setting/
+.settings/
 
 # For namasikanam
 exp/
