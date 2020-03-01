@@ -208,7 +208,7 @@ public abstract class Tree {
 
             // System.out.println(child.name + " is child of " + name);
 
-            hash = hash * 233 + child.treeHash;
+            hash = hash * 2333 + child.treeHash;
             child.parent = this; // set parent here
         }
         this.size = size;

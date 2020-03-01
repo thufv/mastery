@@ -8,6 +8,7 @@ import mastery.util.log.Log;
 
 import java.util.*;
 
+// Based on the mapping part of GumTree algorithm
 public abstract class GumTree {
 
     protected final int minHeight;
@@ -111,24 +112,24 @@ public abstract class GumTree {
 
         // bottom-up pass
         var unmatchedTreesByLabel = new MultiMap<Integer, Tree>();
-        for (var Tree : tree2.preOrder()) {
-            if (!matched.contains(Tree)) {
-                unmatchedTreesByLabel.put(Tree.label, Tree);
+        for (var tree : tree2.preOrder()) {
+            if (!matched.contains(tree)) {
+                unmatchedTreesByLabel.put(tree.label, tree);
             }
         }
 
-        for (var Tree : tree1.postOrder()) {
-            if (!Tree.children.isEmpty() && !matched.contains(Tree)) {
-                var candidates = unmatchedTreesByLabel.get(Tree.label);
+        for (var tree : tree1.postOrder()) {
+            if (!tree.children.isEmpty() && !matched.contains(tree)) {
+                var candidates = unmatchedTreesByLabel.get(tree.label);
                 if (candidates.isEmpty()) continue;
 
                 var it = candidates.iterator();
                 var bestCandidate = it.next();
-                double maxScore = dice(Tree, bestCandidate);
+                double maxScore = dice(tree, bestCandidate);
 
                 while (it.hasNext()) {
                     var candidate = it.next();
-                    var score = dice(Tree, candidate);
+                    var score = dice(tree, candidate);
                     if (score > maxScore) {
                         maxScore = score;
                         bestCandidate = candidate;
@@ -137,20 +138,20 @@ public abstract class GumTree {
 
                 Objects.requireNonNull(bestCandidate);
                 if (maxScore > minDice) { // proper match
-                    match(Tree, bestCandidate, MappingType.container);
+                    match(tree, bestCandidate, MappingType.container);
                     candidates.remove(bestCandidate);
 
-                    if (Tree.isConstructor()) { // detect recovery matching
-                        if (Tree.children.size() != bestCandidate.children.size()) {
-                            throw new IllegalStateException(Tree + " has " + Tree.children.size() + " children, but " +
+                    if (tree.isConstructor()) { // detect recovery matching
+                        if (tree.children.size() != bestCandidate.children.size()) {
+                            throw new IllegalStateException(tree + " has " + tree.children.size() + " children, but " +
                                     bestCandidate + " has " + bestCandidate.children.size() + " children");
                         }
 
-                        for (int i = 0; i < Tree.children.size(); i++) {
-                            var u = Tree.children.get(i);
+                        for (int i = 0; i < tree.children.size(); i++) {
+                            var u = tree.children.get(i);
                             var v = bestCandidate.children.get(i);
 
-                            if (!matched.contains(u) && !matched.contains(v)) {
+                            if (!matched.contains(u) && !matched.contains(v) && u.label == v.label) {
                                 match(u, v, MappingType.recovery);
                             }
                         }

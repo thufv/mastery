@@ -7,10 +7,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
-import mastery.translator.CodeFormatStrategy;
-import mastery.translator.c.CCodeFormatStrategy;
-import mastery.translator.cs.CSharpCodeFormatStrategy;
-import mastery.translator.java.JavaCodeFormatStrategy;
 import mastery.util.log.IndentPrinter;
 
 public class TreePrinters {
@@ -66,22 +62,10 @@ public class TreePrinters {
      * Pretty code formatted according to syntax.
      *
      * @param tree
-     * @param language
+     * @param formatter
      * @return          The output as a string
      */
-    public static String prettyCode(Tree tree, String language) {
-        CodeFormatStrategy strategy;
-        if (language.equals("JAVA")) {
-            strategy = new JavaCodeFormatStrategy();
-        } else if (language.equals("C")) {
-            strategy = new CCodeFormatStrategy();
-        } else if (language.equals("C#")) {
-            strategy = new CSharpCodeFormatStrategy();
-        } else {
-        throw new IllegalStateException(language +
-                                        " is not a valid language for me.");
-        }
-
+    public static String prettyCode(Tree tree, String formatter) {
         var sb = new StringBuilder();
         var tokenWalker = new Tree.PreOrderWalker() {
         @Override
@@ -95,32 +79,37 @@ public class TreePrinters {
         }
         };
         tokenWalker.accept(tree);
-        String rawCode = strategy.apply(sb.toString());
+        String rawCode = sb.toString();
         String formattedCode = "";
 
-        try {
-            // Use clang-format
-            ProcessBuilder pb = new ProcessBuilder("clang-format-8");
-            Process p = pb.start();
+        if (formatter == null) {
+            formattedCode = rawCode;
+        }
+        else {
+            try {
+                // Use clang-format
+                ProcessBuilder pb = new ProcessBuilder(formatter);
+                Process p = pb.start();
 
-            OutputStream os = p.getOutputStream();
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
-            bw.append(rawCode);
-            bw.flush();
-            bw.close();
+                OutputStream os = p.getOutputStream();
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
+                bw.append(rawCode);
+                bw.flush();
+                bw.close();
 
-            InputStream is = p.getInputStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            String line = null;
-            while ((line = br.readLine()) != null) {
-                formattedCode += line + "\n";
+                InputStream is = p.getInputStream();
+                BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                String line = null;
+                while ((line = br.readLine()) != null) {
+                    formattedCode += line + "\n";
+                }
+                br.close();
+                int r = p.waitFor(); // Let the process finish.
+                assert (r == 0);
+            } catch (Exception e) {
+                System.out.println("An error occurs when formatting.");
+                e.printStackTrace();
             }
-            br.close();
-            int r = p.waitFor(); // Let the process finish.
-            assert (r == 0);
-        } catch (Exception e) {
-            System.out.println("An error occurs when clang formatting.");
-            e.printStackTrace();
         }
 
         return formattedCode;

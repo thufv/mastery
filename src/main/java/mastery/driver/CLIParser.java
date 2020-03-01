@@ -62,6 +62,15 @@ public final class CLIParser {
             .desc("also dump log to a file")
             .build();
 
+    static final String FORMATTER = "formatter";
+    final Option formatter = Option
+            .builder(null)
+            .longOpt(FORMATTER)
+            .hasArg()
+            .argName("executable")
+            .desc("the formatter to format output code (default plain)")
+            .build();
+    
     static final String HELP = "h";
     static final String HELP_DESC = "Usage ";
     final Option help = Option.builder(HELP)
@@ -79,6 +88,7 @@ public final class CLIParser {
         options.addOption(logLevel);
         options.addOption(logColorful);
         options.addOption(logFile);
+        options.addOption(formatter);
         options.addOption(help);
     }
 
@@ -140,6 +150,10 @@ public final class CLIParser {
 
         if (cli.hasOption(LOG_FILE)) {
             builder.logDump(cli.getOptionValue(LOG_FILE));
+        }
+
+        if (cli.hasOption(FORMATTER)) {
+            builder.formatter(cli.getOptionValue(FORMATTER));
         }
 
         return builder.build();

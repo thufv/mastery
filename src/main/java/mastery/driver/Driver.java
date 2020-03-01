@@ -72,7 +72,7 @@ public final class Driver {
             Log.fine("done");
 
             // Show our output
-            String code = TreePrinters.prettyCode(target, config.language);
+            String code = TreePrinters.prettyCode(target, config.formatter);
             if (config.output == null) {
               System.out.println(code);
             } else {

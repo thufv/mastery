@@ -4,7 +4,17 @@ A three-way (the newest version of two branches and the version exactly before b
 
 ## Getting Started
 
-GG! I don't know how to use you!
+### Build
+
+#### Parser
+
+### Basic Usage
+
+`-h` will tell you everything.
+
+### Formatter
+
+I develop this tool with [clang format 8.0.0-3~ubuntu18.04.2](https://clang.llvm.org/docs/ClangFormat.html).
 
 ## Road Map
 
@@ -12,7 +22,7 @@ GG! I don't know how to use you!
 
 - [x] Parse from source file
 - [x] Formatter of output
-    - [ ] Formatting of conflict
+    - [x] Formatting of conflict
 - [ ] More heuristics
 - [ ] Some refinement of syntax
 - [ ] Improved algorithm

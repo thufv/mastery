@@ -15,6 +15,7 @@ hs_err_pid*
 .idea/
 build/
 bin/
+sample/
 .classpath
 .project
 
@@ -28,7 +29,7 @@ bin/
 exp/
 
 # Antlr
-*/.antlr/
+**/.antlr/
 
 # Debug
 debug*

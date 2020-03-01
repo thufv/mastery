@@ -21,6 +21,9 @@ public final class Config {
     public final boolean logColorful;
     public final String logDump;
 
+    // formatter
+    public final String formatter;
+
     private Config(Builder builder) {
         this.base = builder.base;
         this.left = builder.left;
@@ -33,6 +36,7 @@ public final class Config {
         this.logColorful = builder.logColorful;
         this.logDump = builder.logDump;
         this.language = builder.language;
+        this.formatter = builder.formatter;
     }
 
     public static Builder builder(String base, String left, String right, String output) {
@@ -54,7 +58,10 @@ public final class Config {
         private Level logLevel = Level.ALL;             // TODO: in production, info
         private boolean logColorful = false;
         private String logDump = null;
-		private String language = "";
+        private String language = "";
+        
+        // formatter
+        private String formatter = null;
 
         public Builder(String base, String left, String right, String output) {
             this.base = base;
@@ -98,6 +105,11 @@ public final class Config {
             return this;   
 		}
 
+		public Builder formatter(String formatter) {
+            this.formatter = formatter;
+            return this;
+        }
+        
         public Config build() {
             return new Config(this);
         }
