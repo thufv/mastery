@@ -1,6 +1,5 @@
-public class Test {
-    public String foo(int i) {
-        if (i == 0)
-            return "Foo!";
-    }
+public class A {
+  public String foo(int i) {
+    int x = 1;
+  }
 }

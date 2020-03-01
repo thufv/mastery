@@ -64,12 +64,11 @@ public final class CLIParser {
 
     static final String HELP = "h";
     static final String HELP_DESC = "Usage ";
-    final Option help = Option
-            .builder(HELP)
-            .longOpt("help")
-            .hasArg(false)
-            .desc("Show usage help.")
-            .build();
+    final Option help = Option.builder(HELP)
+                            .longOpt("help")
+                            .hasArg(false)
+                            .desc("Show usage help.")
+                            .build();
 
     public CLIParser() {
         options = new Options();
@@ -86,8 +85,10 @@ public final class CLIParser {
     public void printHelp() {
         String header = "\noptions:\n";
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("mastery [options] -l java|c|c# <base> <left> <right>\n" +
-                "  arguments should be all file paths", header, options, "");
+        formatter.printHelp(
+            "mastery [options] -l java|c|c# <base> <left> <right>\n"
+                + "  arguments should be all file paths",
+            header, options, "");
     }
 
     public Config parse(String[] args) throws ParseException, HelpException {

@@ -11,8 +11,8 @@ GG! I don't know how to use you!
 ### High Priority
 
 - [x] Parse from source file
-- [ ] Formater of output
-    - [ ] Format of conflict
+- [x] Formatter of output
+    - [ ] Formatting of conflict
 - [ ] More heuristics
 - [ ] Some refinement of syntax
 - [ ] Improved algorithm

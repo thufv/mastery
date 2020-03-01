@@ -33,6 +33,7 @@ public abstract class Tree {
 
     /**
      * Label, i.e. grammar kind/type.
+     * -1 stands for weird label.
      */
     public final int label;
 
@@ -116,9 +117,6 @@ public abstract class Tree {
 
     /**
      * Pre-order walker by node type.
-     */
-    /**
-     * Post-order walker by node type.
      */
     public abstract static class PreOrderWalker implements Visitor, Consumer<Tree> {
         /**

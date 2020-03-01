@@ -51,6 +51,8 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
                 continue;
             }
 
+            // Question: What if relevant(l, b) and relevant(r, b) ?
+
             targets.add(twoWay(l, r));
         }
 

@@ -15,7 +15,7 @@ public class Conflict extends Tree {
     public final Tree right;
 
     private Conflict(@Nullable Tree base, @Nullable Tree left, @Nullable Tree right) {
-        super(-1, "?", List.of(base, left, right));
+        super(-1, "?", List.of(new Leaf(-1, "", "\n//////// Base\n"), base, new Leaf(-1, "", "\n//////// Left\n"), left, new Leaf(-1, "", "\n//////// Right\n"), right));
         this.base = base;
         this.left = left;
         this.right = right;

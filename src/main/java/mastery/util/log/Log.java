@@ -40,13 +40,13 @@ public class Log {
      * @param file      output file
      */
     public static void setup(Level level, String file) throws IOException {
-        var fh = new FileHandler(file, true);
-        fh.setLevel(level);
-        fh.setFormatter(simpleFormatter);
-        L.addHandler(fh);
-        outs.add(new FileOutputStream(file, true));
+      var fh = new FileHandler(file, true);
+      fh.setLevel(level);
+      fh.setFormatter(simpleFormatter);
+      L.addHandler(fh);
+      outs.add(new FileOutputStream(file, true));
 
-        L.setLevel(level);
+      L.setLevel(level);
     }
 
     /**
@@ -55,14 +55,15 @@ public class Log {
      * @param level     log level
      * @param showColor show color?
      */
-    public static void setup(Level level, boolean showColor) throws IOException {
-        var ch = showColor ? new ColorConsoleHandler() : new ConsoleHandler();
-        ch.setLevel(level);
-        ch.setFormatter(simpleFormatter);
-        L.addHandler(ch);
-        outs.add(System.err);
+    public static void setup(Level level, boolean showColor)
+        throws IOException {
+      var ch = showColor ? new ColorConsoleHandler() : new ConsoleHandler();
+      ch.setLevel(level);
+      ch.setFormatter(simpleFormatter);
+      L.addHandler(ch);
+      outs.add(System.err);
 
-        L.setLevel(level);
+      L.setLevel(level);
     }
 
     /**

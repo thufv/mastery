@@ -1,9 +1,16 @@
 package mastery.tree;
 
-import mastery.translator.cs.CSharpCodeFormatStrategy;
-import mastery.translator.c.CCodeFormatStrategy;
-import mastery.translator.java.JavaCodeFormatStrategy;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+
 import mastery.translator.CodeFormatStrategy;
+import mastery.translator.c.CCodeFormatStrategy;
+import mastery.translator.cs.CSharpCodeFormatStrategy;
+import mastery.translator.java.JavaCodeFormatStrategy;
 import mastery.util.log.IndentPrinter;
 
 public class TreePrinters {
@@ -57,8 +64,8 @@ public class TreePrinters {
 
     /**
      * Pretty code formatted according to syntax.
-     * 
-     * @param tree      
+     *
+     * @param tree
      * @param language
      * @return          The output as a string
      */
@@ -68,25 +75,54 @@ public class TreePrinters {
             strategy = new JavaCodeFormatStrategy();
         } else if (language.equals("C")) {
             strategy = new CCodeFormatStrategy();
-        }
-        else if (language.equals("C#")) {
+        } else if (language.equals("C#")) {
             strategy = new CSharpCodeFormatStrategy();
-        }
-        else {
-            throw new IllegalStateException(language + " is not a valid language for me.");
+        } else {
+        throw new IllegalStateException(language +
+                                        " is not a valid language for me.");
         }
 
         var sb = new StringBuilder();
         var tokenWalker = new Tree.PreOrderWalker() {
-            @Override
-            public void visitLeaf(Leaf leaf) {
-                sb.append(leaf.code);
-                sb.append(' ');
-            }
+        @Override
+        public void visitLeaf(Leaf leaf) {
+            sb.append(leaf.code);
+            sb.append(' ');
+        }
+        @Override
+        public void visitConflict(Conflict conflict) {
+            sb.append("\n");
+        }
         };
         tokenWalker.accept(tree);
+        String rawCode = strategy.apply(sb.toString());
+        String formattedCode = "";
 
-        String code = strategy.apply(sb.toString());
-        return code;
+        try {
+            // Use clang-format
+            ProcessBuilder pb = new ProcessBuilder("clang-format-8");
+            Process p = pb.start();
+
+            OutputStream os = p.getOutputStream();
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
+            bw.append(rawCode);
+            bw.flush();
+            bw.close();
+
+            InputStream is = p.getInputStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                formattedCode += line + "\n";
+            }
+            br.close();
+            int r = p.waitFor(); // Let the process finish.
+            assert (r == 0);
+        } catch (Exception e) {
+            System.out.println("An error occurs when clang formatting.");
+            e.printStackTrace();
+        }
+
+        return formattedCode;
     }
 }

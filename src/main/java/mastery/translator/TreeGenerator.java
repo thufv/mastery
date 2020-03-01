@@ -139,13 +139,14 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
             }
             // EOF is not welcomed
             if (o instanceof Leaf && ((Leaf)o).code.equals("<EOF>")) {
-                continue;
+              continue;
             }
 
             children.add(o);
         }
 
-        // System.out.println("arity of children of " + name + " = " + children.size());
+        // System.out.println("arity of children of " + name + " = " +
+        // children.size());
 
         if (ListNodeNames.contains(name)) { // means it is a list
             if (OrderedListNodeNames.contains(name)) {

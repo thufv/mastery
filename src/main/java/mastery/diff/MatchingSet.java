@@ -18,6 +18,7 @@ public class MatchingSet {
     }
 
     public final boolean treesEqual(Tree root1, Tree root2) {
+        // TODO: Another equivalence check
         return root1.treeHash == root2.treeHash;
     }
 
@@ -30,13 +31,13 @@ public class MatchingSet {
     }
 
     public final <E extends Tree> E getLeftMatch(E base) {
-        // TODO: unchecked mapping
-        return (E) leftMatches.get(base);
+      // TODO: unchecked mapping
+      return (E)leftMatches.get(base);
     }
 
     public final <E extends Tree> E getRightMatch(E base) {
-        // TODO: unchecked mapping
-        return (E) rightMatches.get(base);
+      // TODO: unchecked mapping
+      return (E)rightMatches.get(base);
     }
 
     public final boolean matched(Tree base, Tree variant) {
