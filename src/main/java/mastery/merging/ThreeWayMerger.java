@@ -118,12 +118,12 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
 
         if (l != left && r == right) { // lift left
             Log.config("lift left: %s -> %s", l, left);
-            return TreeBuilder.fromUpdate(left, l, t.get(base));
+            return TreeBuilders.fromUpdate(left, l, t.get(base));
         }
 
         if (l == left && r != right) { // lift right
             Log.config("lift right: %s -> %s", r, right);
-            return TreeBuilder.fromUpdate(right, r, t.get(base));
+            return TreeBuilders.fromUpdate(right, r, t.get(base));
         }
 
         // lift both
@@ -185,7 +185,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
 
         if (r == right) return t;
 
-        return TreeBuilder.fromUpdate(right, r, t);
+        return TreeBuilders.fromUpdate(right, r, t);
     }
 
     /**
@@ -204,7 +204,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
 
         if (l == left) return t;
 
-        return TreeBuilder.fromUpdate(left, l, t);
+        return TreeBuilders.fromUpdate(left, l, t);
     }
 
     /**

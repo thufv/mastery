@@ -8,7 +8,9 @@ GG! I don't know how to use you!
 
 ## Road Map
 
-- [ ] Parse from source file
+### High Priority
+
+- [x] Parse from source file
 - [ ] Formater of output
     - [ ] Format of conflict
 - [ ] More heuristics
@@ -16,12 +18,16 @@ GG! I don't know how to use you!
 - [ ] Improved algorithm
   - [ ] More efficient identification algorithm
   - [ ] RTED
-- [ ] More reasonable implementation of matching to keep the magic order
-- [ ] Graphic AST mapping for debug
-    - @namasikanam: looks very hard
-- [ ] Json dumping from the AST
+  - [ ] More reasonable implementation of matching to keep the magic order
 - [ ] Delete unreasonable `Nothing` design
 - [ ] Auto check with expected result
+
+### Low Priority
+
+- [ ] Multiple languages support
+- [ ] Json dumping from the AST
+- [ ] Graphic AST mapping for debug
+    - @namasikanam: looks very hard
 
 ## Authors
 

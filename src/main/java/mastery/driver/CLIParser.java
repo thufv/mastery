@@ -4,8 +4,6 @@ import org.apache.commons.cli.*;
 
 import mastery.util.HelpException;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -24,7 +22,6 @@ public final class CLIParser {
     static final String OUTPUT = "o";
     final Option output = Option.builder(OUTPUT)
             .longOpt("output")
-            .required()
             .hasArg()
             .argName("file")
             .desc("output file/directory")
@@ -71,7 +68,7 @@ public final class CLIParser {
             .builder(HELP)
             .longOpt("help")
             .hasArg(false)
-            .desc("Usage: ")
+            .desc("Show usage help.")
             .build();
 
     public CLIParser() {
@@ -89,7 +86,7 @@ public final class CLIParser {
     public void printHelp() {
         String header = "\noptions:\n";
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("mastery [options] <base> <left> <right>\n" +
+        formatter.printHelp("mastery [options] -l java|c|c# <base> <left> <right>\n" +
                 "  arguments should be all file paths", header, options, "");
     }
 

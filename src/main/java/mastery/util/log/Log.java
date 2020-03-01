@@ -37,23 +37,30 @@ public class Log {
      * Setup logger. Must call this to enable logging.
      *
      * @param level     log level
-     * @param showColor show color?
-     * @param files     a list of file paths for output
+     * @param file      output file
      */
-    public static void setup(Level level, boolean showColor, String... files) throws IOException {
+    public static void setup(Level level, String file) throws IOException {
+        var fh = new FileHandler(file, true);
+        fh.setLevel(level);
+        fh.setFormatter(simpleFormatter);
+        L.addHandler(fh);
+        outs.add(new FileOutputStream(file, true));
+
+        L.setLevel(level);
+    }
+
+    /**
+     * Setup logger. Must call this to enable logging.
+     *
+     * @param level     log level
+     * @param showColor show color?
+     */
+    public static void setup(Level level, boolean showColor) throws IOException {
         var ch = showColor ? new ColorConsoleHandler() : new ConsoleHandler();
         ch.setLevel(level);
         ch.setFormatter(simpleFormatter);
         L.addHandler(ch);
         outs.add(System.err);
-
-        for (var path : files) {
-            var fh = new FileHandler(path, true);
-            fh.setLevel(level);
-            fh.setFormatter(simpleFormatter);
-            L.addHandler(fh);
-            outs.add(new FileOutputStream(path, true));
-        }
 
         L.setLevel(level);
     }

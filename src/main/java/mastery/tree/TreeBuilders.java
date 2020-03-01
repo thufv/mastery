@@ -13,13 +13,12 @@ import mastery.translator.c.CParsingStrategy;
 import mastery.translator.cs.CSharpParsingStrategy;
 import mastery.translator.java.JavaParsingStrategy;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public final class TreeBuilder {
+public final class TreeBuilders {
     /**
      * Build a tree from JSON.
      *
@@ -124,17 +123,17 @@ public final class TreeBuilder {
      */
     public static Tree fromSource(String srcFile, String language) throws IOException {
         ParsingStrategy strategy;
-        if (language == "JAVA") {
+        if (language.equals("JAVA")) {
             strategy = new JavaParsingStrategy();
         }
-        else if (language == "C") {
+        else if (language.equals("C")) {
             strategy = new CParsingStrategy();
         }
-        else if (language == "C#") {
+        else if (language.equals("C#")) {
             strategy = new CSharpParsingStrategy();
         }
         else {
-            throw new IllegalStateException("Why I don't know the language?");
+            throw new IllegalStateException(language + " is not a valid language for me.");
         }
 
         Pair<Parser, ParserRuleContext> p = strategy.apply(srcFile);
