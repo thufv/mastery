@@ -41,7 +41,7 @@ public class TreePrinters {
         var tokenWalker = new Tree.PreOrderWalker() {
             @Override
             public void visitLeaf(Leaf leaf) {
-                sb.append(leaf.value);
+                sb.append(leaf.code);
                 sb.append(' ');
             }
         };

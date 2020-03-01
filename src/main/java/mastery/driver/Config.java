@@ -6,12 +6,13 @@ import java.util.logging.Level;
 
 public final class Config {
     // required arguments
-    public final File base;
-    public final File left;
-    public final File right;
-    public final File output;
+    public final String language;
+    public final String base;
+    public final String left;
+    public final String right;
+    public final String output;
     // optional check mode
-    public final File expected;
+    public final String expected;
 
     // gumtree-related
     public final int minHeight;
@@ -20,7 +21,7 @@ public final class Config {
     // log-related
     public final Level logLevel;
     public final boolean logColorful;
-    public final File logDump;
+    public final String logDump;
 
     private Config(Builder builder) {
         this.base = builder.base;
@@ -33,18 +34,19 @@ public final class Config {
         this.logLevel = builder.logLevel;
         this.logColorful = builder.logColorful;
         this.logDump = builder.logDump;
+        this.language = builder.language;
     }
 
-    public static Builder builder(File base, File left, File right, File output) throws FileNotFoundException {
+    public static Builder builder(String base, String left, String right, String output) {
         return new Builder(base, left, right, output);
     }
 
     public static class Builder {
-        private final File base;
-        private final File left;
-        private final File right;
-        private final File output;
-        private File expected;
+        private final String base;
+        private final String left;
+        private final String right;
+        private final String output;
+        private String expected;
 
         // gumtree-related
         private int minHeight = 2;
@@ -53,22 +55,17 @@ public final class Config {
         // log-related
         private Level logLevel = Level.ALL;             // TODO: in production, info
         private boolean logColorful = false;
-        private File logDump = null;
+        private String logDump = null;
+		private String language = "";
 
-        public Builder(File base, File left, File right, File output) throws FileNotFoundException {
-            if (!base.exists()) throw new FileNotFoundException(base.toString());
-            if (!left.exists()) throw new FileNotFoundException(left.toString());
-            if (!right.exists()) throw new FileNotFoundException(right.toString());
-
+        public Builder(String base, String left, String right, String output) {
             this.base = base;
             this.left = left;
             this.right = right;
             this.output = output;
         }
 
-        public Builder expected(File file) throws FileNotFoundException {
-            if (!file.exists()) throw new FileNotFoundException(file.toString());
-
+        public Builder expected(String file) {
             this.expected = file;
             return this;
         }
@@ -93,10 +90,15 @@ public final class Config {
             return this;
         }
 
-        public Builder logDump(File file) {
+        public Builder logDump(String file) {
             this.logDump = file;
             return this;
         }
+
+        public Builder lang(String language) {
+            this.language = language;
+            return this;   
+		}
 
         public Config build() {
             return new Config(this);

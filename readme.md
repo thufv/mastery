@@ -8,18 +8,23 @@ GG! I don't know how to use you!
 
 ## Road Map
 
-- [ ] More complete command line interfaces
 - [ ] Parse from source file
 - [ ] Formater of output
     - [ ] Format of conflict
 - [ ] More heuristics
 - [ ] Some refinement of syntax
-- [ ] More efficient algorithm of tree Isomorphism
+- [ ] Improved algorithm
+  - [ ] More efficient identification algorithm
+  - [ ] RTED
 - [ ] More reasonable implementation of matching to keep the magic order
-- [ ] Graphic AST
+- [ ] Graphic AST mapping for debug
+    - @namasikanam: looks very hard
+- [ ] Json dumping from the AST
+- [ ] Delete unreasonable `Nothing` design
+- [ ] Auto check with expected result
 
 ## Authors
 
 - Fengmin Zhu
 - Rongchen Xu
-- [Xingyu Xie](http://www.namasikanam.com/)
+- Xingyu Xie

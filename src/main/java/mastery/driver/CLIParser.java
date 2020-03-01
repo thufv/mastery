@@ -2,12 +2,25 @@ package mastery.driver;
 
 import org.apache.commons.cli.*;
 
+import mastery.util.HelpException;
+
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
 public final class CLIParser {
+    static final String LANG = "l";
+    static final String[] LANGS = {"JAVA", "C", "C#"};
+    final Option lang = Option.builder(LANG)
+            .longOpt("lang")
+            .required()
+            .hasArg()
+            .argName("language")
+            .desc("language of the source codes: java, c, c#")
+            .build();
+
     static final String OUTPUT = "o";
     final Option output = Option.builder(OUTPUT)
             .longOpt("output")
@@ -53,15 +66,17 @@ public final class CLIParser {
             .build();
 
     static final String HELP = "h";
+    static final String HELP_DESC = "Usage ";
     final Option help = Option
             .builder(HELP)
             .longOpt("help")
             .hasArg(false)
-            .desc("prints this usage text")
+            .desc("Usage: ")
             .build();
 
     public CLIParser() {
         options = new Options();
+        options.addOption(lang);
         options.addOption(output);
         options.addOption(expected);
         // log related
@@ -75,10 +90,10 @@ public final class CLIParser {
         String header = "\noptions:\n";
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("mastery [options] <base> <left> <right>\n" +
-                "  arguments should be all files or directories", header, options, "");
+                "  arguments should be all file paths", header, options, "");
     }
 
-    public Config parse(String[] args) throws ParseException, FileNotFoundException {
+    public Config parse(String[] args) throws ParseException, HelpException {
         if (args.length == 0 || List.of(args).contains("-h") || List.of(args).contains("--help")) {
             printHelp();
             System.exit(0);
@@ -89,17 +104,31 @@ public final class CLIParser {
 
         String[] arguments = cli.getArgs();
         if (arguments.length < 3) {
+            printHelp();
             throw new ParseException("Please provide 3 files/directories as arguments.");
         }
 
-        File base = new File(arguments[0]);
-        File left = new File(arguments[1]);
-        File right = new File(arguments[2]);
-        File output = new File(cli.getOptionValue(OUTPUT));
+        String base = arguments[0];
+        String left = arguments[1];
+        String right = arguments[2];
+        String output = cli.getOptionValue(OUTPUT);
         var builder = Config.builder(base, left, right, output);
 
+        if (cli.hasOption(HELP)) {
+            throw new HelpException();
+        }
+
+        if (cli.hasOption(LANG)) {
+            String language = cli.getOptionValue(LANG).toUpperCase();
+            if (!Arrays.asList(LANGS).contains(language)) {
+                printHelp();
+                throw new ParseException("Invalid language: " + lang.getDescription());
+            }
+            builder.lang(language);
+        }
+
         if (cli.hasOption(EXPECTED)) {
-            builder.expected(new File(cli.getOptionValue(EXPECTED)));
+            builder.expected(cli.getOptionValue(EXPECTED));
         }
 
         if (cli.hasOption(LOG_LEVEL)) {
@@ -112,7 +141,7 @@ public final class CLIParser {
         }
 
         if (cli.hasOption(LOG_FILE)) {
-            builder.logDump(new File(cli.getOptionValue(LOG_FILE)));
+            builder.logDump(cli.getOptionValue(LOG_FILE));
         }
 
         return builder.build();
