@@ -1,5 +1,9 @@
 package mastery.tree;
 
+import mastery.translator.cs.CSharpCodeFormatStrategy;
+import mastery.translator.c.CCodeFormatStrategy;
+import mastery.translator.java.JavaCodeFormatStrategy;
+import mastery.translator.CodeFormatStrategy;
 import mastery.util.log.IndentPrinter;
 
 public class TreePrinters {
@@ -41,12 +45,48 @@ public class TreePrinters {
         var tokenWalker = new Tree.PreOrderWalker() {
             @Override
             public void visitLeaf(Leaf leaf) {
-                sb.append(leaf.value);
+                sb.append(leaf.code);
                 sb.append(' ');
             }
         };
 
         tokenWalker.accept(tree);
+
         printer.println(sb.toString());
+    }
+
+    /**
+     * Pretty code formatted according to syntax.
+     * 
+     * @param tree      
+     * @param language
+     * @return          The output as a string
+     */
+    public static String prettyCode(Tree tree, String language) {
+        CodeFormatStrategy strategy;
+        if (language.equals("JAVA")) {
+            strategy = new JavaCodeFormatStrategy();
+        } else if (language.equals("C")) {
+            strategy = new CCodeFormatStrategy();
+        }
+        else if (language.equals("C#")) {
+            strategy = new CSharpCodeFormatStrategy();
+        }
+        else {
+            throw new IllegalStateException(language + " is not a valid language for me.");
+        }
+
+        var sb = new StringBuilder();
+        var tokenWalker = new Tree.PreOrderWalker() {
+            @Override
+            public void visitLeaf(Leaf leaf) {
+                sb.append(leaf.code);
+                sb.append(' ');
+            }
+        };
+        tokenWalker.accept(tree);
+
+        String code = strategy.apply(sb.toString());
+        return code;
     }
 }

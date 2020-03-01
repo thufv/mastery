@@ -6,11 +6,11 @@ import java.util.Collections;
  * A leaf node, i.e. a token.
  */
 public class Leaf extends Tree {
-    public final String value;
+    public final String code;
 
-    public Leaf(int label, String name, String value) {
+    public Leaf(int label, String name, String code) {
         super(label, name, Collections.emptyList());
-        this.value = value;
+        this.code = code;
     }
 
     @Override
@@ -40,7 +40,7 @@ public class Leaf extends Tree {
 
     @Override
     public Tree deepCopy() {
-        return new Leaf(label, name, value);
+        return new Leaf(label, name, code);
     }
 
     @Override
@@ -55,6 +55,6 @@ public class Leaf extends Tree {
 
     @Override
     public String toString() {
-        return name + " '" + value + "'";
+        return name + " '" + code + "'";
     }
 }

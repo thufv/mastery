@@ -5,6 +5,8 @@ import java.util.List;
 
 /**
  * A constructor, i.e. an internal node that has a fixed number of children.
+ * 
+ * namasikanam: I don't like this ambiguous name.
  */
 public class Constructor extends Tree {
     public final int arity;

@@ -1,10 +1,21 @@
 package mastery.tree;
 
+import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.misc.Pair;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import mastery.translator.ParsingStrategy;
+import mastery.translator.TreeGenerator;
+import mastery.translator.c.CParsingStrategy;
+import mastery.translator.cs.CSharpParsingStrategy;
+import mastery.translator.java.JavaParsingStrategy;
+
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public final class TreeBuilders {
@@ -40,7 +51,7 @@ public final class TreeBuilders {
         }
 
         if (kind.equals("node")) {
-            return children.isEmpty() ? new Nothing() : new Constructor(label, name, children);
+            return new Constructor(label, name, children);
         }
 
         if (kind.equals("orderedlist")) {
@@ -101,5 +112,34 @@ public final class TreeBuilders {
                 return conflict;
             }
         });
+    }
+
+    /**
+     * Build a tree from source file.
+     * 
+     * @param srcFile      
+     * @param language  
+     * @return the tree
+     */
+    public static Tree fromSource(String srcFile, String language) throws IOException {
+        ParsingStrategy strategy;
+        if (language.equals("JAVA")) {
+            strategy = new JavaParsingStrategy();
+        }
+        else if (language.equals("C")) {
+            strategy = new CParsingStrategy();
+        }
+        else if (language.equals("C#")) {
+            strategy = new CSharpParsingStrategy();
+        }
+        else {
+            throw new IllegalStateException(language + " is not a valid language for me.");
+        }
+
+        Pair<Parser, ParserRuleContext> p = strategy.apply(srcFile);
+        TreeGenerator generator = new TreeGenerator(p.a, p.b, strategy.getListNodeNames(), strategy.getOrderedListNodeNames(), strategy.getAlternativeLabels());
+        
+        Tree tree = generator.generate();
+        return tree;
     }
 }

@@ -30,10 +30,12 @@ public class MatchingSet {
     }
 
     public final <E extends Tree> E getLeftMatch(E base) {
+        // TODO: unchecked mapping
         return (E) leftMatches.get(base);
     }
 
     public final <E extends Tree> E getRightMatch(E base) {
+        // TODO: unchecked mapping
         return (E) rightMatches.get(base);
     }
 
