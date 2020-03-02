@@ -2,6 +2,7 @@ package mastery.diff;
 
 import mastery.tree.Tree;
 
+// Based on the mapping part of GumTree algorithm
 public class Diff extends GumTree {
     public Diff() {
         super(2, 0.2);

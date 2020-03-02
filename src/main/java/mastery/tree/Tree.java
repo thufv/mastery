@@ -18,11 +18,8 @@ import java.util.function.Consumer;
  * @see Constructor (target tree only)
  */
 public abstract class Tree {
-
-    public int id; // TODO: do we really need this?
-
     /**
-     * Height (leaves are 0).
+     * Height, 0 for leaves.
      */
     public final int height;
 
@@ -45,10 +42,12 @@ public abstract class Tree {
     /**
      * Children.
      */
-    public final List<Tree> children;
+    public List<Tree> children;
 
-    // TODO: we don't need hash once we precomputed the isomorphic mappings by other methods (radix sort)
-    public final int treeHash;
+    /**
+     * Assigned integer for equivalence checking. (1-based)
+     */
+    public int assignment;
 
     /**
      * Parent.
@@ -57,6 +56,15 @@ public abstract class Tree {
      */
     public final @Nullable Tree getParent() {
         return parent;
+    }
+
+    /**
+     * Equivalence of two tree nodes.
+     * 
+     * @return if they're equal?
+     */
+    public final boolean equals(Tree tree) {
+        return height == tree.height && assignment == tree.assignment;
     }
 
     /**
@@ -184,40 +192,22 @@ public abstract class Tree {
         this.name = name;
         this.children = children;
 
-        // compute height
-        if (children.isEmpty()) {
-            this.height = 0;
-        } else {
-            var it = children.iterator();
-            int height = it.next().height;
-            while (it.hasNext()) {
-                var child = it.next();
-                if (child.height > height) {
-                    height = child.height;
-                }
-            }
-            this.height = height + 1;
-        }
-
-        // compute size and tree hash
-        // hash(x) = label + \sum_{y \in children(x)} (hash(y) * primes(y.size))
+        // compute size and height
+        int height = 0;
         int size = 1;
-        int hash = label;
         for (var child : children) {
             size += child.size;
+            if (child.height > height) {
+                height = child.height;
+            }
 
-            // System.out.println(child.name + " is child of " + name);
-
-            hash = hash * 2333 + child.treeHash;
             child.parent = this; // set parent here
         }
         this.size = size;
-        this.treeHash = hash;
+        this.height = height + 1;
         this.parent = null;
-
-        // System.out.println("size of " + name + " = " + size);
     }
 
-    // TODO: in-package private
+	// TODO: in-package private
     private Tree parent;
 }

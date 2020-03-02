@@ -17,11 +17,6 @@ public class MatchingSet {
         this.right = right;
     }
 
-    public final boolean treesEqual(Tree root1, Tree root2) {
-        // TODO: Another equivalence check
-        return root1.treeHash == root2.treeHash;
-    }
-
     public final boolean hasLeftMatch(Tree base) {
         return leftMatches.containsKey(base);
     }

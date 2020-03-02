@@ -22,7 +22,6 @@ public class TreePrinters {
         // this node
         sb.append(tree.toString());
         sb.append(" height ").append(tree.height);
-        sb.append(" hash ").append(tree.treeHash);
         sb.append('\n');
 
         if (!tree.children.isEmpty()) {
@@ -68,15 +67,15 @@ public class TreePrinters {
     public static String prettyCode(Tree tree, String formatter) {
         var sb = new StringBuilder();
         var tokenWalker = new Tree.PreOrderWalker() {
-        @Override
-        public void visitLeaf(Leaf leaf) {
-            sb.append(leaf.code);
-            sb.append(' ');
-        }
-        @Override
-        public void visitConflict(Conflict conflict) {
-            sb.append("\n");
-        }
+            @Override
+            public void visitLeaf(Leaf leaf) {
+                sb.append(leaf.code);
+                sb.append(' ');
+            }
+            @Override
+            public void visitConflict(Conflict conflict) {
+                sb.append("\n");
+            }
         };
         tokenWalker.accept(tree);
         String rawCode = sb.toString();

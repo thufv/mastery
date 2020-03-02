@@ -57,4 +57,9 @@ public class Leaf extends Tree {
     public String toString() {
         return name + " '" + code + "'";
     }
+
+    @Override
+    public int calHeight() {
+        return 0;
+    }
 }

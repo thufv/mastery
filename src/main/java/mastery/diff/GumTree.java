@@ -21,96 +21,88 @@ public abstract class GumTree {
     }
 
     public final Map<Tree, Tree> apply(Tree tree1, Tree tree2) {
-        m = new HashMap<>();
+        m = new HashMap<Tree, Tree>();
         matched.clear();
 
-        var TreesByHash = new MultiMap<Integer, Tree>();
-        for (var Tree : tree2.preOrder()) {
-            TreesByHash.put(Tree.treeHash, Tree);
-        }
-
-        var suspended = new ArrayList<Pair<Pair<Tree, Tree>, Double>>();
-
-        // top-down pass
-
-        var queue1 = new WeightedQueue<Tree>(Tree -> Tree.height);
-        var queue2 = new WeightedQueue<Tree>(Tree -> Tree.height);
-        queue1.add(tree1);
-        queue2.add(tree2);
-
-        while (!queue1.isEmpty() && !queue2.isEmpty() &&
-                queue1.maxWeight() > minHeight && queue2.maxWeight() > minHeight) {
-            // case 1: queue1 has a larger height
-            if (queue1.maxWeight() > queue2.maxWeight()) {
-                for (var Tree : queue1.removeMax()) {
-                    queue1.addAll(Tree.children);
+        // Top-down Phase
+        {
+            var queue1 = new WeightedQueue<Tree>(Tree -> Tree.height);
+            var queue2 = new WeightedQueue<Tree>(Tree -> Tree.height);
+            queue1.add(tree1);
+            queue2.add(tree2);
+    
+            while (!queue1.isEmpty() && !queue2.isEmpty() &&
+                    queue1.maxWeight() > minHeight && queue2.maxWeight() > minHeight) {
+                // case 1: queue1 has a larger height
+                if (queue1.maxWeight() > queue2.maxWeight()) {
+                    for (var Tree : queue1.removeMax()) {
+                        queue1.addAll(Tree.children);
+                    }
+                    continue;
                 }
-                continue;
-            }
-
-            // case 2: queue2.maxWeight() > queue1.maxWeight()
-            if (queue2.maxWeight() > queue1.maxWeight()) {
-                for (var Tree : queue2.removeMax()) {
-                    queue2.addAll(Tree.children);
+    
+                // case 2: queue2.maxWeight() > queue1.maxWeight()
+                if (queue2.maxWeight() > queue1.maxWeight()) {
+                    for (var Tree : queue2.removeMax()) {
+                        queue2.addAll(Tree.children);
+                    }
+                    continue;
                 }
-                continue;
-            }
-
-            // case 3: two queues contain Trees of the same height
-            var Trees1 = queue1.removeMax();
-            var Trees2 = queue2.removeMax();
-
-            // collect tree hash values of all Trees from tree 2 in a set for efficient comparison
-            var hashes = new HashSet<Integer>();
-            for (var Tree : Trees2) {
-                hashes.add(Tree.treeHash);
-            }
-
-            // check if any Tree from tree 1 has one (directly record) or more (suspend first) match
-            for (var source : Trees1) {
-                if (hashes.contains(source.treeHash)) {
-                    var targets = TreesByHash.get(source.treeHash);
-                    if (targets.size() == 1) {
-                        match(source, targets.get(0), MappingType.isomorphic);
-                    } else {
-                        for (var target : targets) {
-                            Log.finest("suspend " + source + " <-> " + target);
-                            suspended.add(Pair.of(Pair.of(source, target), dice(source, target)));
+    
+                // case 3: two queues contain Trees of the same height
+                var nodes1 = queue1.removeMax();
+                var nodes2 = queue2.removeMax();
+    
+                // collect tree hash values of all nodes from tree 2 in a set for efficient comparison
+                var assignmentCount = new ArrayList<Integer>();
+                for (var node: nodes1) {
+                    while (assignmentCount.size() <= node.assignment) {
+                        assignmentCount.add(0);
+                    }
+                    assignmentCount.set(node.assignment, assignmentCount.get(node.assignment));
+                }
+                for (var node: nodes2) {
+                    while (assignmentCount.size() <= node.assignment) {
+                        assignmentCount.add(0);
+                    }
+                    assignmentCount.set(node.assignment, assignmentCount.get(node.assignment));
+                }
+    
+                // check if any Tree from tree 1 has one (directly record) or more (suspend first) match
+                for (var node: nodes1) {
+                    if (hashes.contains(source.treeHash)) {
+                        var targets = TreesByHash.get(source.treeHash);
+                        if (targets.size() == 1) {
+                            match(source, targets.get(0), MappingType.isomorphic);
+                        } else {
+                            for (var target : targets) {
+                                Log.finest("suspend " + source + " <-> " + target);
+                                suspended.add(Pair.of(Pair.of(source, target), dice(source, target)));
+                            }
                         }
                     }
                 }
-            }
-
-            // push their children (if not handled) into queue
-            for (var Tree : Trees1) {
-                for (var child : Tree.children) {
-                    if (!matched.contains(child)) {
-                        queue1.add(child);
+    
+                // push their children (if not handled) into queue
+                for (var node : nodes1) {
+                    for (var child : node.children) {
+                        if (!matched.contains(child)) {
+                            queue1.add(child);
+                        }
                     }
                 }
-            }
-
-            for (var Tree : Trees2) {
-                for (var child : Tree.children) {
-                    if (!matched.contains(child)) {
-                        queue2.add(child);
+    
+                for (var node : nodes2) {
+                    for (var child : node.children) {
+                        if (!matched.contains(child)) {
+                            queue2.add(child);
+                        }
                     }
                 }
-            }
+            }    
         }
 
-        Log.finer("handle suspended " + suspended.size());
-
-        // handle suspended
-        suspended.sort(Collections.reverseOrder(Comparator.comparing(p -> p.second)));
-        for (var p : suspended) {
-            var q = p.first;
-            if (!matched.contains(q.first) && !matched.contains(q.second)) {
-                match(q.first, q.second, MappingType.isomorphic);
-            }
-        }
-
-        // bottom-up pass
+        // Bottom-up Phase
         var unmatchedTreesByLabel = new MultiMap<Integer, Tree>();
         for (var tree : tree2.preOrder()) {
             if (!matched.contains(tree)) {
