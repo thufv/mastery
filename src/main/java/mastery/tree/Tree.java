@@ -46,8 +46,9 @@ public abstract class Tree {
 
     /**
      * Assigned integer for equivalence checking. (1-based)
+     * @deprecated when using GumTree, the assignment is not computed!
      */
-    public int assignment;
+    @Deprecated public int assignment;
 
     /**
      * Parent.
@@ -60,10 +61,11 @@ public abstract class Tree {
 
     /**
      * Equivalence of two tree nodes.
+     * @deprecated when using GumTree, the assignment is not computed!
      * 
      * @return if they're equal?
      */
-    public final boolean equals(Tree tree) {
+    @Deprecated public final boolean equals(Tree tree) {
         return height == tree.height && assignment == tree.assignment;
     }
 
@@ -208,6 +210,5 @@ public abstract class Tree {
         this.parent = null;
     }
 
-	// TODO: in-package private
     private Tree parent;
 }

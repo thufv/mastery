@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import mastery.tree.Tree;
 import mastery.util.log.Log;
 
 public class Matcher {
@@ -141,7 +142,7 @@ public class Matcher {
         Log.fine("diff: base <-> right");
         var rightMapping = diff.apply(base, right);
 
-        var matchingSet = new MatchingSet(base, left, right);
+        var matchingSet = new HashMatchingSet(base, left, right);
         leftMapping.forEach(matchingSet::setLeftMatch);
         rightMapping.forEach(matchingSet::setRightMatch);
         Log.fine("diff: %d matches identified", matchingSet.size());

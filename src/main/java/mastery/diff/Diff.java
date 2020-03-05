@@ -21,7 +21,7 @@ public class Diff extends GumTree {
             for (int i = 0; i < node1.children.size(); i++) {
                 var u = node1.children.get(i);
                 var v = node1.children.get(i);
-                if (u.treeHash == v.treeHash && !matched.contains(u) && !matched.contains(v)) {
+                if (matchingSet.treesEqual(u, v) && !matched.contains(u) && !matched.contains(v)) {
                     matchedCount++;
                 }
             }

@@ -6,7 +6,7 @@ import java.io.Writer;
 import java.util.logging.Level;
 import mastery.diff.Matcher;
 import mastery.diff.MatchingSet;
-import mastery.merging.Merger;
+import mastery.merging.BottomUpMerger;
 import mastery.tree.Tree;
 import mastery.tree.TreeBuilders;
 import mastery.tree.TreePrinters;
@@ -64,7 +64,7 @@ public final class Driver {
             MatchingSet mapping = matcher.apply(base, left, right);
 
             // Phase II: Merge
-            Merger merger = new Merger();
+            BottomUpMerger merger = new BottomUpMerger();
             Tree target = merger.apply(mapping);
 
             // Everything is done.

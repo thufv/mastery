@@ -5,7 +5,7 @@ import mastery.tree.Tree;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MatchingSet {
+public abstract class MatchingSet {
 
     public final Tree base;
     public final Tree left;
@@ -26,21 +26,19 @@ public class MatchingSet {
     }
 
     public final <E extends Tree> E getLeftMatch(E base) {
-      Tree leftMatch = leftMatches.get(base);
-      if (base.getClass() == leftMatch.getClass()) {
-          return (E) leftMatch;
-      }
-      else {
-          throw new IllegalStateException("class " + base.getClass().getName() + " and class " + leftMatch.getClass().getName() + " are mapped.");
-      }
+        Tree leftMatch = leftMatches.get(base);
+        if (base.getClass() == leftMatch.getClass()) {
+            return (E) leftMatch;
+        } else {
+            throw new IllegalStateException("class " + base.getClass().getName() + " and class " + leftMatch.getClass().getName() + " are mapped.");
+        }
     }
 
     public final <E extends Tree> E getRightMatch(E base) {
         Tree rightMatch = rightMatches.get(base);
         if (base.getClass() == rightMatch.getClass()) {
             return (E) rightMatch;
-        }
-        else {
+        } else {
             throw new IllegalStateException("class " + base.getClass().getName() + " and class " + rightMatch.getClass().getName() + " are mapped.");
         }
     }
@@ -76,6 +74,15 @@ public class MatchingSet {
 
         return false;
     }
+
+    /**
+     * Decide if two trees are equal (or isomorphic)?
+     *
+     * @param tree1 a tree
+     * @param tree2 another tree
+     * @return true if they are equal
+     */
+    public abstract boolean treesEqual(Tree tree1, Tree tree2);
 
     public final int size() {
         return leftMatches.size() + rightMatches.size();

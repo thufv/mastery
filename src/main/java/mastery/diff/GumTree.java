@@ -9,7 +9,11 @@ import mastery.util.log.Log;
 import java.util.*;
 
 // Based on the mapping part of GumTree algorithm
-public abstract class GumTree {
+
+/**
+ * @deprecated TODO: We should retain an original GumTree!
+ */
+@Deprecated public abstract class GumTree {
 
     protected final int minHeight;
 
@@ -30,7 +34,7 @@ public abstract class GumTree {
             var queue2 = new WeightedQueue<Tree>(Tree -> Tree.height);
             queue1.add(tree1);
             queue2.add(tree2);
-    
+
             while (!queue1.isEmpty() && !queue2.isEmpty() &&
                     queue1.maxWeight() > minHeight && queue2.maxWeight() > minHeight) {
                 // case 1: queue1 has a larger height
@@ -40,7 +44,7 @@ public abstract class GumTree {
                     }
                     continue;
                 }
-    
+
                 // case 2: queue2.maxWeight() > queue1.maxWeight()
                 if (queue2.maxWeight() > queue1.maxWeight()) {
                     for (var Tree : queue2.removeMax()) {
@@ -48,41 +52,41 @@ public abstract class GumTree {
                     }
                     continue;
                 }
-    
+
                 // case 3: two queues contain Trees of the same height
                 var nodes1 = queue1.removeMax();
                 var nodes2 = queue2.removeMax();
-    
+
                 // collect tree hash values of all nodes from tree 2 in a set for efficient comparison
                 var assignmentCount = new ArrayList<Integer>();
-                for (var node: nodes1) {
+                for (var node : nodes1) {
                     while (assignmentCount.size() <= node.assignment) {
                         assignmentCount.add(0);
                     }
                     assignmentCount.set(node.assignment, assignmentCount.get(node.assignment));
                 }
-                for (var node: nodes2) {
+                for (var node : nodes2) {
                     while (assignmentCount.size() <= node.assignment) {
                         assignmentCount.add(0);
                     }
                     assignmentCount.set(node.assignment, assignmentCount.get(node.assignment));
                 }
-    
+
                 // check if any Tree from tree 1 has one (directly record) or more (suspend first) match
-                for (var node: nodes1) {
-                    if (hashes.contains(source.treeHash)) {
-                        var targets = TreesByHash.get(source.treeHash);
-                        if (targets.size() == 1) {
-                            match(source, targets.get(0), MappingType.isomorphic);
-                        } else {
-                            for (var target : targets) {
-                                Log.finest("suspend " + source + " <-> " + target);
-                                suspended.add(Pair.of(Pair.of(source, target), dice(source, target)));
-                            }
-                        }
-                    }
+                for (var node : nodes1) {
+//                    if (hashes.contains(source.treeHash)) {
+//                        var targets = TreesByHash.get(source.treeHash);
+//                        if (targets.size() == 1) {
+//                            match(source, targets.get(0), MappingType.isomorphic);
+//                        } else {
+//                            for (var target : targets) {
+//                                Log.finest("suspend " + source + " <-> " + target);
+//                                suspended.add(Pair.of(Pair.of(source, target), dice(source, target)));
+//                            }
+//                        }
+//                    }
                 }
-    
+
                 // push their children (if not handled) into queue
                 for (var node : nodes1) {
                     for (var child : node.children) {
@@ -91,7 +95,7 @@ public abstract class GumTree {
                         }
                     }
                 }
-    
+
                 for (var node : nodes2) {
                     for (var child : node.children) {
                         if (!matched.contains(child)) {
@@ -99,7 +103,7 @@ public abstract class GumTree {
                         }
                     }
                 }
-            }    
+            }
         }
 
         // Bottom-up Phase
@@ -163,6 +167,7 @@ public abstract class GumTree {
 
     private Map<Tree, Tree> m;
     protected Set<Tree> matched = new HashSet<>();
+    protected MatchingSet matchingSet;
 
     private void match(Tree Tree1, Tree Tree2, MappingType type) {
         m.put(Tree1, Tree2);
