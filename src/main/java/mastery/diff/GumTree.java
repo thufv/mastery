@@ -53,35 +53,31 @@ public abstract class GumTree {
                 var nodes1 = queue1.removeMax();
                 var nodes2 = queue2.removeMax();
     
-                // collect tree hash values of all nodes from tree 2 in a set for efficient comparison
-                var assignmentCount = new ArrayList<Integer>();
+                // gather equivalent nodes of tree1 and tree2, respectively
+                List<List<Tree>> nodes1OfAssignment = new ArrayList<List<Tree>>();
                 for (var node: nodes1) {
-                    while (assignmentCount.size() <= node.assignment) {
-                        assignmentCount.add(0);
+                    while (nodes1OfAssignment.size() <= node.assignment) {
+                        nodes1OfAssignment.add(new ArrayList<Tree>());
                     }
-                    assignmentCount.set(node.assignment, assignmentCount.get(node.assignment));
+                    nodes1OfAssignment.get(node.assignment).add(node);
                 }
+                List<List<Tree>> nodes2OfAssignment = new ArrayList<List<Tree>>();
                 for (var node: nodes2) {
-                    while (assignmentCount.size() <= node.assignment) {
-                        assignmentCount.add(0);
+                    while (nodes2OfAssignment.size() <= node.assignment) {
+                        nodes2OfAssignment.add(new ArrayList<Tree>());
                     }
-                    assignmentCount.set(node.assignment, assignmentCount.get(node.assignment));
+                    nodes2OfAssignment.get(node.assignment).add(node);
                 }
-    
-                // check if any Tree from tree 1 has one (directly record) or more (suspend first) match
-                for (var node: nodes1) {
-                    if (hashes.contains(source.treeHash)) {
-                        var targets = TreesByHash.get(source.treeHash);
-                        if (targets.size() == 1) {
-                            match(source, targets.get(0), MappingType.isomorphic);
-                        } else {
-                            for (var target : targets) {
-                                Log.finest("suspend " + source + " <-> " + target);
-                                suspended.add(Pair.of(Pair.of(source, target), dice(source, target)));
-                            }
-                        }
+
+                for (int assignment = 0; assignment < Math.min(nodes1OfAssignment.size(), nodes2OfAssignment.size()); ++assignment) {
+                    if (nodes1OfAssignment.get(assignment).size() == 1 && nodes2OfAssignment.get(assignment).size() == 1) {
+                        // Add mapping
                     }
                 }
+
+
+
+                // Sort by dice function
     
                 // push their children (if not handled) into queue
                 for (var node : nodes1) {
@@ -164,7 +160,8 @@ public abstract class GumTree {
     private Map<Tree, Tree> m;
     protected Set<Tree> matched = new HashSet<>();
 
-    private void match(Tree Tree1, Tree Tree2, MappingType type) {
+    private void match(Tree base, Tree tree, MappingType type) {
+        if ()
         m.put(Tree1, Tree2);
         matched.add(Tree1);
         matched.add(Tree2);

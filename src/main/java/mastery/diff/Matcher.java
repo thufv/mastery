@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import mastery.tree.Tree;
 import mastery.util.log.Log;
 
 public class Matcher {
