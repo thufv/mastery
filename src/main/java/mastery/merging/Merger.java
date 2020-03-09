@@ -1,6 +1,6 @@
 package mastery.merging;
 
-import mastery.diff.MatchingSet;
+import mastery.matcher.MatchingSet;
 import mastery.tree.*;
 import mastery.util.log.Log;
 

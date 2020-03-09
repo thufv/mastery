@@ -68,15 +68,15 @@ public class TreePrinters {
     public static String prettyCode(Tree tree, String formatter) {
         var sb = new StringBuilder();
         var tokenWalker = new Tree.PreOrderWalker() {
-        @Override
-        public void visitLeaf(Leaf leaf) {
-            sb.append(leaf.code);
-            sb.append(' ');
-        }
-        @Override
-        public void visitConflict(Conflict conflict) {
-            sb.append("\n");
-        }
+            @Override
+            public void visitLeaf(Leaf leaf) {
+                sb.append(leaf.code);
+                sb.append(' ');
+            }
+            @Override
+            public void visitConflict(Conflict conflict) {
+                sb.append("\n");
+            }
         };
         tokenWalker.accept(tree);
         String rawCode = sb.toString();

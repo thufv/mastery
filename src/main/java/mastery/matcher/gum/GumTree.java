@@ -1,5 +1,6 @@
-package mastery.diff.gum;
+package mastery.matcher.gum;
 
+import mastery.matcher.TwoWayMatcher;
 import mastery.tree.Tree;
 import mastery.util.MultiMap;
 import mastery.util.Pair;
@@ -9,7 +10,7 @@ import mastery.util.log.Log;
 import java.util.*;
 
 // Based on the mapping part of GumTree algorithm
-public abstract class GumTree {
+public abstract class GumTree extends TwoWayMatcher{
 
     protected final int minHeight;
 
@@ -20,6 +21,7 @@ public abstract class GumTree {
         this.minDice = minDice;
     }
 
+    @Override
     public final Map<Tree, Tree> apply(Tree tree1, Tree tree2) {
         m = new HashMap<>();
         matched.clear();
@@ -163,22 +165,13 @@ public abstract class GumTree {
         return m;
     }
 
-    private enum MappingType {
-        isomorphic,
-        container,
-        recovery
-    }
+    public abstract double dice(Tree Tree1, Tree Tree2);
 
-    private Map<Tree, Tree> m;
-    protected Set<Tree> matched = new HashSet<>();
-
-    private void match(Tree Tree1, Tree Tree2, MappingType type) {
+    protected void match(Tree Tree1, Tree Tree2, MappingType type) {
         m.put(Tree1, Tree2);
         matched.add(Tree1);
         matched.add(Tree2);
 
         Log.finer("%s mapping: %s <-> %s", type, Tree1, Tree2);
     }
-
-    public abstract double dice(Tree Tree1, Tree Tree2);
 }

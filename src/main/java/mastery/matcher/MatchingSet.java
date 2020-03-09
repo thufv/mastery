@@ -1,4 +1,4 @@
-package mastery.diff;
+package mastery.matcher;
 
 import mastery.tree.Tree;
 

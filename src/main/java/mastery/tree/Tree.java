@@ -1,5 +1,6 @@
 package mastery.tree;
 
+import mastery.util.Pair;
 import mastery.util.log.IndentPrinter;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,9 +19,6 @@ import java.util.function.Consumer;
  * @see Constructor (target tree only)
  */
 public abstract class Tree {
-
-    public int id; // TODO: do we really need this?
-
     /**
      * Height (leaves are 0).
      */
@@ -45,10 +43,24 @@ public abstract class Tree {
     /**
      * Children.
      */
-    public final List<Tree> children;
+    public List<Tree> children;
 
-    // TODO: we don't need hash once we precomputed the isomorphic mappings by other methods (radix sort)
+    /**
+     * Hash value.
+     */
     public final int treeHash;
+
+    /**
+     * Assigned integer for equivalence checking. (1-based)
+     */
+    public int assignment = -1;
+
+    /**
+     * Information about dfs order (1-based) to keep monotonicity.
+     */
+    public Integer dfsIndex = 0;
+    public Pair<Integer, Integer> AncestorInterval = null;
+    public Pair<Integer, Integer> DescendantInterval = null;
 
     /**
      * Parent.
@@ -199,25 +211,34 @@ public abstract class Tree {
             this.height = height + 1;
         }
 
-        // compute size and tree hash
-        // hash(x) = label + \sum_{y \in children(x)} (hash(y) * primes(y.size))
+        // compute size
         int size = 1;
-        int hash = label;
         for (var child : children) {
             size += child.size;
-
-            // System.out.println(child.name + " is child of " + name);
-
-            hash = hash * 2333 + child.treeHash;
-            child.parent = this; // set parent here
         }
         this.size = size;
-        this.treeHash = hash;
+
+        // set parents
+        for (Tree child: children) {
+            child.parent = this; // set parent here
+        }
         this.parent = null;
 
-        // System.out.println("size of " + name + " = " + size);
+        // compute tree hash
+        int hash = label;
+        if (isUnorderedList()) {
+            hash = label * 23333333;
+            for (var child : children) {
+                hash = hash + child.treeHash;
+            }
+        }
+        else {
+            for (var child : children) {
+                hash = hash * 2333 + child.treeHash;
+            }
+        }
+        this.treeHash = hash;
     }
 
-    // TODO: in-package private
-    private Tree parent;
+    Tree parent;
 }

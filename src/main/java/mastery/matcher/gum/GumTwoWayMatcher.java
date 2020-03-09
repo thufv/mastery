@@ -1,14 +1,16 @@
-package mastery.diff.gum;
+package mastery.matcher.gum;
 
 import mastery.tree.Tree;
 
-public class GumDiff extends GumTree {
-    public GumDiff() {
+public class GumTwoWayMatcher extends GumTree {
+    public GumTwoWayMatcher() {
         super(2, 0.2);
     }
 
     @Override
     public double dice(Tree node1, Tree node2) {
+        // TODO: memorized calculation
+
         int matchedCount = 0;
         for (var child : node1.children) {
             if (!matched.contains(child)) {

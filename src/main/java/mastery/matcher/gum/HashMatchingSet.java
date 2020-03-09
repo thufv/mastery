@@ -1,7 +1,7 @@
-package mastery.diff.gum;
+package mastery.matcher.gum;
 
 import mastery.tree.Tree;
-import mastery.diff.MatchingSet;
+import mastery.matcher.MatchingSet;
 
 public class HashMatchingSet extends MatchingSet {
     public HashMatchingSet(Tree base, Tree left, Tree right) {
