@@ -1,4 +1,4 @@
-package mastery.gumdiff;
+package mastery.diff.gum;
 
 import mastery.tree.Tree;
 import mastery.util.MultiMap;

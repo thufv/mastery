@@ -1,11 +1,11 @@
-package mastery.gumdiff;
+package mastery.diff;
 
 import mastery.tree.Tree;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class MatchingSet {
+public abstract class MatchingSet {
 
     public final Tree base;
     public final Tree left;
@@ -17,10 +17,7 @@ public class MatchingSet {
         this.right = right;
     }
 
-    public final boolean treesEqual(Tree root1, Tree root2) {
-        // TODO: Another equivalence check
-        return root1.treeHash == root2.treeHash;
-    }
+    public abstract boolean treesEqual(Tree root1, Tree root2);
 
     public final boolean hasLeftMatch(Tree base) {
         return leftMatches.containsKey(base);
@@ -86,11 +83,11 @@ public class MatchingSet {
         return leftMatches.size() + rightMatches.size();
     }
 
-    final void setLeftMatch(Tree base, Tree left) {
+    public final void setLeftMatch(Tree base, Tree left) {
         leftMatches.put(base, left);
     }
 
-    final void setRightMatch(Tree base, Tree right) {
+    public final void setRightMatch(Tree base, Tree right) {
         rightMatches.put(base, right);
     }
 

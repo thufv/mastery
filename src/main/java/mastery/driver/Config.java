@@ -24,6 +24,9 @@ public final class Config {
     // formatter
     public final String formatter;
 
+    // algorithm
+    public final String algorithm;
+
     private Config(Builder builder) {
         this.base = builder.base;
         this.left = builder.left;
@@ -37,6 +40,7 @@ public final class Config {
         this.logDump = builder.logDump;
         this.language = builder.language;
         this.formatter = builder.formatter;
+        this.algorithm = builder.algorithm;
     }
 
     public static Builder builder(String base, String left, String right, String output) {
@@ -62,6 +66,9 @@ public final class Config {
         
         // formatter
         private String formatter = null;
+
+        // algorithm
+		private String algorithm = null;
 
         public Builder(String base, String left, String right, String output) {
             this.base = base;
@@ -113,5 +120,9 @@ public final class Config {
         public Config build() {
             return new Config(this);
         }
+
+		public void algorithm(String algorithm) {
+            this.algorithm = algorithm;
+		}
     }
 }

@@ -4,8 +4,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.logging.Level;
-import mastery.gumdiff.Matcher;
-import mastery.gumdiff.MatchingSet;
+import mastery.diff.MatchingSet;
+import mastery.diff.Matcher;
+import mastery.diff.gum.GumMatcher;
+import mastery.diff.ta.TaMatcher;
 import mastery.merging.Merger;
 import mastery.tree.Tree;
 import mastery.tree.TreeBuilders;
@@ -60,7 +62,16 @@ public final class Driver {
             });
 
             // Phase I: Mapping
-            Matcher matcher = new Matcher();
+            Matcher matcher;
+            if ("gum".equals(config.algorithm)) {
+                matcher = new GumMatcher();
+            }
+            else if ("ta".equals(config.algorithm)) {
+                matcher = new TaMatcher();
+            }
+            else {
+                throw new IllegalStateException("wrong matching algorithm. The legal options are gum/ta");
+            }
             MatchingSet mapping = matcher.apply(base, left, right);
 
             // Phase II: Merge
@@ -81,6 +92,8 @@ public final class Driver {
               out.close();
             }
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

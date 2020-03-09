@@ -61,6 +61,17 @@ public final class CLIParser {
             .argName("file")
             .desc("also dump log to a file")
             .build();
+    
+    
+    static final String ALGO = "a";
+    final Option algo = Option
+            .builder(ALGO)
+            .longOpt("algorithm")
+            .required()
+            .hasArg()
+            .argName("algorithm")
+            .desc("algorithm of mapping")
+            .build();
 
     static final String FORMATTER = "formatter";
     final Option formatter = Option
@@ -88,6 +99,7 @@ public final class CLIParser {
         options.addOption(logLevel);
         options.addOption(logColorful);
         options.addOption(logFile);
+        options.addOption(algo);
         options.addOption(formatter);
         options.addOption(help);
     }
@@ -96,7 +108,7 @@ public final class CLIParser {
         String header = "\noptions:\n";
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp(
-            "mastery [options] -l java|c|c# <base> <left> <right>\n"
+            "mastery [options] -l java|c|c# -a gum|ta <base> <left> <right>\n"
                 + "  arguments should be all file paths",
             header, options, "");
     }
@@ -150,6 +162,10 @@ public final class CLIParser {
 
         if (cli.hasOption(LOG_FILE)) {
             builder.logDump(cli.getOptionValue(LOG_FILE));
+        }
+
+        if (cli.hasOption(ALGO)) {
+            builder.algorithm(cli.getOptionValue(ALGO));
         }
 
         if (cli.hasOption(FORMATTER)) {

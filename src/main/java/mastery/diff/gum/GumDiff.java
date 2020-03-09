@@ -1,9 +1,9 @@
-package mastery.gumdiff;
+package mastery.diff.gum;
 
 import mastery.tree.Tree;
 
-public class Diff extends GumTree {
-    public Diff() {
+public class GumDiff extends GumTree {
+    public GumDiff() {
         super(2, 0.2);
     }
 
