@@ -88,11 +88,11 @@ public abstract class MatchingSet {
         return leftMatches.size() + rightMatches.size();
     }
 
-    final void setLeftMatch(Tree base, Tree left) {
+    public final void setLeftMatch(Tree base, Tree left) {
         leftMatches.put(base, left);
     }
 
-    final void setRightMatch(Tree base, Tree right) {
+    public final void setRightMatch(Tree base, Tree right) {
         rightMatches.put(base, right);
     }
 

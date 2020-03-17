@@ -46,9 +46,11 @@ public abstract class Tree {
 
     /**
      * Assigned integer for equivalence checking. (1-based)
+     *
      * @deprecated when using GumTree, the assignment is not computed!
      */
-    @Deprecated public int assignment;
+    @Deprecated
+    public int assignment;
 
     /**
      * Parent.
@@ -61,11 +63,12 @@ public abstract class Tree {
 
     /**
      * Equivalence of two tree nodes.
-     * @deprecated when using GumTree, the assignment is not computed!
-     * 
+     *
      * @return if they're equal?
+     * @deprecated when using GumTree, the assignment is not computed!
      */
-    @Deprecated public final boolean equals(Tree tree) {
+    @Deprecated
+    public final boolean equals(Tree tree) {
         return height == tree.height && assignment == tree.assignment;
     }
 
@@ -75,6 +78,29 @@ public abstract class Tree {
      * @return a deep copied version
      */
     public abstract Tree deepCopy();
+
+    /**
+     * The SLOW way of checking if two trees are isomorphic.
+     *
+     * @param that another tree
+     * @return true iff they are isomorphic, or "equal"
+     */
+    public boolean isomorphicTo(Tree that) {
+        if (label != that.label || height != that.height || size != that.size
+                || children.size() != that.children.size()) {
+            return false;
+        }
+
+        var it = children.iterator();
+        var jt = children.iterator();
+        while (it.hasNext()) {
+            if (!it.next().isomorphicTo(jt.next())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     public abstract void accept(Visitor visitor);
 

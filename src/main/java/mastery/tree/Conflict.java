@@ -15,26 +15,29 @@ public class Conflict extends Tree {
     public final Tree right;
 
     private Conflict(@Nullable Tree base, @Nullable Tree left, @Nullable Tree right) {
-        super(-1, "?", List.of(new Leaf(-1, "", "\n//////// Base\n"), base, new Leaf(-1, "", "\n//////// Left\n"), left, new Leaf(-1, "", "\n//////// Right\n"), right));
+        super(-1, "?", List.of(left, right));
+//                new Leaf(-1, "", "\n//////// Base\n"), base,
+//                new Leaf(-1, "", "\n//////// Left\n"), left,
+//                new Leaf(-1, "", "\n//////// Right\n"), right));
         this.base = base;
         this.left = left;
         this.right = right;
     }
 
     public static Conflict of(Tree base, Tree left, Tree right) {
-        return new Conflict(base, left, right);
+        return new Conflict(base.deepCopy(), left.deepCopy(), right.deepCopy());
     }
 
     public static Conflict ofTwoWay(Tree left, Tree right) {
-        return new Conflict(null, left, right);
+        return new Conflict(new Nothing(), left.deepCopy(), right.deepCopy());
     }
 
     public static Conflict ofLeft(Tree base, Tree left) {
-        return new Conflict(base, left, null);
+        return new Conflict(base.deepCopy(), left.deepCopy(), new Nothing());
     }
 
     public static Conflict ofRight(Tree base, Tree right) {
-        return new Conflict(base, null, right);
+        return new Conflict(base.deepCopy(), new Nothing(), right.deepCopy());
     }
 
     @Override
@@ -65,7 +68,7 @@ public class Conflict extends Tree {
     @Override
     public Tree deepCopy() {
         return new Conflict(base == null ? null : base.deepCopy(),
-                left == null ? null : left.deepCopy(), right == null ? null : right.deepCopy());
+                            left == null ? null : left.deepCopy(), right == null ? null : right.deepCopy());
     }
 
     @Override
