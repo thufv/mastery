@@ -2,8 +2,13 @@ package mastery.merging;
 
 import mastery.diff.HashMatchingSet;
 import mastery.tree.Tree;
+import mastery.tree.TreePrinters;
+import mastery.util.log.IndentPrinter;
+import mastery.util.log.Log;
 
+import java.io.IOException;
 import java.util.Map;
+import java.util.logging.Level;
 
 import static org.junit.Assert.assertTrue;
 
@@ -18,7 +23,16 @@ public abstract class MergeTest {
         rightMatches.forEach(m::setRightMatch);
         m.setRightMatch(base, right);
 
+        try {
+            Log.setup(Level.ALL, false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         var tree = merger.apply(m);
-        assertTrue(tree.isomorphicTo(target));
+        IndentPrinter printer = new IndentPrinter();
+        TreePrinters.textTree(tree, printer);
+        printer.flush();
+        assertTrue(tree.identicalTo(target));
     }
 }

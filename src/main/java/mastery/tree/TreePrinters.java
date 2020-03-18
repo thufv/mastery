@@ -1,52 +1,105 @@
 package mastery.tree;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-
 import mastery.util.log.IndentPrinter;
+
+import java.io.*;
 
 public class TreePrinters {
     public static void textTree(Tree tree, IndentPrinter printer) {
-        var sb = new StringBuilder();
-        print(tree, sb, "", "");
-        printer.println(sb.toString());
-    }
+        var textTreePrinter = new Tree.Visitor<String>() {
+            private static final String CONSECUTIVE_PROMPT = "├── ";
+            private static final String LAST_PROMPT = "└── ";
+            private static final String DASHED_PROMPT = "╎   ";
+            private static final String EMPTY_PROMPT = "    ";
 
-    private static void print(Tree tree, StringBuilder sb, String inherited, String prompt) {
-        sb.append(inherited);
-        sb.append(prompt);
-        // this node
-        sb.append(tree.toString());
-        sb.append(" height ").append(tree.height);
-        sb.append('\n');
+            private StringBuilder sb = new StringBuilder();
 
-        if (!tree.children.isEmpty()) {
-            var prefix = inherited;
-            if (prompt.equals(CONSECUTIVE_PROMPT)) prefix += DASHED_PROMPT;
-            else if (prompt.equals(LAST_PROMPT)) prefix += EMPTY_PROMPT;
-
-            var it = tree.children.iterator();
-            for (int i = 0; i < tree.children.size() - 1; i++) {
-                print(it.next(), sb, prefix, CONSECUTIVE_PROMPT);
+            public String get() {
+                return sb.toString();
             }
-            print(it.next(), sb, prefix, LAST_PROMPT);
-        }
-    }
 
-    private static final String CONSECUTIVE_PROMPT = "├── ";
-    private static final String LAST_PROMPT = "└── ";
-    private static final String DASHED_PROMPT = "╎   ";
-    private static final String EMPTY_PROMPT = "    ";
+            @Override
+            public void visitLeaf(Leaf leaf, String... ctx) {
+                String inherited = ctx[0];
+                String prompt = ctx[1];
+
+                sb.append(inherited).append(prompt);
+                sb.append(leaf.name).append(" '").append(leaf.code).append("'");
+                sb.append('\n');
+            }
+
+            @Override
+            public void visitInternal(InternalNode internal, String... ctx) {
+                String inherited = ctx[0];
+                String prompt = ctx[1];
+
+                sb.append(inherited).append(prompt);
+                sb.append(internal.toString());
+                sb.append(" height ").append(internal.height);
+                sb.append('\n');
+
+                if (!internal.children.isEmpty()) {
+                    var prefix = inherited;
+                    if (prompt.equals(CONSECUTIVE_PROMPT)) prefix += DASHED_PROMPT;
+                    else if (prompt.equals(LAST_PROMPT)) prefix += EMPTY_PROMPT;
+
+                    var it = internal.children.iterator();
+                    for (int i = 0; i < internal.children.size() - 1; i++) {
+                        it.next().accept(this, prefix, CONSECUTIVE_PROMPT);
+                    }
+                    it.next().accept(this, prefix, LAST_PROMPT);
+                }
+            }
+
+            @Override
+            public void visitConflict(Conflict conflict, String... ctx) {
+                String inherited = ctx[0];
+                String prompt = ctx[1];
+
+                sb.append(inherited).append(prompt);
+                sb.append("<conflict>");
+                sb.append('\n');
+
+                var prefix = inherited;
+                if (prompt.equals(CONSECUTIVE_PROMPT)) prefix += DASHED_PROMPT;
+                else if (prompt.equals(LAST_PROMPT)) prefix += EMPTY_PROMPT;
+
+                // print left
+                sb.append(prefix).append(CONSECUTIVE_PROMPT);
+                sb.append("<left>").append('\n');
+                if (!conflict.left.isEmpty()) {
+                    var prefix1 = prefix + DASHED_PROMPT;
+                    var it = conflict.left.iterator();
+                    for (int i = 0; i < conflict.left.size() - 1; i++) {
+                        it.next().accept(this, prefix1, CONSECUTIVE_PROMPT);
+
+                    }
+                    it.next().accept(this, prefix1, LAST_PROMPT);
+                }
+
+                // print right
+                sb.append(prefix).append(LAST_PROMPT);
+                sb.append("<right>").append('\n');
+                if (!conflict.right.isEmpty()) {
+                    var prefix1 = prefix + EMPTY_PROMPT;
+                    var it = conflict.right.iterator();
+                    for (int i = 0; i < conflict.right.size() - 1; i++) {
+                        it.next().accept(this, prefix1, CONSECUTIVE_PROMPT);
+                    }
+                    it.next().accept(this, prefix1, LAST_PROMPT);
+                }
+            }
+        };
+
+        tree.accept(textTreePrinter, "", "");
+        printer.println(textTreePrinter.get());
+    }
 
     public static void rawCode(Tree tree, IndentPrinter printer) {
         var sb = new StringBuilder();
         var tokenWalker = new Tree.PreOrderWalker() {
             @Override
-            public void visitLeaf(Leaf leaf) {
+            public void visitLeaf(Leaf leaf, Object... ctx) {
                 sb.append(leaf.code);
                 sb.append(' ');
             }
@@ -62,18 +115,19 @@ public class TreePrinters {
      *
      * @param tree
      * @param formatter
-     * @return          The output as a string
+     * @return The output as a string
      */
     public static String prettyCode(Tree tree, String formatter) {
         var sb = new StringBuilder();
         var tokenWalker = new Tree.PreOrderWalker() {
             @Override
-            public void visitLeaf(Leaf leaf) {
+            public void visitLeaf(Leaf leaf, Object... ctx) {
                 sb.append(leaf.code);
                 sb.append(' ');
             }
+
             @Override
-            public void visitConflict(Conflict conflict) {
+            public void visitConflict(Conflict conflict, Object... ctx) {
                 sb.append("\n");
             }
         };
@@ -83,8 +137,7 @@ public class TreePrinters {
 
         if (formatter == null) {
             formattedCode = rawCode;
-        }
-        else {
+        } else {
             try {
                 // Use clang-format
                 ProcessBuilder pb = new ProcessBuilder(formatter);

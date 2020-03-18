@@ -8,7 +8,7 @@ import java.util.List;
  * <p>
  * namasikanam: I don't like this ambiguous name.
  */
-public final class Constructor extends Tree {
+public final class Constructor extends InternalNode {
     public final int arity;
 
     public Constructor(int label, String name, List<Tree> children) {
@@ -21,11 +21,6 @@ public final class Constructor extends Tree {
             throw new IndexOutOfBoundsException(arity + "-ary constructor does not have a child at index " + index);
         }
         return children.get(index);
-    }
-
-    @Override
-    public boolean isLeaf() {
-        return false;
     }
 
     @Override
@@ -44,11 +39,6 @@ public final class Constructor extends Tree {
     }
 
     @Override
-    public boolean isConflict() {
-        return false;
-    }
-
-    @Override
     public Tree deepCopy() {
         var copied = new ArrayList<Tree>();
         for (var child : children) {
@@ -58,8 +48,8 @@ public final class Constructor extends Tree {
     }
 
     @Override
-    public void accept(Visitor visitor) {
-        visitor.visitConstructor(this);
+    public <C> void accept(Visitor<C> visitor, C... ctx) {
+        visitor.visitConstructor(this, ctx);
     }
 
     @Override

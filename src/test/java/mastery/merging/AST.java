@@ -7,7 +7,7 @@ import java.util.List;
 
 public class AST {
     public static Leaf leaf(String value) {
-        return new Leaf(1, "leaf", value);
+        return new Leaf(1, "token", value);
     }
 
     public static Constructor binary(Tree first, Tree second) {
@@ -19,10 +19,10 @@ public class AST {
     }
 
     public static OrderedList ordered(Tree... elements) {
-        return new OrderedList(4, "ordered", Arrays.asList(elements));
+        return new OrderedList(4, "olist", Arrays.asList(elements));
     }
 
     public static UnorderedList unordered(Tree... elements) {
-        return new UnorderedList(5, "unordered", Arrays.asList(elements));
+        return new UnorderedList(5, "ulist", Arrays.asList(elements));
     }
 }

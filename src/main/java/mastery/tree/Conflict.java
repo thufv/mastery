@@ -1,43 +1,80 @@
 package mastery.tree;
 
-import org.jetbrains.annotations.Nullable;
-
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class Conflict extends Tree {
-    @Nullable
-    public final Tree base;
+public final class Conflict extends Tree {
+    public final List<Tree> left;
+    public final List<Tree> right;
 
-    @Nullable
-    public final Tree left;
-
-    @Nullable
-    public final Tree right;
-
-    private Conflict(@Nullable Tree base, @Nullable Tree left, @Nullable Tree right) {
-        super(-1, "?", List.of(left, right));
-//                new Leaf(-1, "", "\n//////// Base\n"), base,
-//                new Leaf(-1, "", "\n//////// Left\n"), left,
-//                new Leaf(-1, "", "\n//////// Right\n"), right));
-        this.base = base;
+    private Conflict(List<Tree> left, List<Tree> right) {
+        super(-2, "<CONFLICT>");
         this.left = left;
         this.right = right;
     }
 
-    public static Conflict of(Tree base, Tree left, Tree right) {
-        return new Conflict(base.deepCopy(), left.deepCopy(), right.deepCopy());
+    public static Conflict of(Tree left, Tree right) {
+        return new Conflict(List.of(left), List.of(right));
     }
 
-    public static Conflict ofTwoWay(Tree left, Tree right) {
-        return new Conflict(new Nothing(), left.deepCopy(), right.deepCopy());
+    public static Conflict ofLeft(Tree left) {
+        return new Conflict(List.of(left), Collections.emptyList());
     }
 
-    public static Conflict ofLeft(Tree base, Tree left) {
-        return new Conflict(base.deepCopy(), left.deepCopy(), new Nothing());
+    public static Conflict ofRight(Tree right) {
+        return new Conflict(Collections.emptyList(), List.of(right));
     }
 
-    public static Conflict ofRight(Tree base, Tree right) {
-        return new Conflict(base.deepCopy(), new Nothing(), right.deepCopy());
+    public static Conflict of(List<Tree> left, List<Tree> right) {
+        return new Conflict(left, right);
+    }
+
+    @Override
+    public Tree deepCopy() {
+        var leftCopy = new ArrayList<Tree>();
+        for (var node : left) {
+            leftCopy.add(node.deepCopy());
+        }
+
+        var rightCopy = new ArrayList<Tree>();
+        for (var node : right) {
+            rightCopy.add(node.deepCopy());
+        }
+
+        return new Conflict(leftCopy, rightCopy);
+    }
+
+    @Override
+    public boolean identicalTo(Tree that) {
+        if (that.isConflict()) {
+            Conflict c = (Conflict) that;
+            if (left.size() != c.left.size() || right.size() != c.right.size()) {
+                return false;
+            }
+
+            // zip(left.children, that.left.children).forall(_ isomorphicTo _)
+            var it = left.iterator();
+            var jt = c.left.iterator();
+            while (it.hasNext()) {
+                if (!it.next().identicalTo(jt.next())) {
+                    return false;
+                }
+            }
+
+            // zip(right.children, that.right.children).forall(_ isomorphicTo _)
+            it = right.iterator();
+            jt = c.right.iterator();
+            while (it.hasNext()) {
+                if (!it.next().identicalTo(jt.next())) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     @Override
@@ -66,14 +103,8 @@ public class Conflict extends Tree {
     }
 
     @Override
-    public Tree deepCopy() {
-        return new Conflict(base == null ? null : base.deepCopy(),
-                            left == null ? null : left.deepCopy(), right == null ? null : right.deepCopy());
-    }
-
-    @Override
-    public void accept(Visitor visitor) {
-        visitor.visitConflict(this);
+    public <C> void accept(Visitor<C> visitor, C... ctx) {
+        visitor.visitConflict(this, ctx);
     }
 
     @Override

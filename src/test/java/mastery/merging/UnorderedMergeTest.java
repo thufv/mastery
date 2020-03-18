@@ -1,7 +1,6 @@
 package mastery.merging;
 
 import mastery.tree.Conflict;
-import mastery.tree.Leaf;
 import mastery.tree.Tree;
 import mastery.tree.UnorderedList;
 import org.junit.Test;
@@ -11,12 +10,12 @@ import java.util.Map;
 import static mastery.merging.AST.leaf;
 import static mastery.merging.AST.unordered;
 
-public class UnorderedTest extends MergeTest {
+public class UnorderedMergeTest extends MergeTest {
     @Test
     public void leftDeletion() {
-        final Leaf base1 = leaf("y");
-        final Leaf left1 = leaf("y");
-        final Leaf right1 = leaf("y1");
+        final Tree base1 = leaf("y");
+        final Tree left1 = base1.deepCopy();
+        final Tree right1 = leaf("y1");
 
         final Tree baseDeletion = leaf("x");
         final Tree rightDeletion = leaf("x");
@@ -33,9 +32,9 @@ public class UnorderedTest extends MergeTest {
 
     @Test
     public void rightDeletion() {
-        final Leaf base1 = leaf("y");
-        final Leaf left1 = leaf("y");
-        final Leaf right1 = leaf("y1");
+        final Tree base1 = leaf("y");
+        final Tree left1 = base1.deepCopy();
+        final Tree right1 = leaf("y1");
 
         final Tree baseDeletion = leaf("x");
         final Tree leftDeletion = leaf("x");
@@ -52,9 +51,9 @@ public class UnorderedTest extends MergeTest {
 
     @Test
     public void leftInsertion() {
-        final Leaf base1 = leaf("y");
-        final Leaf left1 = leaf("y");
-        final Leaf right1 = leaf("y1");
+        final Tree base1 = leaf("y");
+        final Tree left1 = base1.deepCopy();
+        final Tree right1 = leaf("y1");
 
         final Tree insertion = leaf("x");
 
@@ -70,16 +69,17 @@ public class UnorderedTest extends MergeTest {
 
     @Test
     public void rightInsertion() {
-        final Leaf base1 = leaf("y");
-        final Leaf left1 = leaf("y");
-        final Leaf right1 = leaf("y1");
+        final Tree base1 = leaf("y");
+        final Tree left1 = base1.deepCopy();
+        final Tree right1 = leaf("y1");
 
-        final Tree insertion = leaf("x");
+        final Tree insertion1 = leaf("x");
+        final Tree insertion2 = leaf("z");
 
         final UnorderedList base = unordered(base1);
         final UnorderedList left = unordered(left1);
-        final UnorderedList right = unordered(insertion, right1);
-        final UnorderedList target = unordered(right1.deepCopy(), insertion.deepCopy());
+        final UnorderedList right = unordered(insertion1, right1, insertion2);
+        final UnorderedList target = unordered(right1.deepCopy(), insertion1.deepCopy(), insertion2.deepCopy());
 
         testOn(base, left, right, target,
                Map.of(base1, left1),
@@ -88,16 +88,14 @@ public class UnorderedTest extends MergeTest {
 
     @Test
     public void deletionChangeConflict() {
-        final Leaf base1 = leaf("y");
-        final Leaf left1 = leaf("y");
-        final Leaf right1 = leaf("y1");
+        final Tree base1 = leaf("y");
+        final Tree left1 = base1.deepCopy();
+        final Tree right1 = leaf("y1");
 
         final Tree leftDeletion = leaf("x");
         final Tree leftChange = leaf("x1");
-
         final Tree rightDeletion = leaf("z");
         final Tree rightChange = leaf("z1");
-
         final Tree leftInsertion = leaf("u");
         final Tree rightInsertion = leaf("v");
 
@@ -105,8 +103,8 @@ public class UnorderedTest extends MergeTest {
         final UnorderedList left = unordered(left1, leftInsertion, leftChange);
         final UnorderedList right = unordered(right1, rightInsertion, rightChange);
 
-        final Tree conflict1 = Conflict.ofLeft(leftDeletion, leftChange);
-        final Tree conflict2 = Conflict.ofRight(rightDeletion, rightChange);
+        final Tree conflict1 = Conflict.ofLeft(leftChange);
+        final Tree conflict2 = Conflict.ofRight(rightChange);
         final UnorderedList target = unordered(right1.deepCopy(), conflict1, conflict2,
                                                leftInsertion.deepCopy(), rightInsertion.deepCopy());
 

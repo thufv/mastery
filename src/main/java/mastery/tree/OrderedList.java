@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * An ordered list assumes no permutation of children is allowed.
  */
-public class OrderedList extends ListNode {
+public final class OrderedList extends ListNode {
     public OrderedList(int label, String name, List<Tree> children) {
         super(label, name, children);
     }
@@ -31,8 +31,8 @@ public class OrderedList extends ListNode {
     }
 
     @Override
-    public void accept(Visitor visitor) {
-        visitor.visitOrderedList(this);
+    public <C> void accept(Visitor<C> visitor, C... ctx) {
+        visitor.visitOrderedList(this, ctx);
     }
 
     @Override

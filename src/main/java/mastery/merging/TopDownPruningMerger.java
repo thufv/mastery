@@ -1,10 +1,11 @@
 package mastery.merging;
 
-import mastery.diff.MatchingSet;
 import mastery.tree.Tree;
 import mastery.util.log.Log;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
 
 public final class TopDownPruningMerger extends Merger {
     @Override

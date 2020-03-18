@@ -1,7 +1,5 @@
 package mastery.tree;
 
-import java.util.Collections;
-
 /**
  * A leaf node, i.e. a token.
  */
@@ -9,47 +7,57 @@ public class Leaf extends Tree {
     public final String code;
 
     public Leaf(int label, String name, String code) {
-        super(label, name, Collections.emptyList());
+        super(label, name);
         this.code = code;
     }
 
     @Override
-    public boolean isLeaf() {
+    public final boolean isLeaf() {
         return true;
     }
 
     @Override
-    public boolean isConstructor() {
+    public final boolean isConstructor() {
         return false;
     }
 
     @Override
-    public boolean isOrderedList() {
+    public final boolean isOrderedList() {
         return false;
     }
 
     @Override
-    public boolean isUnorderedList() {
+    public final boolean isUnorderedList() {
         return false;
     }
 
     @Override
-    public boolean isConflict() {
+    public final boolean isConflict() {
         return false;
     }
 
     @Override
-    public Tree deepCopy() {
+    public final Tree deepCopy() {
         return new Leaf(label, name, code);
     }
 
     @Override
-    public void accept(Visitor visitor) {
-        visitor.visitLeaf(this);
+    public boolean identicalTo(Tree that) {
+        if (that.isLeaf()) {
+            Leaf leaf = (Leaf) that;
+            return label == leaf.label && code.equals(leaf.code);
+        }
+
+        return false;
     }
 
     @Override
-    public <T> T accept(RichVisitor<T> visitor) {
+    public final <C> void accept(Visitor<C> visitor, C... ctx) {
+        visitor.visitLeaf(this, ctx);
+    }
+
+    @Override
+    public final <T> T accept(RichVisitor<T> visitor) {
         return visitor.visitLeaf(this);
     }
 

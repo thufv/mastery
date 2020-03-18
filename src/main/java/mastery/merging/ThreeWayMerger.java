@@ -4,6 +4,7 @@ import mastery.diff.MatchingSet;
 import mastery.tree.*;
 import mastery.util.MultiMap;
 import mastery.util.log.Log;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -17,21 +18,21 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
     public Tree visitLeaves(Leaf base, Leaf left, Leaf right) {
         if (m.treesEqual(base, left)) {
             Log.finest("trivial merge scenario: base = left, thus target = right");
-            return right;
+            return right.deepCopy();
         }
 
         if (m.treesEqual(base, right)) {
             Log.finest("trivial merge scenario: base = right, thus target = left");
-            return left;
+            return left.deepCopy();
         }
 
         if (m.treesEqual(left, right)) {
             Log.finest("trivial merge scenario: left = right, thus target is either");
-            return left;
+            return left.deepCopy();
         }
 
         Log.finest("conflict: %s <-> %s", left, right);
-        return Conflict.of(base, left, right);
+        return Conflict.of(left, right);
     }
 
     @Override
@@ -44,24 +45,8 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             var l = left.childAt(i);
             var r = right.childAt(i);
 
-            if (m.relevant(b, l) && m.relevant(b, r)) {
-                targets.add(threeWay(b, l, r));
-                continue;
-            }
-
-            if (!m.relevant(b, l) && m.relevant(b, r)) {
-                targets.add(leftInsert(b, l, r));
-                continue;
-            }
-
-            if (m.relevant(b, l) && !m.relevant(b, r)) {
-                targets.add(rightInsert(b, l, r));
-                continue;
-            }
-
-            // Question: What if relevant(l, b) and relevant(r, b) ?
-
-            targets.add(twoWay(l, r));
+            assert m.relevant(b, l) && m.relevant(b, r);
+            targets.add(threeWay(b, l, r));
         }
 
         return new Constructor(base.label, base.name, targets);
@@ -72,79 +57,84 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
         Log.finest("merging ordered list %s", base.name);
 
         // collect
-        var candidates = new Vector<Tree>();
-        var pi = new HashMap<Tree, Tree>();
+        var candidates = new ArrayList<Candidate>();
+        var pi = new HashMap<Tree, Candidate>();
+        var visited = new HashSet<Tree>();
 
-        for (var b : base.children) {
+        for (var b : base) {
             var l = m.hasLeftMatch(b) ? lift(m.getLeftMatch(b), left) : null;
             var r = m.hasRightMatch(b) ? lift(m.getRightMatch(b), right) : null;
 
             if (l != null && r != null) {
-                var t = threeWay(b, l, r);
-                pi.put(b, t);
-                pi.put(l, t);
-                pi.put(r, t);
-                candidates.add(t);
+                visited.add(l);
+                visited.add(r);
+
+                var c = Candidate.of(threeWay(b, l, r), l, r);
+                candidates.add(c);
+
+                pi.put(b, c);
+                pi.put(l, c);
+                pi.put(r, c);
                 continue;
             }
 
             if (l != null) {
-                rightDelete(b, l).ifPresent(conflict -> {
-                    pi.put(b, conflict);
-                    pi.put(l, conflict);
-                    candidates.add(conflict);
-                });
+                visited.add(l);
+
+                var c = rightDelete(b, l).map(conflict -> Candidate.ofLeft(conflict, l))
+                                         .orElse(Candidate.ofRightDeletion(l));
+                candidates.add(c);
+
+                pi.put(b, c);
+                pi.put(l, c);
                 continue;
             }
 
             if (r != null) {
-                leftDelete(b, r).ifPresent(conflict -> {
-                    pi.put(b, conflict);
-                    pi.put(r, conflict);
-                    candidates.add(conflict);
-                });
+                visited.add(r);
+
+                var c = leftDelete(b, r).map(conflict -> Candidate.ofRight(conflict, r))
+                                        .orElse(Candidate.ofLeftDeletion(r));
+                candidates.add(c);
+                pi.put(b, c);
+                pi.put(r, c);
             }
         }
 
-        for (var l : left.children) {
-            if (!pi.containsKey(l)) {
-                pi.put(l, l);
-                candidates.add(l);
+        for (var l : left) {
+            if (!visited.contains(l)) {
+                var c = Candidate.ofLeft(l.deepCopy(), l);
+                candidates.add(c);
+
+                pi.put(l, c);
             }
         }
 
-        for (var r : right.children) {
-            if (!pi.containsKey(r)) {
-                pi.put(r, r);
-                candidates.add(r);
+        for (var r : right) {
+            if (!visited.contains(r)) {
+                var c = Candidate.ofRight(r.deepCopy(), r);
+                candidates.add(c);
+
+                pi.put(r, c);
             }
         }
+
+        Log.finest("candidates: %s", candidates);
 
         // encode
-        var succ = new MultiMap<Tree, Tree>();
-        var pred = new MultiMap<Tree, Tree>();
+        var succ = new MultiMap<Candidate, Candidate>();
+        var pred = new MultiMap<Candidate, Candidate>();
 
-        var baseIt = base.children.iterator();
-        var leftIt = left.children.iterator();
-        var rightIt = right.children.iterator();
+        for (var list : List.of(base, left, right)) {
+            if (!list.isEmpty()) {
+                var it = list.iterator();
+                var prev = pi.get(it.next());
 
-        for (var it : List.of(baseIt, leftIt, rightIt)) {
-            Tree prev = null;
-            while (it.hasNext()) {
-                var elem = it.next();
-                if (pi.containsKey(elem)) {
-                    prev = pi.get(elem);
-                    break;
-                }
-            }
-
-            while (it.hasNext()) {
-                var elem = it.next();
-                if (pi.containsKey(elem)) {
-                    Objects.requireNonNull(prev);
-                    var next = pi.get(elem);
+                while (it.hasNext()) {
+                    var next = pi.get(it.next());
                     succ.put(prev, next);
                     pred.put(next, prev);
+                    Log.finest("%s -> %s", prev, next);
                     prev = next;
                 }
             }
@@ -152,38 +142,130 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
 
         // topology sort
         var targets = new ArrayList<Tree>();
+        var leftSuspended = new ArrayList<Tree>();
+        var rightSuspended = new ArrayList<Tree>();
 
-        var inDeg = new HashMap<Tree, Integer>();
-        var zero = new ArrayList<Tree>();
-        for (var node : pred.keySet()) {
-            int deg = pred.get(node).size();
-            inDeg.put(node, deg);
+        var inDeg = new HashMap<Candidate, Integer>();
+        Queue<Candidate> zero = new LinkedList<>();
+        for (var c : candidates) {
+            int deg = pred.get(c).size();
+            inDeg.put(c, deg);
             if (deg == 0) {
-                zero.add(node);
+                zero.add(c);
             }
         }
 
+        Set<Candidate> issued = new HashSet<>();
         while (!zero.isEmpty()) {
-            if (zero.size() > 1) { // conflict
-                // TODO
-                return new OrderedList(base.label, base.name, targets);
+            Log.finest("zero-inDeg: %s", zero);
+
+            var valid = new ArrayList<Candidate>();
+            final int choices = zero.size();
+            for (int i = 0; i < choices; i++) {
+                var u = zero.poll();
+                issued.add(u);
+
+                if (u.valid) {
+                    valid.add(u);
+                }
+
+                for (var v : succ.get(u)) {
+                    int deg = inDeg.get(v);
+                    deg--;
+                    inDeg.put(v, deg);
+                    if (deg == 0) {
+                        zero.add(v);
+                    }
+                }
             }
 
-            var u = zero.get(0);
-            zero.clear();
-
-            targets.add(u);
-            for (var v : succ.get(u)) {
-                int deg = inDeg.get(v);
-                deg--;
-                inDeg.put(v, deg);
-                if (deg == 0) {
-                    zero.add(v);
+            if (valid.size() == 1) {
+                if (!leftSuspended.isEmpty() || !rightSuspended.isEmpty()) { // handle suspended
+                    targets.add(Conflict.of(leftSuspended, rightSuspended));
+                    leftSuspended = new ArrayList<>();
+                    rightSuspended = new ArrayList<>();
+                }
+                targets.add(valid.get(0).target);
+            } else if (valid.size() > 1) { // conflict
+                Log.fine("disambiguated choices: %s", valid);
+                for (var node : valid) {
+                    if (node.hasLeftOrigin()) {
+                        leftSuspended.add(node.leftOrigin);
+                    } else {
+                        rightSuspended.add(node.rightOrigin);
+                    }
                 }
             }
         }
+        if (!leftSuspended.isEmpty() || !rightSuspended.isEmpty()) { // handle suspended
+            targets.add(Conflict.of(leftSuspended, rightSuspended));
+        }
 
+        if (issued.size() < candidates.size()) { // cyclic
+            for (var l : left) {
+                var c = pi.get(l);
+                if (!issued.contains(c)) {
+                    leftSuspended.add(l);
+                }
+            }
+
+            for (var r : right) {
+                var c = pi.get(r);
+                if (!issued.contains(c)) {
+                    rightSuspended.add(r);
+                }
+            }
+
+            targets.add(Conflict.of(leftSuspended, rightSuspended));
+        }
+
+        Log.finest("targets: %s", targets);
         return new OrderedList(base.label, base.name, targets);
+    }
+
+    private static final class Candidate {
+        final boolean valid;
+        final Tree target;
+        @Nullable
+        final Tree leftOrigin;
+        @Nullable
+        final Tree rightOrigin;
+
+        private Candidate(boolean valid, Tree target, @Nullable Tree leftOrigin, @Nullable Tree rightOrigin) {
+            this.valid = valid;
+            this.target = target;
+            this.leftOrigin = leftOrigin;
+            this.rightOrigin = rightOrigin;
+        }
+
+        static Candidate of(Tree target, Tree left, Tree right) {
+            return new Candidate(true, target, left, right);
+        }
+
+        static Candidate ofLeft(Tree target, Tree left) {
+            return new Candidate(true, target, left, null);
+        }
+
+        static Candidate ofRight(Tree target, Tree right) {
+            return new Candidate(true, target, null, right);
+        }
+
+        static Candidate ofLeftDeletion(Tree right) {
+            return new Candidate(false, right, null, right);
+        }
+
+        static Candidate ofRightDeletion(Tree left) {
+            return new Candidate(false, left, left, null);
+        }
+
+        boolean hasLeftOrigin() {
+            return leftOrigin != null;
+        }
+
+        @Override
+        public String toString() {
+            return target + (valid ? "" : " (removed)");
+        }
     }
 
     @Override
@@ -193,24 +275,9 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
         var targets = new ArrayList<Tree>();
         var visited = new HashSet<Tree>();
 
-        for (var b : base.children) {
-            Tree l = null, r = null;
-
-            if (m.hasLeftMatch(b)) {
-                l = m.getLeftMatch(b);
-                while (l.getParent() != left) {
-                    l = l.getParent();
-                }
-                Objects.requireNonNull(l);
-            }
-
-            if (m.hasRightMatch(b)) {
-                r = m.getRightMatch(b);
-                while (r.getParent() != right) {
-                    r = r.getParent();
-                }
-                Objects.requireNonNull(r);
-            }
+        for (var b : base) {
+            Tree l = m.hasLeftMatch(b) ? lift(m.getLeftMatch(b), left) : null;
+            Tree r = m.hasRightMatch(b) ? lift(m.getRightMatch(b), right) : null;
 
             if (l != null && r != null) {
                 visited.add(l);
@@ -231,13 +298,13 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             }
         }
 
-        for (var l : left.children) {
+        for (var l : left) {
             if (!visited.contains(l)) {
                 targets.add(l);
             }
         }
 
-        for (var r : right.children) {
+        for (var r : right) {
             if (!visited.contains(r)) {
                 targets.add(r);
             }
@@ -249,24 +316,6 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
     // read-only contexts
     private MatchingSet m;
     private Map<Tree, Tree> t;
-
-    // helper mergers for lists
-    private OrderedListMerger ordered = new OrderedListMerger();
-    private UnorderedListMerger unordered = new UnorderedListMerger();
-
-    /**
-     * Two-way merge.
-     * <p>
-     * No conflict iff both variants are equal to each other.
-     *
-     * @param left  left version
-     * @param right right version
-     * @return merge result
-     */
-    private Tree twoWay(Tree left, Tree right) {
-        Log.finest("two way: %s <-> %s", left, right);
-        return m.treesEqual(left, right) ? left : Conflict.ofTwoWay(left, right);
-    }
 
     /**
      * A trivial three-way merge that handles lifting (if exists).
@@ -301,7 +350,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
 
         // lift both
         Log.config("lift both: %s -> %s and %s -> %s", l, left, r, right);
-        return Conflict.of(base, left, right);
+        return Conflict.of(left, right);
     }
 
     /**
@@ -315,12 +364,12 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
      * @return merge result
      */
     private Optional<Tree> leftDelete(Tree base, Tree right) {
-        if (m.matched(base, right) && m.treesEqual(base, right)) {
+        if (m.treesEqual(base, right)) {
             Log.fine("delete by left: %s", base);
             return Optional.empty();
         }
 
-        return Optional.of(Conflict.ofRight(base, right));
+        return Optional.of(Conflict.ofRight(right));
     }
 
     /**
@@ -333,51 +382,12 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
      * @return merge result
      */
     private Optional<Tree> rightDelete(Tree base, Tree left) {
-        if (m.matched(base, left) && m.treesEqual(base, left)) {
+        if (m.treesEqual(base, left)) {
             Log.fine("delete by right: %s", base);
             return Optional.empty();
         }
 
-        return Optional.of(Conflict.ofLeft(base, left));
-    }
-
-    /**
-     * Handle insertion entailed by left, i.e. `left` is not matched with `base`.
-     * <p>
-     * No conflict iff no change is introduced by `right`.
-     * REQUIRE: `right` is relevant to `base`.
-     *
-     * @param base  base version
-     * @param left  left version
-     * @param right right version
-     * @return merge result
-     */
-    private Tree leftInsert(Tree base, Tree left, Tree right) {
-        var r = m.getRightMatch(base);
-        var t = m.treesEqual(base, r) ? left : Conflict.of(base, left, r);
-
-        if (r == right) return t;
-
-        return TreeBuilders.fromUpdate(right, r, t);
-    }
-
-    /**
-     * Handle insertion entailed by right, i.e. `right` is not matched with `base`.
-     * <p>
-     * Similar to leftInsert.
-     *
-     * @param base  base version
-     * @param left  left version
-     * @param right right version
-     * @return merge result
-     */
-    private Tree rightInsert(Tree base, Tree left, Tree right) {
-        var l = m.getLeftMatch(base);
-        var t = m.treesEqual(base, l) ? right : Conflict.of(base, l, right);
-
-        if (l == left) return t;
-
-        return TreeBuilders.fromUpdate(left, l, t);
+        return Optional.of(Conflict.ofLeft(left));
     }
 
     private Tree lift(Tree node, Tree parent) {
