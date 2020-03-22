@@ -119,7 +119,7 @@ public class TreePrinters {
      */
     public static String prettyCode(Tree tree, String formatter) {
         var sb = new StringBuilder();
-        var tokenWalker = new Tree.PreOrderWalker() {
+        var tokenWalker = new Tree.Visitor<Object>() {
             @Override
             public void visitLeaf(Leaf leaf, Object... ctx) {
                 sb.append(leaf.code);
@@ -127,11 +127,26 @@ public class TreePrinters {
             }
 
             @Override
+            public void visitInternal(InternalNode internal, Object... ctx) {
+                for (Tree child: internal.children) {
+                    child.accept(this);
+                }
+            }
+
+            @Override
             public void visitConflict(Conflict conflict, Object... ctx) {
-                sb.append("\n");
+                sb.append("\n///// left\n");
+                for (Tree node: conflict.left) {
+                    node.accept(this);
+                }
+                sb.append("\n///// right\n");
+                for (Tree node: conflict.right) {
+                    node.accept(this);
+                }
+                sb.append("\n/////\n");
             }
         };
-        tokenWalker.accept(tree);
+        tree.accept(tokenWalker);
         String rawCode = sb.toString();
         String formattedCode = "";
 
