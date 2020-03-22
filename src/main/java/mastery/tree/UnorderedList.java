@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * An unordered list assumes permutation of children is allowed.
  */
-public class UnorderedList extends ListNode {
+public final class UnorderedList extends ListNode {
     public UnorderedList(int label, String name, List<Tree> children) {
         super(label, name, children);
     }
@@ -31,8 +31,8 @@ public class UnorderedList extends ListNode {
     }
 
     @Override
-    public void accept(Visitor visitor) {
-        visitor.visitUnorderedList(this);
+    public <C> void accept(Visitor<C> visitor, C... ctx) {
+        visitor.visitUnorderedList(this, ctx);
     }
 
     @Override

@@ -3,6 +3,7 @@ package mastery.tree;
 import mastery.util.log.IndentPrinter;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -40,15 +41,17 @@ public abstract class Tree {
     public final String name;
 
     /**
-     * Children.
-     */
-    public List<Tree> children;
-
-    /**
      * Assigned integer for equivalence checking. (1-based)
+     *
      * @deprecated when using GumTree, the assignment is not computed!
      */
-    @Deprecated public int assignment;
+    @Deprecated
+    public int assignment;
+
+    /**
+     * Children.
+     */
+    public final List<Tree> children;
 
     /**
      * Parent.
@@ -61,11 +64,12 @@ public abstract class Tree {
 
     /**
      * Equivalence of two tree nodes.
-     * @deprecated when using GumTree, the assignment is not computed!
-     * 
+     *
      * @return if they're equal?
+     * @deprecated when using GumTree, the assignment is not computed!
      */
-    @Deprecated public final boolean equals(Tree tree) {
+    @Deprecated
+    public final boolean equals(Tree tree) {
         return height == tree.height && assignment == tree.assignment;
     }
 
@@ -76,26 +80,40 @@ public abstract class Tree {
      */
     public abstract Tree deepCopy();
 
-    public abstract void accept(Visitor visitor);
+    /**
+     * The SLOW way to check if two trees are strictly identical (unordered lists are also regarded as ordered).
+     *
+     * @param that another tree
+     * @return true iff they are identical
+     */
+    public abstract boolean identicalTo(Tree that);
+
+    public abstract <C> void accept(Visitor<C> visitor, C... ctx);
 
     /**
      * A visitor for visiting nodes by type.
      * You have the freedom to decide which nodes need be visited and the visiting order.
      */
-    public interface Visitor {
-        default void visitLeaf(Leaf leaf) {
+    public interface Visitor<C> {
+        default void visitLeaf(Leaf leaf, C... ctx) {
         }
 
-        default void visitConstructor(Constructor constructor) {
+        default void visitConstructor(Constructor constructor, C... ctx) {
+            visitInternal(constructor, ctx);
         }
 
-        default void visitOrderedList(OrderedList ordered) {
+        default void visitOrderedList(OrderedList ordered, C... ctx) {
+            visitInternal(ordered, ctx);
         }
 
-        default void visitUnorderedList(UnorderedList unordered) {
+        default void visitUnorderedList(UnorderedList unordered, C... ctx) {
+            visitInternal(unordered, ctx);
         }
 
-        default void visitConflict(Conflict conflict) {
+        default void visitConflict(Conflict conflict, C... ctx) {
+        }
+
+        default void visitInternal(InternalNode internal, C... ctx) {
         }
     }
 
@@ -128,7 +146,7 @@ public abstract class Tree {
     /**
      * Pre-order walker by node type.
      */
-    public abstract static class PreOrderWalker implements Visitor, Consumer<Tree> {
+    public abstract static class PreOrderWalker implements Visitor<Object>, Consumer<Tree> {
         /**
          * Execute post-order walking.
          *
@@ -154,7 +172,7 @@ public abstract class Tree {
     /**
      * Post-order walker by node type.
      */
-    public abstract static class PostOrderWalker implements Visitor, Consumer<Tree> {
+    public abstract static class PostOrderWalker implements Visitor<Object>, Consumer<Tree> {
         /**
          * Execute post-order walking.
          *
@@ -207,6 +225,15 @@ public abstract class Tree {
         }
         this.size = size;
         this.height = height + 1;
+        this.parent = null;
+    }
+
+    protected Tree(int label, String name) {
+        this.label = label;
+        this.name = name;
+        this.children = Collections.emptyList();
+        this.height = 0;
+        this.size = 1;
         this.parent = null;
     }
 
