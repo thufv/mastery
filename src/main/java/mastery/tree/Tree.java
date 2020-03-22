@@ -1,8 +1,10 @@
 package mastery.tree;
 
-import mastery.util.Pair;
+import mastery.util.Interval;
 import mastery.util.log.IndentPrinter;
 import org.jetbrains.annotations.Nullable;
+
+import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -59,8 +61,35 @@ public abstract class Tree {
      * Information about dfs order (1-based) to keep monotonicity.
      */
     public Integer dfsIndex = 0;
-    public Pair<Integer, Integer> AncestorInterval = null;
-    public Pair<Integer, Integer> DescendantInterval = null;
+
+    /**
+     * The current node is considered.
+     * (for base tree)
+     */
+    public Interval preInterval = null;
+
+    /**
+     * LCA stands for the lowest common ancestor
+     * The current node is considered.
+     * (for base tree)
+     */
+    public Tree postLCA = null;
+
+    /**
+     * The interval of the current node.
+     * (for left tree and right tree)
+     */
+    public Interval interval = null;
+
+    /**
+     * The number of child that the node is
+     */
+    public int childno;
+
+    /**
+     * The buddy of recovery mapping (if the current node is one node of recovery mapping)
+     */
+    public Tree recoveryBuddy;
 
     /**
      * Parent.
@@ -219,7 +248,10 @@ public abstract class Tree {
         this.size = size;
 
         // set parents
-        for (Tree child: children) {
+        for (int i = 0; i < children.size(); ++i) {
+            Tree child = children.get(i);
+
+            child.childno = i;
             child.parent = this; // set parent here
         }
         this.parent = null;
@@ -241,4 +273,21 @@ public abstract class Tree {
     }
 
     Tree parent;
+
+    public final static Tree getLCA(Tree node1, Tree node2) {
+        if (node1 == null) return node2;
+        if (node2 == null) return node1;
+        while(node1 != node2) {
+            assertNotNull(node1);
+            assertNotNull(node2);
+
+            if (node1.size < node2.size) {
+                node1 = node1.parent;
+            }
+            else {
+                node2 = node2.parent;
+            }
+        }
+        return node1;
+    }
 }

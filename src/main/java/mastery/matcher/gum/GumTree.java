@@ -174,4 +174,6 @@ public abstract class GumTree extends TwoWayMatcher{
 
         Log.finer("%s mapping: %s <-> %s", type, Tree1, Tree2);
     }
+
+    protected Set<Tree> matched = new HashSet<>();
 }

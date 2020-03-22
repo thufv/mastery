@@ -108,7 +108,7 @@ public final class CLIParser {
         String header = "\noptions:\n";
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp(
-            "mastery [options] -l java|c|c# -a gum|ta <base> <left> <right>\n"
+            "mastery [options] -l java|c|c# -a gum|ta <left> <base> <right>\n"
                 + "  arguments should be all file paths",
             header, options, "");
     }
@@ -128,8 +128,8 @@ public final class CLIParser {
             throw new ParseException("Please provide 3 files/directories as arguments.");
         }
 
-        String base = arguments[0];
-        String left = arguments[1];
+        String left = arguments[0];
+        String base = arguments[1];
         String right = arguments[2];
         String output = cli.getOptionValue(OUTPUT);
         var builder = Config.builder(base, left, right, output);

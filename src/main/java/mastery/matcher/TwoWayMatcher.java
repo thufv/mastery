@@ -1,8 +1,6 @@
 package mastery.matcher;
 
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import mastery.tree.Tree;
 
@@ -18,5 +16,4 @@ public abstract class TwoWayMatcher{
     }
 
     protected Map<Tree, Tree> m;
-    protected Set<Tree> matched = new HashSet<>();
 }
