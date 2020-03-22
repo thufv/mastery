@@ -7,7 +7,7 @@ public class Leaf extends Tree {
     public final String code;
 
     public Leaf(int label, String name, String code) {
-        super(label, name);
+        super(label, name, code);
         this.code = code;
     }
 

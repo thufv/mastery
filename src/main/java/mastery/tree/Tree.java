@@ -294,8 +294,17 @@ public abstract class Tree {
         this.height = 0;
         this.size = 1;
         this.parent = null;
+        this.treeHash = label;
+    }
 
-        this.treeHash = label * 2333 + name.hashCode();
+    protected Tree(int label, String name, String code) {
+        this.label = label;
+        this.name = name;
+        this.children = Collections.emptyList();
+        this.height = 0;
+        this.size = 1;
+        this.parent = null;
+        this.treeHash = label * 2333 + code.hashCode();
     }
 
     Tree parent;

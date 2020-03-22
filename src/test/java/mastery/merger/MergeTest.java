@@ -29,7 +29,7 @@ public abstract class MergeTest {
             e.printStackTrace();
         }
 
-        var tree = merger.apply(m);
+        Tree tree = merger.apply(m);
         IndentPrinter printer = new IndentPrinter();
         TreePrinters.textTree(tree, printer);
         printer.flush();

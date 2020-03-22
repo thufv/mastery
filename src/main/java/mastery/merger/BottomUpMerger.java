@@ -25,7 +25,7 @@ public final class BottomUpMerger extends Merger {
             public void visitConstructor(Constructor constructor, Object... ctx) {
                 if (m.hasLeftMatch(constructor) && m.hasRightMatch(constructor)) {
                     scenarios.add(MergeScenario.of(constructor,
-                            m.getLeftMatch(constructor), m.getRightMatch(constructor)));
+                                                   m.getLeftMatch(constructor), m.getRightMatch(constructor)));
                 }
             }
 
