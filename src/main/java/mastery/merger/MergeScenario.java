@@ -1,4 +1,4 @@
-package mastery.merging;
+package mastery.merger;
 
 import mastery.tree.*;
 

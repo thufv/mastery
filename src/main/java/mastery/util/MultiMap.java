@@ -26,4 +26,8 @@ public class MultiMap<K, V> {
 
         return Collections.emptyList();
     }
+
+    public Set<K> keySet() {
+        return map.keySet();
+    }
 }

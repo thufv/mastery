@@ -69,6 +69,10 @@ public final class IndentPrinter {
         this(out, false, 4);
     }
 
+    public IndentPrinter() {
+        this(System.out, false, 4);
+    }
+
     /**
      * Increase indentation (by one level).
      */
