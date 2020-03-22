@@ -2,7 +2,6 @@ package mastery.matcher.ta;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import org.simmetrics.StringMetrics;
 
@@ -46,9 +45,17 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     // The order of arguments matters!
     @Override
     public final Map<Tree, Tree> apply(Tree tree1, Tree tree2) {
+        // System.out.println("A matching begins!");
+
         // Necessary initializations
         initMatch(tree1.size, tree2.size);
         initDice(tree1.size, tree2.size);
+
+        for (Tree node: tree1.preOrder()) {
+            node.postLCA = null;
+            node.recoveryBuddy = null;
+            node.preInterval = null;
+        }
 
         root1 = tree1;
         root2 = tree2;
@@ -81,6 +88,8 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                     }
                     continue;
                 }
+
+                // System.out.println("====== height " + queue1.maxWeight() + " ======");
     
                 // case 3: two queues contain Trees of the same height
                 var nodes1 = queue1.removeMax();
@@ -111,13 +120,16 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                             assertFalse(list2.isEmpty());
 
                             Tree maxNode = list2.get(0);
-                            double maxDice = getMemoizedDice(node1.getParent(), maxNode.getParent());
-                            for (int i = 1; i < list2.size(); ++i) {
-                                Tree tmpNode = list2.get(i);
-                                double tmpDice = getMemoizedDice(node1, tmpNode);
-                                if (maxDice < tmpDice) {
-                                    maxNode = tmpNode;
-                                    maxDice = tmpDice;
+
+                            if (maxNode != root2) {
+                                double maxDice = getMemoizedDice(node1.getParent(), maxNode.getParent());
+                                for (int i = 1; i < list2.size(); ++i) {
+                                    Tree tmpNode = list2.get(i);
+                                    double tmpDice = getMemoizedDice(node1, tmpNode);
+                                    if (maxDice < tmpDice) {
+                                        maxNode = tmpNode;
+                                        maxDice = tmpDice;
+                                    }
                                 }
                             }
 
@@ -191,7 +203,9 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         assertEquals(matched2to1[tree2.dfsIndex], 0);
         matched2to1[tree2.dfsIndex] = tree1.dfsIndex;
 
-        updateMemoizedDice(tree1, tree2);
+        if (type == MappingType.isomorphic) {
+            updateMemoizedDice(tree1, tree2);
+        }
 
         tree1.preInterval = tree2.interval;
         tree1.postLCA = tree2;
@@ -235,6 +249,8 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         }
     }
     private void preMatch(Tree tree1, Tree tree2) {
+        Log.finer("preMatch(%s, %s)", tree1, tree2);
+
         getPreInterval(tree1);
         if (Interval.isSubinterval(tree2.interval, tree1.preInterval) && checkMatchingOfConstructors(tree1, tree2)) {
             matchSubTree(tree1, tree2);
@@ -242,19 +258,21 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     }
     
     // utils of dice function
+    // interMappingCount[dfsIndex of tree1][indexAtHeight of tree2]
     private List<List<Integer>> interMappingCount = new ArrayList<>();
     private void initDice(int size1, int size2) {
         for (int i = 0; i <= size1; ++i) {
-            List<Integer> li = new ArrayList<>();
-            interMappingCount.add(li);
-            for (int j = 0; j <= size2; ++j) {
-                li.add(0);
-            }
+            interMappingCount.add(new ArrayList<>());
         }
     }
     private void updateMemoizedDice(Tree tree1, Tree tree2) {
+        assert tree1.height == tree2.height;
+
         var li = interMappingCount.get(tree1.dfsIndex);
-        li.set(tree2.dfsIndex, li.get(tree1.dfsIndex) + 1);
+        while (tree2.indexAtHeight >= li.size()) {
+            li.add(0);
+        }
+        li.set(tree2.indexAtHeight, li.get(tree2.indexAtHeight) + 1);
         if (tree1.getParent() != null) {
             assert(tree2.getParent() != null);
             updateMemoizedDice(tree1.getParent(), tree2.getParent());
@@ -264,7 +282,13 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         }
     }
     private double getMemoizedDice(Tree tree1, Tree tree2) {
-        return Similarities.diceSimilarity(interMappingCount.get(tree1.dfsIndex).get(tree2.dfsIndex), tree1.size, tree2.size);
+        assert tree1.height == tree2.height;
+
+        var li = interMappingCount.get(tree1.dfsIndex);
+        while (tree2.indexAtHeight >= li.size()) {
+            li.add(0);
+        }
+        return Similarities.jaccardSimilarity(li.get(tree2.indexAtHeight), tree1.size, tree2.size);
     }
 
     /**
@@ -277,43 +301,60 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         // container mapping
         if (matched1to2[node.dfsIndex] != 0) {
             ++mappingCount;
+
+            for (Tree child: node.children) {
+                mappingCount += bottomUpDfs(child);
+            }
         }
         else {
             for (Tree child: node.children) {
                 mappingCount += bottomUpDfs(child);
                 node.postLCA = Tree.getLCA(node.postLCA, child.postLCA);
             }
-
-            assertTrue(Interval.isSubinterval(node.postLCA.interval, node.preInterval));
             
             if (node == root1) {
+                assert node.postLCA != null;
+
                 match(root1, root2, MappingType.container);
                 if (Math.max(root1.size, root2.size) < maxSize) {
                     mappingCount += recovery(node, root2);
                 }
             }
             else {
-                Tree candidate = node.postLCA;
-                if (matched2to1[candidate.dfsIndex] != 0) {
-                    candidate = candidate.getParent();
-                    if (candidate == null) {
-                        return mappingCount;
+                if (node.postLCA != null) {
+                    assert Interval.isSubinterval(node.postLCA.interval, node.preInterval);
+
+                    Tree candidate = node.postLCA;
+
+                    System.out.println("container candidate of " + node + " is " + candidate);
+
+                    while (matched2to1[candidate.dfsIndex] != 0 || node.label != candidate.label) {
+                        candidate = candidate.getParent();
+                        if (candidate == null) {
+                            return mappingCount;
+                        }
                     }
-                }
-                if (Interval.isProperSubinterval(candidate.interval, node.preInterval)) {
-                    // get the candidate!
-                    // let's check the dice!
-                    if (Similarities.diceSimilarity(mappingCount, node.size, candidate.size) > minDice) {
-                        if (checkMatchingOfConstructors(node, candidate)) {
-                            match(node, candidate, MappingType.container);
-                            if (Math.max(node.size, candidate.size) < maxSize) {
-                                mappingCount += recovery(node, candidate);
+
+                    System.out.println("After find upwards, container candidate of " + node + " is " + candidate);
+
+                    if (Interval.isProperSubinterval(candidate.interval, node.preInterval)) {
+                        // get the candidate!
+                        // let's check the dice!
+                        if (Similarities.diceSimilarity(mappingCount, node.size, candidate.size) > minDice) {
+                            if (checkMatchingOfConstructors(node, candidate)) {
+                                match(node, candidate, MappingType.container);
+                                if (Math.max(node.size, candidate.size) < maxSize) {
+                                    mappingCount += recovery(node, candidate);
+                                }
                             }
                         }
                     }
                 }
             }
         }
+
+        System.out.println("final mappingCount of " + node + " = " + mappingCount);
+
         return mappingCount;
     }
 
@@ -325,7 +366,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
 
     private static Tree getFirstLeaf(Tree t) {
         Tree current = t;
-        while (!current.isLeaf())
+        while (!current.children.isEmpty())
             current = current.children.get(0);
 
         return current;
@@ -371,7 +412,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     }
 
     private int recoverydfs(Tree node) {
-        assertTrue(Interval.isSubinterval(node.postLCA.interval, node.preInterval));
+        assert node.postLCA == null || Interval.isSubinterval(node.postLCA.interval, node.preInterval);
 
         int ans = 0;
 
@@ -382,7 +423,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 // buddy is not matched
                 if (matched2to1[buddy.dfsIndex] == 0) {
                     // check the monotonicity
-                    if (Interval.isSubinterval(buddy.interval, node.preInterval) && Interval.isSubinterval(node.postLCA.interval, buddy.interval)) {
+                    if (Interval.isSubinterval(buddy.interval, node.preInterval) && (node.postLCA == null || Interval.isSubinterval(node.postLCA.interval, buddy.interval))) {
                         if (checkMatchingOfConstructors(node, buddy)) {
                             match(node, buddy, MappingType.recovery);
                         }
@@ -489,8 +530,10 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 Leaf l2 = (Leaf)n2;
                 if ("".equals(l1.code) || "".equals(l2.code))
                     return 1D;
-                else
+                else {
+                    // System.out.println("Calculate update cost of " + l1.code + " and " + l2.code);
                     return 1D - StringMetrics.qGramsDistance().compare(l1.code, l2.code);
+                }
             }
             else {
                 return 1D;
@@ -527,7 +570,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 tmpData.put(n, idx);
                 this.setTree(idx, n);
                 this.setLld(idx, tmpData.get(TaTwoWayMatcher.getFirstLeaf(n)));
-                if (n.isLeaf())
+                if (n.children.isEmpty())
                     leafCount++;
                 idx++;
             }

@@ -28,6 +28,11 @@ public abstract class Tree {
     public final int height;
 
     /**
+     * The index at some height
+     */
+    public int indexAtHeight;
+
+    /**
      * Size, i.e. total number of nodes.
      */
     public final int size;

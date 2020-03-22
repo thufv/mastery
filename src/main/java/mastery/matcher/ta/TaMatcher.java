@@ -4,20 +4,24 @@ import mastery.matcher.Matcher;
 import mastery.matcher.MatchingSet;
 import mastery.tree.Leaf;
 import mastery.tree.Tree;
+import mastery.tree.UnorderedList;
 import mastery.util.Interval;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class TaMatcher extends Matcher {
     // nodesWithHeight[height][]: nodes at some specific height
     List<List<Tree>> nodesOfHeight = new ArrayList<>();
 
-    private void addNodesAtHeight(Tree node) {
-        while (node.height >= nodesOfHeight.size()) {
-            nodesOfHeight.add(new ArrayList<Tree>());
+    private void addNodesAtHeight(Tree tree) {
+        for (Tree node: tree.postOrder()) {
+            while (node.height >= nodesOfHeight.size()) {
+                nodesOfHeight.add(new ArrayList<Tree>());
+            }
+            nodesOfHeight.get(node.height).add(node);
         }
-        nodesOfHeight.get(node.height).add(node);
     }
 
     int[] compressedAssignment;
@@ -38,7 +42,7 @@ public class TaMatcher extends Matcher {
                     compressedAssignment[childAssignment] = ++assignmentCount;
                     nodesOfAssignment.add(new ArrayList<>());
                 }
-                nodesOfAssignment.get(compressedAssignment[childAssignment]).add(node);
+                nodesOfAssignment.get(compressedAssignment[childAssignment] - 1).add(node);
             }
         }
         for (Tree node: nodes) {
@@ -49,39 +53,39 @@ public class TaMatcher extends Matcher {
         // [assignmentStart, assignmentEnd) is the assigned interval
         int assignmentEnd = assignmentStart + (noChildExists ? 1: 0);
         for (var undistinguishableNodes: nodesOfAssignment) {
-            assignmentEnd += assign(undistinguishableNodes, 0, assignmentEnd);
+            assignmentEnd += assign(undistinguishableNodes, childStart + 1, assignmentEnd);
         }
         return assignmentEnd - assignmentStart;
     }
     // Classify nodes by the children starting at [childStart],
     // and assignment starting at [assignmentStart]
     private int assignLeaf(List<Leaf> nodes, int charStart, int assignmentStart) {
-        boolean noChildExists = false;
+        boolean noCharExists = false;
         List<List<Leaf>> nodesOfAssignment = new ArrayList<>();
         Integer assignmentCount = 0;
         for (Leaf node: nodes) {
-            if (node.children.size() == charStart) {
-                noChildExists = true;
+            if (node.code.length() == charStart) {
+                noCharExists = true;
                 node.assignment = assignmentStart;
             }
             else {
-                int childAssignment = node.code.charAt(0);
+                int childAssignment = node.code.charAt(charStart);
                 if (compressedAssignment[childAssignment] == 0) {
                     compressedAssignment[childAssignment] = ++assignmentCount;
                     nodesOfAssignment.add(new ArrayList<>());
                 }
-                nodesOfAssignment.get(compressedAssignment[childAssignment]).add(node);
+                nodesOfAssignment.get(compressedAssignment[childAssignment] - 1).add(node);
             }
         }
-        for (Tree node: nodes) {
-            if (node.children.size() > charStart) {
-                compressedAssignment[node.children.get(charStart).assignment] = 0;
+        for (Leaf node: nodes) {
+            if (node.code.length() > charStart) {
+                compressedAssignment[node.code.charAt(charStart)] = 0;
             }
         }
         // [assignmentStart, assignmentEnd) is the assigned interval
-        int assignmentEnd = assignmentStart + (noChildExists ? 1: 0);
+        int assignmentEnd = assignmentStart + (noCharExists ? 1: 0);
         for (var undistinguishableNodes: nodesOfAssignment) {
-            assignmentEnd += assignLeaf(undistinguishableNodes, 0, assignmentEnd);
+            assignmentEnd += assignLeaf(undistinguishableNodes, charStart + 1, assignmentEnd);
         }
         return assignmentEnd - assignmentStart;
     }
@@ -111,19 +115,18 @@ public class TaMatcher extends Matcher {
         // Assign trees
 
         // put nodes into the 2D-list
-        for (Tree node: base.postOrder()) {
-            addNodesAtHeight(node);
-        }
-        for (Tree node: left.postOrder()) {
-            addNodesAtHeight(node);
-        }
-        for (Tree node: right.postOrder()) {
-            addNodesAtHeight(node);
-        }
+        addNodesAtHeight(base);
+        addNodesAtHeight(left);
+        addNodesAtHeight(right);
+
+        // Initialize index at height
+        initIndexAtHeight(base);
+        initIndexAtHeight(left);
+        initIndexAtHeight(right);
 
         // Enumerate nodes by height increasing order
 
-        // Initialize
+        // Initialize compressedAssignment
         int compressedAssignmentSize = Math.max(256, nodesOfHeight.stream().mapToInt((List<Tree> nodes)->nodes.size()).max().getAsInt());
         compressedAssignment = new int[compressedAssignmentSize];
 
@@ -143,21 +146,32 @@ public class TaMatcher extends Matcher {
                 }
             }
 
-            List<List<Leaf>> nodesOfAssignment = new ArrayList<>();
             Integer assignmentCount = 0;
             for (Tree node: nodesOfHeight.get(0)) {
-                if (compressedAssignment[node.assignment] == 0) {
-                    compressedAssignment[node.assignment] = ++assignmentCount;
-                    nodesOfAssignment.add(new ArrayList<>());
+                if (node instanceof UnorderedList) {
+                    if (compressedAssignment[node.assignment] == 0) {
+                        compressedAssignment[node.assignment] = ++assignmentCount;
+                    }
+                    node.assignment = compressedAssignment[node.assignment];
                 }
-                assert(node instanceof Leaf);
-                nodesOfAssignment.get(compressedAssignment[node.assignment]).add((Leaf)node);
             }
+            
+            Integer assignmentEnd = assignmentCount + 1;
+            assignmentCount = 0;
+
+            List<List<Leaf>> nodesOfAssignment = new ArrayList<>();
             for (Tree node: nodesOfHeight.get(0)) {
-                compressedAssignment[node.assignment] = 0;
+                if (node instanceof Leaf) {
+                    if (compressedAssignment[node.assignment] == 0) {
+                        compressedAssignment[node.assignment] = ++assignmentCount;
+                        nodesOfAssignment.add(new ArrayList<>());
+                    }
+                    nodesOfAssignment.get(compressedAssignment[node.assignment] - 1).add((Leaf)node);
+                }
             }
 
-            Integer assignmentEnd = 1;
+            Arrays.fill(compressedAssignment, 0);
+
             for (var nodes: nodesOfAssignment) {
                 assignmentEnd += assignLeaf(nodes, 0, assignmentEnd);
             }
@@ -196,7 +210,7 @@ public class TaMatcher extends Matcher {
                     compressedAssignment[node.assignment] = ++assignmentCount;
                     nodesOfAssignment.add(new ArrayList<>());
                 }
-                nodesOfAssignment.get(compressedAssignment[node.assignment]).add(node);
+                nodesOfAssignment.get(compressedAssignment[node.assignment] - 1).add(node);
             }
             for (Tree node: nodesOfHeight.get(height)) {
                 compressedAssignment[node.assignment] = 0;
@@ -216,4 +230,10 @@ public class TaMatcher extends Matcher {
         // Calculate Mapping
         return calc(new TaTwoWayMatcher(), new TaMatchingSet(base, left, right), base, left, right);
     }
+	private void initIndexAtHeight(Tree tree) {
+        int[] indexCount = new int[tree.height + 1];
+        for (Tree node: tree.preOrder()) {
+            node.indexAtHeight = ++indexCount[node.height];
+        }
+	}
 }
