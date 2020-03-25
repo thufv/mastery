@@ -15,7 +15,6 @@ hs_err_pid*
 .idea/
 build/
 bin/
-sample/
 .classpath
 .project
 

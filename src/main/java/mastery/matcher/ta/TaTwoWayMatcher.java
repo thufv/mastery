@@ -34,9 +34,9 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     }
     public TaTwoWayMatcher() {
         // default parameters in the paper of GumTree
-        this.minHeight = 2;
+        this.minHeight = 1;
         this.minDice = 0.5;
-        this.maxSize = 100;
+        this.maxSize = 1000;
     }
 
     private Tree root1;
@@ -45,8 +45,6 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     // The order of arguments matters!
     @Override
     public final Map<Tree, Tree> apply(Tree tree1, Tree tree2) {
-        // System.out.println("A matching begins!");
-
         // Necessary initializations
         initMatch(tree1.size, tree2.size);
         initDice(tree1.size, tree2.size);
@@ -102,6 +100,8 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                         nodes1Of.add(new ArrayList<Tree>());
                     }
                     nodes1Of.get(node.assignment).add(node);
+
+                    // System.out.println(node + " assignment " + node.assignment);
                 }
                 var nodes2Of = new ArrayList<List<Tree>>();
                 for (var node: nodes2) {
@@ -109,11 +109,32 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                         nodes2Of.add(new ArrayList<Tree>());
                     }
                     nodes2Of.get(node.assignment).add(node);
+
+                    // System.out.println(node + " assignment " + node.assignment);
                 }
     
                 for (int assignment = 1; assignment < Math.min(nodes1Of.size(), nodes2Of.size()); ++assignment) {
                     var list1 = nodes1Of.get(assignment);
                     var list2 = nodes2Of.get(assignment);
+
+                    if (!list1.isEmpty() || !list2.isEmpty()) {
+                        int height = 0;
+                        if (!list1.isEmpty()) {
+                            height = list1.get(0).height;
+                        }
+                        else {
+                            height = list2.get(0).height;
+                        }
+
+                        // System.out.println("A equivalence class of height " + height + " assignment " + assignment + ":");
+                        // for (Tree node: list1) {
+                        //     System.out.println("\t" + node);
+                        // }
+                        // for (Tree node: list2) {
+                        //     System.out.println("\t" + node);
+                        // }
+                    }
+
                     if (list1.size() <= list2.size()) {
                         Collections.shuffle(list1);
                         for (var node1: list1) {
@@ -259,36 +280,18 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     
     // utils of dice function
     // interMappingCount[dfsIndex of tree1][indexAtHeight of tree2]
-    private List<List<Integer>> interMappingCount = new ArrayList<>();
+    private int[][] interMappingCount;
     private void initDice(int size1, int size2) {
-        for (int i = 0; i <= size1; ++i) {
-            interMappingCount.add(new ArrayList<>());
-        }
+        interMappingCount = new int[size1 + 1][size2 + 1];
     }
     private void updateMemoizedDice(Tree tree1, Tree tree2) {
-        assert tree1.height == tree2.height;
-
-        var li = interMappingCount.get(tree1.dfsIndex);
-        while (tree2.indexAtHeight >= li.size()) {
-            li.add(0);
-        }
-        li.set(tree2.indexAtHeight, li.get(tree2.indexAtHeight) + 1);
-        if (tree1.getParent() != null) {
-            assert(tree2.getParent() != null);
+        ++interMappingCount[tree1.dfsIndex][tree2.dfsIndex];
+        if (tree1.getParent() != null && tree2.getParent() != null) {
             updateMemoizedDice(tree1.getParent(), tree2.getParent());
-        }
-        else {
-            assert(tree2.getParent() == null);
         }
     }
     private double getMemoizedDice(Tree tree1, Tree tree2) {
-        assert tree1.height == tree2.height;
-
-        var li = interMappingCount.get(tree1.dfsIndex);
-        while (tree2.indexAtHeight >= li.size()) {
-            li.add(0);
-        }
-        return Similarities.jaccardSimilarity(li.get(tree2.indexAtHeight), tree1.size, tree2.size);
+        return interMappingCount[tree1.dfsIndex][tree2.dfsIndex];
     }
 
     /**
@@ -313,8 +316,6 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
             }
             
             if (node == root1) {
-                assert node.postLCA != null;
-
                 match(root1, root2, MappingType.container);
                 if (Math.max(root1.size, root2.size) < maxSize) {
                     mappingCount += recovery(node, root2);
@@ -326,16 +327,12 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
 
                     Tree candidate = node.postLCA;
 
-                    System.out.println("container candidate of " + node + " is " + candidate);
-
                     while (matched2to1[candidate.dfsIndex] != 0 || node.label != candidate.label) {
                         candidate = candidate.getParent();
                         if (candidate == null) {
                             return mappingCount;
                         }
                     }
-
-                    System.out.println("After find upwards, container candidate of " + node + " is " + candidate);
 
                     if (Interval.isProperSubinterval(candidate.interval, node.preInterval)) {
                         // get the candidate!
@@ -352,9 +349,6 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 }
             }
         }
-
-        System.out.println("final mappingCount of " + node + " = " + mappingCount);
-
         return mappingCount;
     }
 
@@ -461,6 +455,8 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
 
             int lastRow = treePair[0];
             int lastCol = treePair[1];
+
+            // System.out.println("====== A recovery iteration: " + lastRow + ", " + lastCol + " ========");
 
             // compute forest distance matrix
             if (!rootNodePair)

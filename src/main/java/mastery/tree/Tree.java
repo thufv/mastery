@@ -28,11 +28,6 @@ public abstract class Tree {
     public final int height;
 
     /**
-     * The index at some height
-     */
-    public int indexAtHeight;
-
-    /**
      * Size, i.e. total number of nodes.
      */
     public final int size;
@@ -246,23 +241,13 @@ public abstract class Tree {
         this.children = children;
 
         // compute height
-        if (children.isEmpty()) {
-            this.height = 0;
-        } else {
-            var it = children.iterator();
-            int height = it.next().height;
-            while (it.hasNext()) {
-                var child = it.next();
-                if (child.height > height) {
-                    height = child.height;
-                }
-            }
-            this.height = height + 1;
-        }
+        this.height = children.stream().mapToInt((Tree child)->{
+            return child.height;
+        }).max().orElse(-1) + 1;
 
         // compute size
         int size = 1;
-        for (var child : children) {
+        for (var child: children) {
             size += child.size;
         }
         this.size = size;

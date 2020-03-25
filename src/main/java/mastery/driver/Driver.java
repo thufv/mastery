@@ -3,7 +3,6 @@ package mastery.driver;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.logging.Level;
 import mastery.matcher.MatchingSet;
 import mastery.matcher.Matcher;
 import mastery.matcher.gum.GumMatcher;
@@ -42,24 +41,9 @@ public final class Driver {
             Log.config("logger setup");
 
             // Parse AST from source code
-            Tree base = TreeBuilders.fromSource(config.base, config.language);
-
-            Log.ifLoggable(Level.FINEST, printer -> {
-                printer.println("base");
-                base.prettyPrintTo(printer);
-            });
-
             Tree left = TreeBuilders.fromSource(config.left, config.language);
-            Log.ifLoggable(Level.FINEST, printer -> {
-                printer.println("left");
-                left.prettyPrintTo(printer);
-            });
-
+            Tree base = TreeBuilders.fromSource(config.base, config.language);
             Tree right = TreeBuilders.fromSource(config.right, config.language);
-            Log.ifLoggable(Level.FINEST, printer -> {
-                printer.println("right");
-                right.prettyPrintTo(printer);
-            });
 
             // Phase I: Mapping
             Matcher matcher;

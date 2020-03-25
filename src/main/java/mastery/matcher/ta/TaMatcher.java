@@ -6,10 +6,12 @@ import mastery.tree.Leaf;
 import mastery.tree.Tree;
 import mastery.tree.UnorderedList;
 import mastery.util.Interval;
+import mastery.util.log.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 
 public class TaMatcher extends Matcher {
     // nodesWithHeight[height][]: nodes at some specific height
@@ -119,11 +121,6 @@ public class TaMatcher extends Matcher {
         addNodesAtHeight(left);
         addNodesAtHeight(right);
 
-        // Initialize index at height
-        initIndexAtHeight(base);
-        initIndexAtHeight(left);
-        initIndexAtHeight(right);
-
         // Enumerate nodes by height increasing order
 
         // Initialize compressedAssignment
@@ -180,26 +177,36 @@ public class TaMatcher extends Matcher {
         for (int height = 0; height < nodesOfHeight.size(); ++height) {
             if (height > 0) {
                 List<List<Tree>> childrenOfAssignment = new ArrayList<>();
-                childrenOfAssignment.add(new ArrayList<>());
-                for (int i = 0; i < nodesOfHeight.get(height - 1).size(); ++i) {
-                    childrenOfAssignment.add(new ArrayList<>());
-                }
 
                 // Sort children of unorderedList
                 for (Tree node: nodesOfHeight.get(height)) {
                     if (node.isUnorderedList()) {
                         for (Tree child: node.children) {
+                            while (child.assignment >= childrenOfAssignment.size()) {
+                                childrenOfAssignment.add(new ArrayList<>());
+                            }
                             childrenOfAssignment.get(child.assignment).add(child);
                         }
                         node.children.clear();
                     }
                 }
 
-                for (int i = 1; i <= nodesOfHeight.get(height - 1).size(); ++i) {
-                    for (Tree node: childrenOfAssignment.get(i)) {
+                for (var nodes: childrenOfAssignment) {
+                    for (Tree node: nodes) {
                         node.getParent().children.add(node);
                     }
                 }
+
+                // for (Tree node: nodesOfHeight.get(height)) {
+                //     if (node.isUnorderedList()) {
+                //         System.out.println("Children of " + node + ":");
+                //         System.out.print("\t");
+                //         for (Tree child: node.children) {
+                //             System.out.print(" " + child);
+                //         }
+                //         System.out.print("\n");
+                //     }
+                // }
             }
 
             // Assign
@@ -227,13 +234,21 @@ public class TaMatcher extends Matcher {
         cal_dfs(left);
         cal_dfs(right);
 
+        // log
+        Log.ifLoggable(Level.FINEST, printer -> {
+            printer.println("base");
+            base.prettyPrintTo(printer);
+        });
+        Log.ifLoggable(Level.FINEST, printer -> {
+            printer.println("left");
+            left.prettyPrintTo(printer);
+        });
+        Log.ifLoggable(Level.FINEST, printer -> {
+            printer.println("right");
+            right.prettyPrintTo(printer);
+        });
+
         // Calculate Mapping
         return calc(new TaTwoWayMatcher(), new TaMatchingSet(base, left, right), base, left, right);
     }
-	private void initIndexAtHeight(Tree tree) {
-        int[] indexCount = new int[tree.height + 1];
-        for (Tree node: tree.preOrder()) {
-            node.indexAtHeight = ++indexCount[node.height];
-        }
-	}
 }

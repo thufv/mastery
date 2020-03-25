@@ -1,6 +1,9 @@
 package mastery.matcher;
 
 import mastery.tree.Tree;
+import mastery.util.Interval;
+
+import static org.junit.Assert.assertNotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,20 +63,16 @@ public abstract class MatchingSet {
      * @return if they are relevant
      */
     public final boolean relevant(Tree base, Tree variant) {
+        assertNotNull(variant);
+
         var u = leftMatches.get(base);
-        while (u != null) {
-            if (u == variant) {
-                return true;
-            }
-            u = u.getParent();
+        if (u != null && Interval.isSubinterval(u.interval, variant.interval)) {
+            return true;
         }
 
         u = rightMatches.get(base);
-        while (u != null) {
-            if (u == variant) {
-                return true;
-            }
-            u = u.getParent();
+        if (u != null && Interval.isSubinterval(u.interval, variant.interval)) {
+            return true;
         }
 
         return false;

@@ -6,6 +6,8 @@ import mastery.util.MultiMap;
 import mastery.util.log.Log;
 import org.jetbrains.annotations.Nullable;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.util.*;
 
 public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
@@ -45,8 +47,14 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             var l = left.childAt(i);
             var r = right.childAt(i);
 
-            assert m.relevant(b, l) && m.relevant(b, r);
-            targets.add(threeWay(b, l, r));
+            if (!m.relevant(b, l) || !m.relevant(b, r)) {
+                targets.add(Conflict.of(l, r));
+            }
+            else {
+                Tree c = threeWay(b, l, r);
+                assertNotNull(c);
+                targets.add(c);
+            }
         }
 
         return new Constructor(base.label, base.name, targets);
@@ -335,6 +343,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
         Objects.requireNonNull(r);
 
         if (l == left && r == right) { // no lifting needed
+            Log.config("no lifting needed: %s", base);
             return t.get(base);
         }
 
