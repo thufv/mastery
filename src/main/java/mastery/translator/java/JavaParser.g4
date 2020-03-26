@@ -398,12 +398,15 @@ block: '{' blockStatements '}';
 blockStatements: blockStatement*;
 
 blockStatement:
-	localVariableDeclaration
+	localVariableDeclarationStatement
 	| statement
 	| localTypeDeclaration;
 
+localVariableDeclarationStatement:
+    localVariableDeclaration ';';
+
 localVariableDeclaration:
-	variableModifiers typeType variableDeclarators ';';
+	variableModifiers typeType variableDeclarators;
 
 localTypeDeclaration:
 	classOrInterfaceModifiers (

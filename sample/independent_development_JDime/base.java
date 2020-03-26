@@ -5,8 +5,8 @@ public class Example {
     }
     public static long fac(int n) {
         long result = 1;
-        // for (int i = 1; i <= n; i++)
-        //     result *= i;
+        for (int i = 1; i <= n; i++)
+            result *= i;
         return result;
     }
 }

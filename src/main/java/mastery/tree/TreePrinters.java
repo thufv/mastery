@@ -35,8 +35,6 @@ public class TreePrinters {
 
                 sb.append(inherited).append(prompt);
                 sb.append(internal.toString());
-                sb.append(" height ").append(internal.height);
-                sb.append(" assignment ").append(internal.assignment);
                 sb.append(" size ").append(internal.size);
                 sb.append('\n');
 

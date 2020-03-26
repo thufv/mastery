@@ -73,21 +73,25 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                     queue1.maxWeight() > minHeight && queue2.maxWeight() > minHeight) {
                 // case 1: queue1 has a larger height
                 if (queue1.maxWeight() > queue2.maxWeight()) {
-                    for (var Tree : queue1.removeMax()) {
-                        queue1.addAll(Tree.children);
+                    for (var node : queue1.removeMax()) {
+                        System.out.println("Add children of " + node + " <base>");
+
+                        queue1.addAll(node.children);
                     }
                     continue;
                 }
     
                 // case 2: queue2.maxWeight() > queue1.maxWeight()
                 if (queue2.maxWeight() > queue1.maxWeight()) {
-                    for (var Tree : queue2.removeMax()) {
-                        queue2.addAll(Tree.children);
+                    for (var node : queue2.removeMax()) {
+                        System.out.println("Add children of " + node + " <variant>");
+
+                        queue2.addAll(node.children);
                     }
                     continue;
                 }
 
-                // System.out.println("====== height " + queue1.maxWeight() + " ======");
+                System.out.println("====== height " + queue1.maxWeight() + " ======");
     
                 // case 3: two queues contain Trees of the same height
                 var nodes1 = queue1.removeMax();
@@ -101,7 +105,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                     }
                     nodes1Of.get(node.assignment).add(node);
 
-                    // System.out.println(node + " assignment " + node.assignment);
+                    System.out.println(node + " assignment " + node.assignment + " height " + node.height + " <base>");
                 }
                 var nodes2Of = new ArrayList<List<Tree>>();
                 for (var node: nodes2) {
@@ -110,7 +114,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                     }
                     nodes2Of.get(node.assignment).add(node);
 
-                    // System.out.println(node + " assignment " + node.assignment);
+                    System.out.println(node + " assignment " + node.assignment + " height " + node.height + " <variant>");
                 }
     
                 for (int assignment = 1; assignment < Math.min(nodes1Of.size(), nodes2Of.size()); ++assignment) {
@@ -126,13 +130,13 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                             height = list2.get(0).height;
                         }
 
-                        // System.out.println("A equivalence class of height " + height + " assignment " + assignment + ":");
-                        // for (Tree node: list1) {
-                        //     System.out.println("\t" + node);
-                        // }
-                        // for (Tree node: list2) {
-                        //     System.out.println("\t" + node);
-                        // }
+                        System.out.println("An equivalence class at height " + height + " assignment " + assignment + ":");
+                        for (Tree node: list1) {
+                            System.out.println("\t" + node);
+                        }
+                        for (Tree node: list2) {
+                            System.out.println("\t" + node);
+                        }
                     }
 
                     if (list1.size() <= list2.size()) {
@@ -183,21 +187,19 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 }
     
                 // push their children (if not handled) into queue
-                for (var node : nodes1) {
-                    for (var child : node.children) {
-                        if (matched1to2[child.dfsIndex] == 0) {
-                            queue1.add(child);
-                        }
+                for (var node : nodes1) 
+                    if (matched1to2[node.dfsIndex] == 0) {
+                        System.out.println("Add children of " + node + " <base>");
+
+                        queue1.addAll(node.children);
                     }
-                }
     
-                for (var node : nodes2) {
-                    for (var child : node.children) {
-                        if (matched2to1[child.dfsIndex] == 0) {
-                            queue2.add(child);
-                        }
+                for (var node : nodes2)
+                    if (matched2to1[node.dfsIndex] == 0) {
+                        System.out.println("Add children of " + node + " <variant>");
+
+                        queue2.addAll(node.children);
                     }
-                }
             }    
         }
 
@@ -236,18 +238,13 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     private boolean checkMatchingOfConstructors(Tree tree1, Tree tree2) {
         Tree parent1 = tree1.getParent();
         Tree parent2 = tree2.getParent();
-        if (parent1 == null) {
-            return parent2 == null;
-        }
+        if (parent1 == null) return parent2 == null;
         else {
-            if (parent2 == null) {
-                return false;
-            }
+            if (parent2 == null) return false;
             else {
-                if (!parent1.isConstructor()) {
-                    return !parent2.isConstructor();
-                }
+                if (!parent1.isConstructor() || !parent2.isConstructor() || parent1.label != parent2.label) return true;
                 else {
+                    // Log.finer("checkMatchingofConstructors: tree2.childno = %d, tree2.childno = %d", tree1.childno, tree2.childno);
                     return tree1.childno == tree2.childno;
                 }
             }
@@ -273,6 +270,9 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         Log.finer("preMatch(%s, %s)", tree1, tree2);
 
         getPreInterval(tree1);
+
+        Log.finer("tree2.interval = %s, tree1.preInterval = %s", tree2.interval, tree1.preInterval);
+
         if (Interval.isSubinterval(tree2.interval, tree1.preInterval) && checkMatchingOfConstructors(tree1, tree2)) {
             matchSubTree(tree1, tree2);
         }
@@ -313,6 +313,8 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
             for (Tree child: node.children) {
                 mappingCount += bottomUpDfs(child);
                 node.postLCA = Tree.getLCA(node.postLCA, child.postLCA);
+
+                // Log.config("after considering %s (%s), the postLCA of %s becomes %s", child, child.postLCA, node, node.postLCA);
             }
             
             if (node == root1) {
@@ -327,17 +329,20 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
 
                     Tree candidate = node.postLCA;
 
-                    while (matched2to1[candidate.dfsIndex] != 0 || node.label != candidate.label) {
+                    Log.config("first version container mapping candidate: %s <-> %s", node, candidate);
+
+                    while (candidate != null && (matched2to1[candidate.dfsIndex] != 0 || node.label != candidate.label)) {
                         candidate = candidate.getParent();
-                        if (candidate == null) {
-                            return mappingCount;
-                        }
                     }
 
-                    if (Interval.isProperSubinterval(candidate.interval, node.preInterval)) {
+                    if (candidate != null && Interval.isProperSubinterval(candidate.interval, node.preInterval)) {
                         // get the candidate!
                         // let's check the dice!
+
+                        Log.config("container mapping candidate: %s <-> %s, similarity = %f", node, candidate, Similarities.diceSimilarity(mappingCount, node.size, candidate.size));
+
                         if (Similarities.diceSimilarity(mappingCount, node.size, candidate.size) > minDice) {
+
                             if (checkMatchingOfConstructors(node, candidate)) {
                                 match(node, candidate, MappingType.container);
                                 if (Math.max(node.size, candidate.size) < maxSize) {
@@ -349,6 +354,9 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 }
             }
         }
+
+        // Log.config("postLCA of %s is %s", node, node.postLCA);
+
         return mappingCount;
     }
 
@@ -475,10 +483,12 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 if ((row > firstRow)
                         && (forestDist[row - 1][col] + 1D == forestDist[row][col])) {
                     // node with postorderID row is deleted from ted1
+                    // Log.config("ZS: delete %s", zsSrc.tree(row));
                     row--;
                 } else if ((col > firstCol)
                         && (forestDist[row][col - 1] + 1D == forestDist[row][col])) {
                     // node with postorderID col is inserted into ted2
+                    // Log.config("ZS: insert %s", zsDst.tree(col));
                     col--;
                 } else {
                     // node with postorderID row in ted1 is renamed to node col
@@ -488,6 +498,9 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                         // if both subforests are trees, map nodes
                         Tree tSrc = zsSrc.tree(row);
                         Tree tDst = zsDst.tree(col);
+
+                        // Log.config("ZS: rename %s <-> %s", tSrc, tDst);
+
                         if (tSrc.label == tDst.label) {
                             tSrc.recoveryBuddy = tDst;
                         }

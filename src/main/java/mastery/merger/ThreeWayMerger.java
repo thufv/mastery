@@ -2,6 +2,7 @@ package mastery.merger;
 
 import mastery.matcher.MatchingSet;
 import mastery.tree.*;
+import mastery.util.Interval;
 import mastery.util.MultiMap;
 import mastery.util.log.Log;
 import org.jetbrains.annotations.Nullable;
@@ -47,13 +48,23 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             var l = left.childAt(i);
             var r = right.childAt(i);
 
-            if (!m.relevant(b, l) || !m.relevant(b, r)) {
-                targets.add(Conflict.of(l, r));
+            boolean relevant = true;
+            Tree cLeft = m.getLeftMatch(b);
+            if (cLeft == null || !Interval.isSubinterval(cLeft.interval, l.interval)) {
+                relevant = false;
             }
-            else {
+            Tree cRight = m.getRightMatch(b);
+            if (cRight == null || !Interval.isSubinterval(cRight.interval, r.interval)) {
+                relevant = false;
+            }
+
+            if (relevant) {
                 Tree c = threeWay(b, l, r);
                 assertNotNull(c);
                 targets.add(c);
+            }
+            else {
+                targets.add(Conflict.of(l, r));
             }
         }
 

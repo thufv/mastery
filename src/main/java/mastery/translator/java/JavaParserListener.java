@@ -1359,6 +1359,16 @@ public interface JavaParserListener extends ParseTreeListener {
 	 */
 	void exitBlockStatement(JavaParser.BlockStatementContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link JavaParser#localVariableDeclarationStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterLocalVariableDeclarationStatement(JavaParser.LocalVariableDeclarationStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaParser#localVariableDeclarationStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitLocalVariableDeclarationStatement(JavaParser.LocalVariableDeclarationStatementContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link JavaParser#localVariableDeclaration}.
 	 * @param ctx the parse tree
 	 */

@@ -32,9 +32,8 @@ public abstract class MatchingSet {
 
     public final <E extends Tree> E getLeftMatch(E base) {
       Tree leftMatch = leftMatches.get(base);
-      if (base.getClass() == leftMatch.getClass()) {
-          return (E) leftMatch;
-      }
+      if (leftMatch == null) return null;
+      else if (base.getClass() == leftMatch.getClass()) return (E) leftMatch;
       else {
           throw new IllegalStateException("class " + base.getClass().getName() + " and class " + leftMatch.getClass().getName() + " are mapped.");
       }
@@ -42,9 +41,8 @@ public abstract class MatchingSet {
 
     public final <E extends Tree> E getRightMatch(E base) {
         Tree rightMatch = rightMatches.get(base);
-        if (base.getClass() == rightMatch.getClass()) {
-            return (E) rightMatch;
-        }
+        if (rightMatch == null) return null;
+        else if (base.getClass() == rightMatch.getClass()) return (E) rightMatch;
         else {
             throw new IllegalStateException("class " + base.getClass().getName() + " and class " + rightMatch.getClass().getName() + " are mapped.");
         }
@@ -52,30 +50,6 @@ public abstract class MatchingSet {
 
     public final boolean matched(Tree base, Tree variant) {
         return leftMatches.get(base) == variant || rightMatches.get(base) == variant;
-    }
-
-    /**
-     * Check if `variant` is <em>relevant</em> to `base`, i.e. it has a descendant (could be itself) `u` such that
-     * `u` and `base` are matched.
-     *
-     * @param base    base Tree
-     * @param variant Tree from left or right
-     * @return if they are relevant
-     */
-    public final boolean relevant(Tree base, Tree variant) {
-        assertNotNull(variant);
-
-        var u = leftMatches.get(base);
-        if (u != null && Interval.isSubinterval(u.interval, variant.interval)) {
-            return true;
-        }
-
-        u = rightMatches.get(base);
-        if (u != null && Interval.isSubinterval(u.interval, variant.interval)) {
-            return true;
-        }
-
-        return false;
     }
 
     public final int size() {

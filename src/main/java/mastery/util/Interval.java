@@ -44,4 +44,9 @@ public class Interval {
             return p.l == q.l && p.r == q.r;
         }
     }
+
+    @Override
+    public String toString() {
+        return "[" + l + ", " + r + "]";
+    }
 }
