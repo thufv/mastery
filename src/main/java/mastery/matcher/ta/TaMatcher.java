@@ -92,7 +92,7 @@ public class TaMatcher extends Matcher {
         return assignmentEnd - assignmentStart;
     }
 
-    private Integer dfsIndex = 0;
+    private Integer dfsIndex;
     private void dfs(Tree node) {
         node.dfsIndex = ++dfsIndex;
         for (Tree child: node.children) {
@@ -107,10 +107,27 @@ public class TaMatcher extends Matcher {
             }
         }
     }
-    private void cal_dfs(Tree tree) {
+    private void calDfs(Tree tree) {
         dfsIndex = 0;
         dfs(tree);
     }
+
+    // private int sqrtHeight; 
+    // private void initSqrtAncestor(Tree node) {
+    //     if (node.height >= sqrtHeight) {
+    //         node.sqrtAncestor = node;
+    //     }
+    //     else {
+    //         node.sqrtAncestor = node.getParent().sqrtAncestor;
+    //     }
+    //     for (Tree child: node) {
+    //         initSqrtAncestor(node);
+    //     }
+    // }
+    // private void dfs(Tree node) {
+    //     sqrtHeight = Math.sqrt(tree.size);
+    //     initSqrtAncestor(node);
+    // }
 
     @Override
     public MatchingSet apply(Tree base, Tree left, Tree right) {
@@ -229,9 +246,12 @@ public class TaMatcher extends Matcher {
         }
 
         // Calculate information about dfs ordering
-        cal_dfs(base);
-        cal_dfs(left);
-        cal_dfs(right);
+        calDfs(base);
+        calDfs(left);
+        calDfs(right);
+
+        // Calculate sqrtAncestor of base
+        // initSqrtAncestor(base);
 
         // log
         Log.ifLoggable(Level.FINEST, printer -> {

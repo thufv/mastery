@@ -45,6 +45,11 @@ public class Interval {
         }
     }
 
+    public static boolean in(Integer p, Interval i) {
+        if (p == null || i == null) return false;
+        else return i.l <= p && p <= i.r;
+    }
+
     @Override
     public String toString() {
         return "[" + l + ", " + r + "]";

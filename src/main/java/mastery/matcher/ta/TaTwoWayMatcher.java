@@ -36,7 +36,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         // default parameters in the paper of GumTree
         this.minHeight = 1;
         this.minDice = 0.5;
-        this.maxSize = 1000;
+        this.maxSize = 100;
     }
 
     private Tree root1;
@@ -74,7 +74,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 // case 1: queue1 has a larger height
                 if (queue1.maxWeight() > queue2.maxWeight()) {
                     for (var node : queue1.removeMax()) {
-                        System.out.println("Add children of " + node + " <base>");
+                        // System.out.println("Add children of " + node + " <base>");
 
                         queue1.addAll(node.children);
                     }
@@ -84,7 +84,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 // case 2: queue2.maxWeight() > queue1.maxWeight()
                 if (queue2.maxWeight() > queue1.maxWeight()) {
                     for (var node : queue2.removeMax()) {
-                        System.out.println("Add children of " + node + " <variant>");
+                        // System.out.println("Add children of " + node + " <variant>");
 
                         queue2.addAll(node.children);
                     }
@@ -105,7 +105,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                     }
                     nodes1Of.get(node.assignment).add(node);
 
-                    System.out.println(node + " assignment " + node.assignment + " height " + node.height + " <base>");
+                    // System.out.println(node + " assignment " + node.assignment + " height " + node.height + " <base>");
                 }
                 var nodes2Of = new ArrayList<List<Tree>>();
                 for (var node: nodes2) {
@@ -114,14 +114,14 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                     }
                     nodes2Of.get(node.assignment).add(node);
 
-                    System.out.println(node + " assignment " + node.assignment + " height " + node.height + " <variant>");
+                    // System.out.println(node + " assignment " + node.assignment + " height " + node.height + " <variant>");
                 }
     
                 for (int assignment = 1; assignment < Math.min(nodes1Of.size(), nodes2Of.size()); ++assignment) {
                     var list1 = nodes1Of.get(assignment);
                     var list2 = nodes2Of.get(assignment);
 
-                    if (!list1.isEmpty() || !list2.isEmpty()) {
+                    if (list1.size() > 1 && list2.size() > 1) {
                         int height = 0;
                         if (!list1.isEmpty()) {
                             height = list1.get(0).height;
@@ -189,14 +189,14 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 // push their children (if not handled) into queue
                 for (var node : nodes1) 
                     if (matched1to2[node.dfsIndex] == 0) {
-                        System.out.println("Add children of " + node + " <base>");
+                        // System.out.println("Add children of " + node + " <base>");
 
                         queue1.addAll(node.children);
                     }
     
                 for (var node : nodes2)
                     if (matched2to1[node.dfsIndex] == 0) {
-                        System.out.println("Add children of " + node + " <variant>");
+                        // System.out.println("Add children of " + node + " <variant>");
 
                         queue2.addAll(node.children);
                     }
@@ -288,18 +288,28 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     
     // utils of dice function
     // interMappingCount[dfsIndex of tree1][indexAtHeight of tree2]
-    private int[][] interMappingCount;
+    // private int[][] interMappingCount;
     private void initDice(int size1, int size2) {
-        interMappingCount = new int[size1 + 1][size2 + 1];
+        // interMappingCount = new int[size1 + 1][size2 + 1];
     }
     private void updateMemoizedDice(Tree tree1, Tree tree2) {
-        ++interMappingCount[tree1.dfsIndex][tree2.dfsIndex];
-        if (tree1.getParent() != null && tree2.getParent() != null) {
-            updateMemoizedDice(tree1.getParent(), tree2.getParent());
+        // ++interMappingCount[tree1.dfsIndex][tree2.dfsIndex];
+        // if (tree1.getParent() != null && tree2.getParent() != null) {
+        //     updateMemoizedDice(tree1.getParent(), tree2.getParent());
+        // }
+    }
+    private int interMappingCount(Tree tree1, Tree tree2) {
+        int ans = 0;
+        if (Interval.in(matched1to2[tree1.dfsIndex], tree2.interval)) {
+            ans = 1;
         }
+        for (Tree child: tree1.children) {
+            ans += interMappingCount(child, tree2);
+        }
+        return ans;
     }
     private double getMemoizedDice(Tree tree1, Tree tree2) {
-        return interMappingCount[tree1.dfsIndex][tree2.dfsIndex];
+        return Similarities.jaccardSimilarity(interMappingCount(tree1, tree2), tree1.size, tree2.size);
     }
 
     /**
@@ -326,7 +336,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
             {
                 Tree parent = node.getParent();
                 if (parent != null && parent.isOrderedList() && node.childno != parent.children.size() - 1) {
-                    node.postLCA = Tree.getLCA(node.postLCA, parent.children.get(node.childno + 1));
+                    node.postLCA = Tree.getLCA(node.postLCA, parent.children.get(node.childno + 1).postLCA);
                 }
             }
             
@@ -352,9 +362,9 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                         // get the candidate!
                         // let's check the dice!
 
-                        Log.config("container mapping candidate: %s <-> %s, similarity = %f", node, candidate, Similarities.diceSimilarity(mappingCount, node.size, candidate.size));
+                        Log.config("container mapping candidate: %s <-> %s, similarity = %f", node, candidate, Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size));
 
-                        if (Similarities.diceSimilarity(mappingCount, node.size, candidate.size) > minDice) {
+                        if (Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size) > minDice) {
 
                             if (checkMatchingOfConstructors(node, candidate)) {
                                 match(node, candidate, MappingType.container);
