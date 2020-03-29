@@ -128,6 +128,7 @@ public class TaMatcher extends Matcher {
         compressedAssignment = new int[compressedAssignmentSize];
 
         // Initialize assign as label
+        Integer assignmentEnd;
         {
             for (var nodes: nodesOfHeight) {
                 List<Integer> compressedLabel = new ArrayList<>();
@@ -153,7 +154,7 @@ public class TaMatcher extends Matcher {
                 }
             }
             
-            Integer assignmentEnd = assignmentCount + 1;
+            assignmentEnd = assignmentCount + 1;
             assignmentCount = 0;
 
             List<List<Leaf>> nodesOfAssignment = new ArrayList<>();
@@ -172,20 +173,24 @@ public class TaMatcher extends Matcher {
             for (var nodes: nodesOfAssignment) {
                 assignmentEnd += assignLeaf(nodes, 0, assignmentEnd);
             }
-        }        
+        }
 
+        
         for (int height = 0; height < nodesOfHeight.size(); ++height) {
             if (height > 0) {
                 List<List<Tree>> childrenOfAssignment = new ArrayList<>();
+                Integer assignmentCount = 0;
 
                 // Sort children of unorderedList
                 for (Tree node: nodesOfHeight.get(height)) {
                     if (node.isUnorderedList()) {
                         for (Tree child: node.children) {
-                            while (child.assignment >= childrenOfAssignment.size()) {
+                            if (compressedAssignment[child.assignment] == 0) {
+                                compressedAssignment[child.assignment] = assignmentCount++;
                                 childrenOfAssignment.add(new ArrayList<>());
                             }
-                            childrenOfAssignment.get(child.assignment).add(child);
+
+                            childrenOfAssignment.get(compressedAssignment[child.assignment]).add(child);
                         }
                         node.children.clear();
                     }
@@ -197,16 +202,11 @@ public class TaMatcher extends Matcher {
                     }
                 }
 
-                // for (Tree node: nodesOfHeight.get(height)) {
-                //     if (node.isUnorderedList()) {
-                //         System.out.println("Children of " + node + ":");
-                //         System.out.print("\t");
-                //         for (Tree child: node.children) {
-                //             System.out.print(" " + child);
-                //         }
-                //         System.out.print("\n");
-                //     }
-                // }
+                for (var nodes: childrenOfAssignment) {
+                    for (Tree node: nodes) {
+                        compressedAssignment[node.assignment] = 0;
+                    }
+                }
             }
 
             // Assign
@@ -223,7 +223,6 @@ public class TaMatcher extends Matcher {
                 compressedAssignment[node.assignment] = 0;
             }
 
-            Integer assignmentEnd = 1;
             for (var nodes: nodesOfAssignment) {
                 assignmentEnd += assign(nodes, 0, assignmentEnd);
             }

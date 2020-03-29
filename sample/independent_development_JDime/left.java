@@ -10,6 +10,6 @@ public class Example {
         return result;
     }
     public static int square(int n) {
-        return n*n;
+        return n * n;
     }
 }

@@ -244,7 +244,6 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
             else {
                 if (!parent1.isConstructor() || !parent2.isConstructor() || parent1.label != parent2.label) return true;
                 else {
-                    // Log.finer("checkMatchingofConstructors: tree2.childno = %d, tree2.childno = %d", tree1.childno, tree2.childno);
                     return tree1.childno == tree2.childno;
                 }
             }
@@ -254,8 +253,17 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     private void getPreInterval(Tree node) {
         if (node.preInterval == null) {
             Tree parent = node.getParent();
-            getPreInterval(parent);
-            node.preInterval = parent.preInterval;
+            if (parent != null) {
+                if (parent.isOrderedList() && node.childno != 0) {
+                    Tree brother = parent.children.get(node.childno - 1);
+                    getPreInterval(brother);
+                    node.preInterval = brother.preInterval;
+                }
+                else {
+                    getPreInterval(parent);
+                    node.preInterval = parent.preInterval;
+                }
+            }
         }
     }
     private void matchSubTree(Tree tree1, Tree tree2) {
@@ -305,16 +313,21 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         if (matched1to2[node.dfsIndex] != 0) {
             ++mappingCount;
 
-            for (Tree child: node.children) {
-                mappingCount += bottomUpDfs(child);
+            for (int i = node.children.size() - 1; i >= 0; --i) {
+                mappingCount += bottomUpDfs(node.children.get(i));
             }
         }
         else {
             for (Tree child: node.children) {
                 mappingCount += bottomUpDfs(child);
                 node.postLCA = Tree.getLCA(node.postLCA, child.postLCA);
-
-                // Log.config("after considering %s (%s), the postLCA of %s becomes %s", child, child.postLCA, node, node.postLCA);
+            }
+            
+            {
+                Tree parent = node.getParent();
+                if (parent != null && parent.isOrderedList() && node.childno != parent.children.size() - 1) {
+                    node.postLCA = Tree.getLCA(node.postLCA, parent.children.get(node.childno + 1));
+                }
             }
             
             if (node == root1) {
@@ -435,12 +448,46 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
             }
         }
 
-        for (Tree child: node.children) {
-            if (matched1to2[child.dfsIndex] == 0) {
-                child.preInterval = node.preInterval;
+        if (node.isOrderedList()) {
+            Tree brother = null;
+            for (Tree child: node.children) {
+                if (brother == null) {
+                    if (matched1to2[child.dfsIndex] == 0) {
+                        child.preInterval = node.preInterval;
+                    }
+                }
+                else {
+                    if (matched1to2[child.dfsIndex] == 0) {
+                        child.preInterval = brother.preInterval;
+                    }
+                }
+
+                ans += recoverydfs(child);
+                
+                brother = child;
             }
-            ans += recoverydfs(child);
-            node.postLCA = Tree.getLCA(node.postLCA, child.postLCA);
+
+            brother = null;
+            for (int i = node.children.size() - 1; i >= 0; --i) {
+                Tree child = node.children.get(i);
+                if (brother != null) {
+                    child.postLCA = Tree.getLCA(child.postLCA, brother.postLCA);
+                }
+                brother = child;
+            }
+
+            if (brother != null) {
+                node.postLCA = Tree.getLCA(node.postLCA, brother.postLCA);
+            }
+        }
+        else {
+            for (Tree child: node.children) {
+                if (matched1to2[child.dfsIndex] == 0) {
+                    child.preInterval = node.preInterval;
+                }
+                ans += recoverydfs(child);
+                node.postLCA = Tree.getLCA(node.postLCA, child.postLCA);
+            }
         }
         return ans;
     }
