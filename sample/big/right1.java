@@ -120,10 +120,10 @@ public class TokenStreamRewriter {
 	// Define the rewrite operation hierarchy
 
 	public class RewriteOperation {
-	/** What index into rewrites List are we? */
-	protected int instructionIndex;
-	/** Token buffer index. */
-	protected int index;
+        /** What index into rewrites List are we? */
+        protected int instructionIndex;
+        /** Token buffer index. */
+        protected int index;
 		protected Object text;
 
 		protected RewriteOperation(int index) {

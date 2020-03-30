@@ -233,6 +233,22 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         tree1.preInterval = tree2.interval;
         tree1.postLCA = tree2;
 
+        if (type != MappingType.isomorphic && tree1.isConstructor()) {
+            assert tree2.isConstructor();
+            for (int i = 0; i < tree1.children.size(); ++i) {
+                Tree child1 = tree1.children.get(i);
+                if (child1.height == 0) {
+                    Tree child2 = tree2.children.get(i);
+                    if (matched1to2[child1.dfsIndex] != 0) {
+                        assert matched1to2[child1.dfsIndex] == child2.dfsIndex;
+                    }
+                    else {
+                        match(child1, child2, MappingType.recovery);
+                    }
+                }
+            }
+        }
+
         Log.finer("%s mapping: %s <-> %s", type, tree1, tree2);
     }
     private boolean checkMatchingOfConstructors(Tree tree1, Tree tree2) {
@@ -556,7 +572,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                         Tree tSrc = zsSrc.tree(row);
                         Tree tDst = zsDst.tree(col);
 
-                        // Log.config("ZS: rename %s <-> %s", tSrc, tDst);
+                        Log.config("ZS: rename %s <-> %s", tSrc, tDst);
 
                         if (tSrc.label == tDst.label) {
                             tSrc.recoveryBuddy = tDst;

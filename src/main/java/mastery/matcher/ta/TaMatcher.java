@@ -197,13 +197,15 @@ public class TaMatcher extends Matcher {
             if (height > 0) {
                 List<List<Tree>> childrenOfAssignment = new ArrayList<>();
                 Integer assignmentCount = 0;
+                
+                childrenOfAssignment.add(new ArrayList<>());
 
                 // Sort children of unorderedList
                 for (Tree node: nodesOfHeight.get(height)) {
                     if (node.isUnorderedList()) {
                         for (Tree child: node.children) {
                             if (compressedAssignment[child.assignment] == 0) {
-                                compressedAssignment[child.assignment] = assignmentCount++;
+                                compressedAssignment[child.assignment] = ++assignmentCount;
                                 childrenOfAssignment.add(new ArrayList<>());
                             }
 
