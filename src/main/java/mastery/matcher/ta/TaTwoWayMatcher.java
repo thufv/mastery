@@ -91,7 +91,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                     continue;
                 }
 
-                System.out.println("====== height " + queue1.maxWeight() + " ======");
+                // System.out.println("====== height " + queue1.maxWeight() + " ======");
     
                 // case 3: two queues contain Trees of the same height
                 var nodes1 = queue1.removeMax();
@@ -121,23 +121,23 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                     var list1 = nodes1Of.get(assignment);
                     var list2 = nodes2Of.get(assignment);
 
-                    if (list1.size() > 1 && list2.size() > 1) {
-                        int height = 0;
-                        if (!list1.isEmpty()) {
-                            height = list1.get(0).height;
-                        }
-                        else {
-                            height = list2.get(0).height;
-                        }
+                    // if (list1.size() > 1 && list2.size() > 1) {
+                    //     int height = 0;
+                    //     if (!list1.isEmpty()) {
+                    //         height = list1.get(0).height;
+                    //     }
+                    //     else {
+                    //         height = list2.get(0).height;
+                        // }
 
-                        System.out.println("An equivalence class at height " + height + " assignment " + assignment + ":");
-                        for (Tree node: list1) {
-                            System.out.println("\t" + node);
-                        }
-                        for (Tree node: list2) {
-                            System.out.println("\t" + node);
-                        }
-                    }
+                        // System.out.println("An equivalence class at height " + height + " assignment " + assignment + ":");
+                        // for (Tree node: list1) {
+                        //     System.out.println("\t" + node);
+                        // }
+                        // for (Tree node: list2) {
+                        //     System.out.println("\t" + node);
+                        // }
+                    // }
 
                     if (list1.size() <= list2.size()) {
                         Collections.shuffle(list1);

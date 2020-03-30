@@ -10,7 +10,7 @@ public abstract class Matcher {
         Log.fine("2-way matching: base <-> left");
         var leftMapping = twoWayMatcher.apply(base, left);
 
-        System.out.println("====== Above is left, following is right ========\n");
+        // System.out.println("====== Above is left, following is right ========\n");
 
         Log.fine("2-way matching: base <-> right");
         var rightMapping = twoWayMatcher.apply(base, right);
