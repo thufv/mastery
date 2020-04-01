@@ -4,11 +4,11 @@ import mastery.util.Interval;
 import mastery.util.log.IndentPrinter;
 import org.jetbrains.annotations.Nullable;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  * A parse tree.
@@ -115,7 +115,7 @@ public abstract class Tree {
      * @return true iff they are identical
      */
     public abstract boolean identicalTo(Tree that);
-    
+
     public abstract <C> void accept(Visitor<C> visitor, C... ctx);
 
     /**
@@ -225,6 +225,19 @@ public abstract class Tree {
         TreePrinters.textTree(this, printer);
     }
 
+    public String toReadableString() {
+        var sb = new StringBuilder();
+        sb.append(name).append(" `");
+        var code = TreePrinters.rawCode(this).strip();
+        if (code.length() < 30) {
+            sb.append(code);
+        } else {
+            sb.append(code, 0, 30).append("...");
+        }
+        sb.append('`');
+        return sb.toString();
+    }
+
     public abstract boolean isLeaf();
 
     public abstract boolean isConstructor();
@@ -241,13 +254,13 @@ public abstract class Tree {
         this.children = children;
 
         // compute height
-        this.height = children.stream().mapToInt((Tree child)->{
+        this.height = children.stream().mapToInt((Tree child) -> {
             return child.height;
         }).max().orElse(-1) + 1;
 
         // compute size
         int size = 1;
-        for (var child: children) {
+        for (var child : children) {
             size += child.size;
         }
         this.size = size;
@@ -268,8 +281,7 @@ public abstract class Tree {
             for (var child : children) {
                 hash = hash + child.treeHash;
             }
-        }
-        else {
+        } else {
             for (var child : children) {
                 hash = hash * 2333 + child.treeHash;
             }
@@ -302,14 +314,13 @@ public abstract class Tree {
     public final static Tree getLCA(Tree node1, Tree node2) {
         if (node1 == null) return node2;
         if (node2 == null) return node1;
-        while(node1 != node2) {
+        while (node1 != node2) {
             assertNotNull(node1);
             assertNotNull(node2);
 
             if (node1.size < node2.size) {
                 node1 = node1.parent;
-            }
-            else {
+            } else {
                 node2 = node2.parent;
             }
         }
