@@ -95,7 +95,7 @@ public class TreePrinters {
         printer.println(textTreePrinter.get());
     }
 
-    public static void rawCode(Tree tree, IndentPrinter printer) {
+    public static String rawCode(Tree tree) {
         var sb = new StringBuilder();
         var tokenWalker = new Tree.PreOrderWalker() {
             @Override
@@ -106,8 +106,7 @@ public class TreePrinters {
         };
 
         tokenWalker.accept(tree);
-
-        printer.println(sb.toString());
+        return sb.toString();
     }
 
     /**
@@ -128,7 +127,7 @@ public class TreePrinters {
 
             @Override
             public void visitInternal(InternalNode internal, Object... ctx) {
-                for (Tree child: internal.children) {
+                for (Tree child : internal.children) {
                     child.accept(this);
                 }
             }
@@ -136,11 +135,11 @@ public class TreePrinters {
             @Override
             public void visitConflict(Conflict conflict, Object... ctx) {
                 sb.append("\n///// left\n");
-                for (Tree node: conflict.left) {
+                for (Tree node : conflict.left) {
                     node.accept(this);
                 }
                 sb.append("\n///// right\n");
-                for (Tree node: conflict.right) {
+                for (Tree node : conflict.right) {
                     node.accept(this);
                 }
                 sb.append("\n/////\n");

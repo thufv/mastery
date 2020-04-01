@@ -7,9 +7,10 @@ import mastery.util.MultiMap;
 import mastery.util.log.Log;
 import org.jetbrains.annotations.Nullable;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.util.*;
+import java.util.logging.Level;
+
+import static org.junit.Assert.assertNotNull;
 
 public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
     public ThreeWayMerger(MatchingSet m, Map<Tree, Tree> t) {
@@ -20,27 +21,27 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
     @Override
     public Tree visitLeaves(Leaf base, Leaf left, Leaf right) {
         if (m.treesEqual(base, left)) {
-            Log.finest("trivial merge scenario: base = left, thus target = right");
+            Log.finest("right-change %s", right.toReadableString());
             return right.deepCopy();
         }
 
         if (m.treesEqual(base, right)) {
-            Log.finest("trivial merge scenario: base = right, thus target = left");
+            Log.finest("left-change %s", left.toReadableString());
             return left.deepCopy();
         }
 
         if (m.treesEqual(left, right)) {
-            Log.finest("trivial merge scenario: left = right, thus target is either");
+            Log.finest("consistent change %s", left.toReadableString());
             return left.deepCopy();
         }
 
-        Log.finest("conflict: %s <-> %s", left, right);
+        Log.finer("conflict %s <-> %s", left.toReadableString(), right.toReadableString());
         return Conflict.of(left, right);
     }
 
     @Override
     public Tree visitConstructors(Constructor base, Constructor left, Constructor right) {
-        Log.finest("merging constructor %s", base.name);
+        Log.finer("merging %s", base.name);
 
         var targets = new ArrayList<Tree>();
         for (int i = 0; i < base.arity; i++) {
@@ -61,10 +62,12 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             if (relevant) {
                 Tree c = threeWay(b, l, r);
                 assertNotNull(c);
+                Log.finer("+ %s (3-way)", c.toReadableString());
                 targets.add(c);
-            }
-            else {
-                targets.add(Conflict.of(l, r));
+            } else {
+                var c = Conflict.of(l, r);
+                Log.finer("+ conflict %s", c.toReadableString());
+                targets.add(c);
             }
         }
 
@@ -73,7 +76,12 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
 
     @Override
     public Tree visitOrderedLists(OrderedList base, OrderedList left, OrderedList right) {
-        Log.finest("merging ordered list %s", base.name);
+        Log.finer("merging ordered %s", base.name);
+
+        if (m.treesEqual(left, right)) {
+            Log.finer("trivial case: consistent change %s", left.toReadableString());
+            return left.deepCopy();
+        }
 
         // collect
         var candidates = new ArrayList<Candidate>();
@@ -88,7 +96,10 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
                 visited.add(l);
                 visited.add(r);
 
-                var c = Candidate.of(threeWay(b, l, r), l, r);
+                var t = threeWay(b, l, r);
+                Log.finer("+ %s (3-way)", t.toReadableString());
+
+                var c = Candidate.of(t, l, r);
                 candidates.add(c);
 
                 pi.put(b, c);
@@ -100,8 +111,15 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             if (l != null) {
                 visited.add(l);
 
-                var c = rightDelete(b, l).map(conflict -> Candidate.ofLeft(conflict, l))
-                                         .orElse(Candidate.ofRightDeletion(l));
+                var t = rightDelete(b, l);
+                Candidate c;
+                if (t.isPresent()) {
+                    Log.finer("+ conflict %s <-> ε", l.toReadableString());
+                    c = Candidate.ofLeft(t.get(), l);
+                } else {
+                    Log.finer("- %s (left)", l.toReadableString());
+                    c = Candidate.ofRightDeletion(l);
+                }
                 candidates.add(c);
 
                 pi.put(b, c);
@@ -112,16 +130,27 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             if (r != null) {
                 visited.add(r);
 
-                var c = leftDelete(b, r).map(conflict -> Candidate.ofRight(conflict, r))
-                                        .orElse(Candidate.ofLeftDeletion(r));
+                var t = leftDelete(b, r);
+                Candidate c;
+                if (t.isPresent()) {
+                    Log.finer("+ conflict ε <-> %s", r.toReadableString());
+                    c = Candidate.ofRight(t.get(), r);
+                } else {
+                    Log.finer("- %s (right)", r.toReadableString());
+                    c = Candidate.ofLeftDeletion(r);
+                }
                 candidates.add(c);
                 pi.put(b, c);
                 pi.put(r, c);
+                continue;
             }
+
+            Log.finer("- %s (base)", b);
         }
 
         for (var l : left) {
             if (!visited.contains(l)) {
+                Log.finer("+ %s (left)", l.toReadableString());
                 var c = Candidate.ofLeft(l.deepCopy(), l);
                 candidates.add(c);
 
@@ -131,14 +160,13 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
 
         for (var r : right) {
             if (!visited.contains(r)) {
+                Log.finer("+ %s (right)", r.toReadableString());
                 var c = Candidate.ofRight(r.deepCopy(), r);
                 candidates.add(c);
 
                 pi.put(r, c);
             }
         }
-
-        Log.finest("candidates: %s", candidates);
 
         // encode
         var succ = new MultiMap<Candidate, Candidate>();
@@ -153,7 +181,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
                     var next = pi.get(it.next());
                     succ.put(prev, next);
                     pred.put(next, prev);
-                    Log.finest("%s -> %s", prev, next);
+                    Log.finest("constraint: %s precedes %s", prev, next);
                     prev = next;
                 }
             }
@@ -176,8 +204,6 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
 
         Set<Candidate> issued = new HashSet<>();
         while (!zero.isEmpty()) {
-            Log.finest("zero-inDeg: %s", zero);
-
             var valid = new ArrayList<Candidate>();
             final int choices = zero.size();
             for (int i = 0; i < choices; i++) {
@@ -200,13 +226,26 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
 
             if (valid.size() == 1) {
                 if (!leftSuspended.isEmpty() || !rightSuspended.isEmpty()) { // handle suspended
+                    ArrayList<Tree> finalLeftSuspended = leftSuspended;
+                    ArrayList<Tree> finalRightSuspended = rightSuspended;
+                    Log.ifLoggable(Level.FINER, printer -> {
+                        printer.println("conflict");
+                        printer.incIndent();
+                        finalLeftSuspended.forEach(printer::println);
+                        printer.decIndent();
+                        printer.println("<->");
+                        printer.incIndent();
+                        finalRightSuspended.forEach(printer::println);
+                        printer.decIndent();
+                    });
                     targets.add(Conflict.of(leftSuspended, rightSuspended));
                     leftSuspended = new ArrayList<>();
                     rightSuspended = new ArrayList<>();
                 }
+                Log.finer("unique choice: %s", valid.get(0).target);
                 targets.add(valid.get(0).target);
             } else if (valid.size() > 1) { // conflict
-                Log.fine("disambiguated choices: %s", valid);
+                Log.finer("disambiguated choices: %s", valid);
                 for (var node : valid) {
                     if (node.hasLeftOrigin()) {
                         leftSuspended.add(node.leftOrigin);
@@ -217,10 +256,24 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             }
         }
         if (!leftSuspended.isEmpty() || !rightSuspended.isEmpty()) { // handle suspended
+            ArrayList<Tree> finalLeftSuspended1 = leftSuspended;
+            ArrayList<Tree> finalRightSuspended1 = rightSuspended;
+            Log.ifLoggable(Level.FINER, printer -> {
+                printer.println("conflict");
+                printer.incIndent();
+                finalLeftSuspended1.forEach(printer::println);
+                printer.decIndent();
+                printer.println("<->");
+                printer.incIndent();
+                finalRightSuspended1.forEach(printer::println);
+                printer.decIndent();
+            });
             targets.add(Conflict.of(leftSuspended, rightSuspended));
         }
 
         if (issued.size() < candidates.size()) { // cyclic
+            Log.finer("detect cycle");
+
             for (var l : left) {
                 var c = pi.get(l);
                 if (!issued.contains(c)) {
@@ -235,10 +288,21 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
                 }
             }
 
+            ArrayList<Tree> finalLeftSuspended2 = leftSuspended;
+            ArrayList<Tree> finalRightSuspended2 = rightSuspended;
+            Log.ifLoggable(Level.FINER, printer -> {
+                printer.println("conflict");
+                printer.incIndent();
+                finalLeftSuspended2.forEach(printer::println);
+                printer.decIndent();
+                printer.println("<->");
+                printer.incIndent();
+                finalRightSuspended2.forEach(printer::println);
+                printer.decIndent();
+            });
             targets.add(Conflict.of(leftSuspended, rightSuspended));
         }
 
-        Log.finest("targets: %s", targets);
         return new OrderedList(base.label, base.name, targets);
     }
 
@@ -289,7 +353,12 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
 
     @Override
     public Tree visitUnorderedLists(UnorderedList base, UnorderedList left, UnorderedList right) {
-        Log.finest("merging unordered list %s", base.name);
+        Log.finer("merging unordered %s", base.name);
+
+        if (m.treesEqual(left, right)) {
+            Log.finer("trivial case: consistent change %s", left.toReadableString());
+            return left.deepCopy();
+        }
 
         var targets = new ArrayList<Tree>();
         var visited = new HashSet<Tree>();
@@ -301,30 +370,52 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             if (l != null && r != null) {
                 visited.add(l);
                 visited.add(r);
-                targets.add(threeWay(b, l, r));
+
+                var t = threeWay(b, l, r);
+                Log.finer("+ %s (3-way)", t.toReadableString());
+                targets.add(t);
                 continue;
             }
 
             if (l != null) {
                 visited.add(l);
-                rightDelete(b, l).ifPresent(targets::add);
+
+                var t = rightDelete(b, l);
+                if (t.isPresent()) {
+                    Log.finer("+ conflict %s <-> ε", l.toReadableString());
+                    targets.add(t.get());
+                } else {
+                    Log.finer("- %s (left)", l.toReadableString());
+                }
                 continue;
             }
 
             if (r != null) {
                 visited.add(r);
-                leftDelete(b, r).ifPresent(targets::add);
+
+                var t = leftDelete(b, r);
+                if (t.isPresent()) {
+                    Log.finer("+ conflict ε <-> %s", r.toReadableString());
+                    targets.add(t.get());
+                } else {
+                    Log.finer("- %s (right)", r.toReadableString());
+                }
+                continue;
             }
+
+            Log.finer("- %s (base)", b.toReadableString());
         }
 
         for (var l : left) {
             if (!visited.contains(l)) {
+                Log.finer("+ %s (left)", l.toReadableString());
                 targets.add(l);
             }
         }
 
         for (var r : right) {
             if (!visited.contains(r)) {
+                Log.finer("+ %s (right)", r.toReadableString());
                 targets.add(r);
             }
         }
@@ -354,22 +445,22 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
         Objects.requireNonNull(r);
 
         if (l == left && r == right) { // no lifting needed
-            Log.config("no lifting needed: %s", base);
             return t.get(base);
         }
 
         if (l != left && r == right) { // lift left
-            Log.config("lift left: %s -> %s", l, left);
+            Log.config("lift left: %s -> %s", l.toReadableString(), left.toReadableString());
             return TreeBuilders.fromUpdate(left, l, t.get(base));
         }
 
         if (l == left && r != right) { // lift right
-            Log.config("lift right: %s -> %s", r, right);
+            Log.config("lift right: %s -> %s", r.toReadableString(), right.toReadableString());
             return TreeBuilders.fromUpdate(right, r, t.get(base));
         }
 
         // lift both
-        Log.config("lift both: %s -> %s and %s -> %s", l, left, r, right);
+        Log.config("lift both: %s -> %s and %s -> %s", l.toReadableString(), left.toReadableString(),
+                   r.toReadableString(), right.toReadableString());
         return Conflict.of(left, right);
     }
 
@@ -385,7 +476,6 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
      */
     private Optional<Tree> leftDelete(Tree base, Tree right) {
         if (m.treesEqual(base, right)) {
-            Log.fine("delete by left: %s", base);
             return Optional.empty();
         }
 
@@ -403,7 +493,6 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
      */
     private Optional<Tree> rightDelete(Tree base, Tree left) {
         if (m.treesEqual(base, left)) {
-            Log.fine("delete by right: %s", base);
             return Optional.empty();
         }
 
