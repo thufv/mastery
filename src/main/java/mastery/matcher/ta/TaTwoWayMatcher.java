@@ -36,7 +36,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         // default parameters in the paper of GumTree
         this.minHeight = 1;
         this.minDice = 0.5;
-        this.maxSize = 100;
+        this.maxSize = 1000;
     }
 
     private Tree root1;
@@ -343,6 +343,8 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                     if (candidate != null && Interval.isProperSubinterval(candidate.interval, node.preInterval)) {
                         // get the candidate!
                         // let's check the dice!
+
+                        Log.finer("container mapping candidate: %s <-> %s (Jaccard Similarity = %f)", node, candidate, Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size));
 
                         if (Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size) > minDice) {
 
