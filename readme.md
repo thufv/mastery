@@ -6,7 +6,17 @@ A three-way (the newest version of two branches and the version exactly before b
 
 ### Build
 
-#### Parser
+```bash
+./gradlew build
+```
+
+If you want to modify and build java parser, you need to do this:
+```bash
+cd ./src/main/java/mastery/translator/java
+antlr4 JavaParser.java
+python3 add_package.py
+cd ../../../../../../
+```
 
 ### Basic Usage
 
@@ -18,26 +28,37 @@ I develop this tool with [clang format 8.0.0-3~ubuntu18.04.2](https://clang.llvm
 
 ## Road Map
 
-### High Priority
+### Algorithm
 
-- [x] Parse from source file
-- [x] Formatter of output
-    - [x] Formatting of conflict
-- [ ] More heuristics
-- [ ] Some refinement of syntax
-- [ ] Improved algorithm
-  - [ ] More efficient identification algorithm
-  - [ ] RTED
-  - [ ] More reasonable implementation of matching to keep the magic order
-- [ ] Delete unreasonable `Nothing` design
-- [ ] Auto check with expected result
+- Performance optimization
+    - [ ] LCA calculation: $O(n) \rightarrow O(\log n)$ per time
+    - [ ] Dice function calculation: $O(n) \rightarrow O(\log^2 n) / O(\sqrt n)$ per time
+    - [ ] Finding candidate of container mapping: $O(n) \rightarrow O(1)$
+- [ ] ZS algorithm: apply Hungary Algorithm for unordered list
+- [ ] Heuristics when adding isomorphism mapping: try including the information of ancestor path
+- [ ] Compulsory container mapping between method / classes / ... with the same identifier.
+- [ ] Find a theoretical bound of isomorphism mappings (or, isomorphism mapped subtrees) between ASTs
 
-### Low Priority
+### Engineering
 
-- [ ] Multiple languages support
-- [ ] Json dumping from the AST
-- [ ] Graphic AST mapping for debug
-    - @namasikanam: looks very hard
+- [ ] Pretty Printer to follow convention
+- [ ] Only output mapping
+- [ ] Keep the order of children of unordered lists
+- [ ] More supported languages
+- [ ] Graphic AST mappings
+
+### Wierd Inputs
+
+Here are input source files that maybe caused by bugs of algorithm design or implementation.
+
+Samples in papers
+- [ ] `./sample/ordering_conflict_JDime/`
+- [ ] `./sample/duplicated_jFSTMerge/`
+
+Samples in real merge scenarios
+- [ ] `./scenario/antlr4/TokenTagToken`
+- [ ] `./scenario/kotlin/TokenTagToken.java`
+- [ ] `./scenario/RxJava/TokenTagToken.java`
 
 ## Authors
 
