@@ -57,8 +57,8 @@ Samples in papers
 
 Samples in real merge scenarios
 - [ ] `./scenario/antlr4/TokenTagToken`
-- [ ] `./scenario/kotlin/TokenTagToken.java`
-- [ ] `./scenario/RxJava/TokenTagToken.java`
+- [ ] `./scenario/kotlin/ExtensionFunction2.java`
+- [ ] `./scenario/RxJava/Action3.java`
 
 ## Authors
 
