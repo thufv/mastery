@@ -93,11 +93,6 @@ public abstract class Tree {
     public Tree recoveryBuddy;
 
     /**
-     * The first ancestor (including the node itself) that 
-     */
-     public int sqrtAncestor;
-
-    /**
      * Parent.
      *
      * @return parent if exists, or else null.

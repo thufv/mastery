@@ -112,23 +112,6 @@ public class TaMatcher extends Matcher {
         dfs(tree);
     }
 
-    // private int sqrtHeight; 
-    // private void initSqrtAncestor(Tree node) {
-    //     if (node.height >= sqrtHeight) {
-    //         node.sqrtAncestor = node;
-    //     }
-    //     else {
-    //         node.sqrtAncestor = node.getParent().sqrtAncestor;
-    //     }
-    //     for (Tree child: node) {
-    //         initSqrtAncestor(node);
-    //     }
-    // }
-    // private void dfs(Tree node) {
-    //     sqrtHeight = Math.sqrt(tree.size);
-    //     initSqrtAncestor(node);
-    // }
-
     @Override
     public MatchingSet apply(Tree base, Tree left, Tree right) {
         // Assign trees
@@ -197,7 +180,7 @@ public class TaMatcher extends Matcher {
             if (height > 0) {
                 List<List<Tree>> childrenOfAssignment = new ArrayList<>();
                 Integer assignmentCount = 0;
-                
+
                 childrenOfAssignment.add(new ArrayList<>());
 
                 // Sort children of unorderedList
@@ -251,9 +234,6 @@ public class TaMatcher extends Matcher {
         calDfs(base);
         calDfs(left);
         calDfs(right);
-
-        // Calculate sqrtAncestor of base
-        // initSqrtAncestor(base);
 
         // log
         Log.ifLoggable(Level.FINEST, printer -> {

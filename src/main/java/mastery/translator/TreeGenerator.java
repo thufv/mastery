@@ -122,8 +122,6 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
 
         int n = node.getChildCount();
 
-        // System.out.println("child count of " + name + " = " + n);
-
         List<Tree> children = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             ParseTree child = node.getChild(i);
@@ -140,9 +138,6 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
 
             children.add(o);
         }
-
-        // System.out.println("arity of children of " + name + " = " +
-        // children.size());
 
         if (ListNodeNames.contains(name)) { // means it is a list
             if (OrderedListNodeNames.contains(name)) {
