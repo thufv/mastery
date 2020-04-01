@@ -13,6 +13,6 @@ public class TaMatchingSet extends MatchingSet {
         if (root1.assignment == -1 || root2.assignment == -1) {
             throw new IllegalStateException("Try to check the equivalence of some unassigned tree.");
         }
-        return root1.height == root2.height && root1.assignment == root2.assignment;
+        return root1.assignment == root2.assignment;
     }
 }
