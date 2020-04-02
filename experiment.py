@@ -54,4 +54,4 @@ for basefile in basefiles[:50]:
     results.append(result)
 
 with open(path.join('results', datetime.datetime.now().strftime("%b_%d-%H%M") + '.json'), 'w') as f:
-    json.dump(results, f)
+    json.dump(results, f, indent = "\t")
