@@ -46,7 +46,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     @Override
     public final Map<Tree, Tree> apply(Tree tree1, Tree tree2) {
         // Necessary initializations
-        initMatch(tree1.size, tree2.size);
+        initMatch(tree1, tree2);
         initDice(tree1.size, tree2.size);
 
         for (Tree node: tree1.preOrder()) {
@@ -178,12 +178,26 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     }
 
     // utils of matching
-    private int[] matched1to2;
-    private int[] matched2to1;
-    private void initMatch(int size1, int size2) {
+    private int[] matched1to2; // matched1to2[tree1.dfsIndex] = tree2.dfsIndex
+    private int[] matched2to1; // matched2to1[tree2.dfsIndex] = tree1.dfsIndex
+    private Tree[] nodeInDfsOrdering1; // nodeInDfsOrdering1[node1.dfsIndex] = node
+    private Tree[] nodeInDfsOrdering2; // nodeInDfsOrdering2[node2.dfsIndex] = node
+    private void initMatch(Tree tree1, Tree tree2) {
         m = new HashMap<Tree, Tree>();
-        matched1to2 = new int[size1 + 1];
-        matched2to1 = new int[size2 + 1];
+
+        matched1to2 = new int[tree1.size + 1];
+        matched2to1 = new int[tree2.size + 1];
+
+        nodeInDfsOrdering1 = new Tree[tree1.size + 1];
+        for (Tree node: tree1.preOrder()) {
+            nodeInDfsOrdering1[node.dfsIndex] = node;
+        }
+        nodeInDfsOrdering2 = new Tree[tree2.size + 1];
+        for (Tree node: tree2.preOrder()) {
+            nodeInDfsOrdering2[node.dfsIndex] = node;
+        }
+
+        // System.out.println("length of nodeInDfsOrdering2 = " + (tree2.size + 1));
     }
     protected void match(Tree tree1, Tree tree2, MappingType type) {
         m.put(tree1, tree2);
@@ -259,11 +273,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         }
     }
     private void preMatch(Tree tree1, Tree tree2) {
-        // Log.finer("preMatch(%s, %s)", tree1, tree2);
-
         getPreInterval(tree1);
-
-        // Log.finer("tree2.interval = %s, tree1.preInterval = %s", tree2.interval, tree1.preInterval);
 
         if (Interval.isSubinterval(tree2.interval, tree1.preInterval) && checkMatchingOfConstructors(tree1, tree2)) {
             matchSubTree(tree1, tree2);
@@ -344,8 +354,6 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                         // get the candidate!
                         // let's check the dice!
 
-                        Log.finer("container mapping candidate: %s <-> %s (Jaccard Similarity = %f)", node, candidate, Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size));
-
                         if (Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size) > minDice) {
 
                             if (checkMatchingOfConstructors(node, candidate)) {
@@ -422,6 +430,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
 
         // node is not matched
         if (matched1to2[node.dfsIndex] == 0) {
+            boolean matched = false;
             Tree buddy = node.recoveryBuddy;
             if (buddy != null) {
                 // buddy is not matched
@@ -430,8 +439,21 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                     if (Interval.isSubinterval(buddy.interval, node.preInterval) && (node.postLCA == null || Interval.isSubinterval(node.postLCA.interval, buddy.interval))) {
                         if (checkMatchingOfConstructors(node, buddy)) {
                             match(node, buddy, MappingType.recovery);
+                            matched = true;
                         }
                         ++ans;
+                    }
+                }
+            }
+            if (!matched) {
+                Tree parent = node.getParent();
+                if (parent != null && parent.isConstructor()) {
+                    int parentBuddyDfsIndex = matched1to2[parent.dfsIndex];
+                    if (parentBuddyDfsIndex != 0) {
+                        buddy = nodeInDfsOrdering2[parentBuddyDfsIndex].children.get(node.childno);
+                        if (matched2to1[buddy.dfsIndex] == 0) {
+                            match(node, buddy, MappingType.recovery);
+                        }
                     }
                 }
             }
@@ -500,8 +522,6 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
             int lastRow = treePair[0];
             int lastCol = treePair[1];
 
-            // System.out.println("====== A recovery iteration: " + lastRow + ", " + lastCol + " ========");
-
             // compute forest distance matrix
             if (!rootNodePair)
                 forestDist(lastRow, lastCol);
@@ -519,12 +539,10 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 if ((row > firstRow)
                         && (forestDist[row - 1][col] + 1D == forestDist[row][col])) {
                     // node with postorderID row is deleted from ted1
-                    // Log.config("ZS: delete %s", zsSrc.tree(row));
                     row--;
                 } else if ((col > firstCol)
                         && (forestDist[row][col - 1] + 1D == forestDist[row][col])) {
                     // node with postorderID col is inserted into ted2
-                    // Log.config("ZS: insert %s", zsDst.tree(col));
                     col--;
                 } else {
                     // node with postorderID row in ted1 is renamed to node col
@@ -576,7 +594,6 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 if ("".equals(l1.code) || "".equals(l2.code))
                     return 1D;
                 else {
-                    // System.out.println("Calculate update cost of " + l1.code + " and " + l2.code);
                     return 1D - StringMetrics.qGramsDistance().compare(l1.code, l2.code);
                 }
             }
