@@ -197,7 +197,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
             nodeInDfsOrdering2[node.dfsIndex] = node;
         }
 
-        // System.out.println("length of nodeInDfsOrdering2 = " + (tree2.size + 1));
+        System.out.println("length of nodeInDfsOrdering2 = " + (tree2.size + 1));
     }
     protected void match(Tree tree1, Tree tree2, MappingType type) {
         m.put(tree1, tree2);
@@ -353,6 +353,8 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                     if (candidate != null && Interval.isProperSubinterval(candidate.interval, node.preInterval)) {
                         // get the candidate!
                         // let's check the dice!
+
+                        // Log.finer("container mapping candidate: %s <-> %s (Jaccard Similarity = %f)", node, candidate, Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size));
 
                         if (Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size) > minDice) {
 
@@ -539,10 +541,12 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 if ((row > firstRow)
                         && (forestDist[row - 1][col] + 1D == forestDist[row][col])) {
                     // node with postorderID row is deleted from ted1
+                    // Log.config("ZS: delete %s", zsSrc.tree(row));
                     row--;
                 } else if ((col > firstCol)
                         && (forestDist[row][col - 1] + 1D == forestDist[row][col])) {
                     // node with postorderID col is inserted into ted2
+                    // Log.config("ZS: insert %s", zsDst.tree(col));
                     col--;
                 } else {
                     // node with postorderID row in ted1 is renamed to node col
@@ -594,6 +598,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 if ("".equals(l1.code) || "".equals(l2.code))
                     return 1D;
                 else {
+                    // System.out.println("Calculate update cost of " + l1.code + " and " + l2.code);
                     return 1D - StringMetrics.qGramsDistance().compare(l1.code, l2.code);
                 }
             }
