@@ -30,6 +30,7 @@ public abstract class MatchingSet {
         return rightMatches.containsKey(base);
     }
 
+    @SuppressWarnings("unchecked")
     public final <E extends Tree> E getLeftMatch(E base) {
       Tree leftMatch = leftMatches.get(base);
       if (leftMatch == null) return null;
@@ -39,6 +40,7 @@ public abstract class MatchingSet {
       }
     }
 
+    @SuppressWarnings("unchecked")
     public final <E extends Tree> E getRightMatch(E base) {
         Tree rightMatch = rightMatches.get(base);
         if (rightMatch == null) return null;

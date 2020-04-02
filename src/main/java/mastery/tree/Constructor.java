@@ -50,7 +50,8 @@ public final class Constructor extends InternalNode {
     }
 
     @Override
-    public <C> void accept(Visitor<C> visitor, C... ctx) {
+    @SafeVarargs
+    public final <C> void accept(Visitor<C> visitor, C... ctx) {
         visitor.visitConstructor(this, ctx);
     }
 

@@ -33,7 +33,8 @@ public final class UnorderedList extends ListNode {
     }
 
     @Override
-    public <C> void accept(Visitor<C> visitor, C... ctx) {
+    @SafeVarargs
+    public final <C> void accept(Visitor<C> visitor, C... ctx) {
         visitor.visitUnorderedList(this, ctx);
     }
 

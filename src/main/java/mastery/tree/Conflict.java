@@ -103,7 +103,8 @@ public class Conflict extends Tree {
     }
 
     @Override
-    public <C> void accept(Visitor<C> visitor, C... ctx) {
+    @SafeVarargs
+    public final <C> void accept(Visitor<C> visitor, C... ctx) {
         visitor.visitConflict(this, ctx);
     }
 
