@@ -20,6 +20,8 @@ bin/
 # VS Code
 .vscode/
 .settings/
+.classpath
+.project
 
 # For namasikanam
 exp/
