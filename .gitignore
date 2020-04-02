@@ -15,9 +15,6 @@ hs_err_pid*
 .idea/
 build/
 bin/
-.classpath
-.project
-
 *.DS_Store
 
 # VS Code
@@ -32,6 +29,7 @@ exp/
 
 # Debug
 debug*
+test.log
 
 # Experiment
 results/

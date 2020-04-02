@@ -6,11 +6,11 @@ import mastery.tree.TreePrinters;
 import mastery.util.log.IndentPrinter;
 import mastery.util.log.Log;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
-
-import static org.junit.Assert.assertTrue;
 
 public abstract class MergeTest {
     private final Merger merger = new BottomUpMerger();

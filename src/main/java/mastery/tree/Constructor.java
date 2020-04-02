@@ -40,11 +40,13 @@ public final class Constructor extends InternalNode {
 
     @Override
     public Tree deepCopy() {
-        var copied = new ArrayList<Tree>();
+        var copiedChildren = new ArrayList<Tree>();
         for (var child : children) {
-            copied.add(child.deepCopy());
+            copiedChildren.add(child.deepCopy());
         }
-        return new Constructor(label, name, copied);
+        Tree copiedConstructor = new Constructor(label, name, copiedChildren);
+        copiedConstructor.assignment = assignment;
+        return copiedConstructor;
     }
 
     @Override

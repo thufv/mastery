@@ -406,17 +406,27 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             Log.finer("- %s (base)", b.toReadableString());
         }
 
+        Map<Integer, Tree> subtreeOfAssignment = new HashMap<>();
+        Map<Integer, Integer> count1OfAssignment = new HashMap<>();
+        Map<Integer, Integer> count2OfAssignment = new HashMap<>();
+
         for (var l : left) {
             if (!visited.contains(l)) {
-                Log.finer("+ %s (left)", l.toReadableString());
-                targets.add(l);
+                count1OfAssignment.put(l.assignment, count1OfAssignment.getOrDefault(l.assignment, 0) + 1);
+                subtreeOfAssignment.put(l.assignment, l);
+            }
+        }
+        for (var r : right) {
+            if (!visited.contains(r)) {
+                count2OfAssignment.put(r.assignment, count2OfAssignment.getOrDefault(r.assignment, 0) + 1);
+                subtreeOfAssignment.put(r.assignment, r);
             }
         }
 
-        for (var r : right) {
-            if (!visited.contains(r)) {
-                Log.finer("+ %s (right)", r.toReadableString());
-                targets.add(r);
+        for (Integer assignment : subtreeOfAssignment.keySet()) {
+            for (int count = Math.max(count1OfAssignment.getOrDefault(assignment, 0), count2OfAssignment.getOrDefault(assignment, 0)); count > 0; --count) {
+                Log.finer("+ %s",  subtreeOfAssignment.get(assignment).toReadableString());
+                targets.add(subtreeOfAssignment.get(assignment));
             }
         }
 

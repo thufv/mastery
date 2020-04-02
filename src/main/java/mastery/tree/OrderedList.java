@@ -23,11 +23,13 @@ public final class OrderedList extends ListNode {
 
     @Override
     public Tree deepCopy() {
-        var copied = new ArrayList<Tree>();
+        var copiedChildren = new ArrayList<Tree>();
         for (var child : children) {
-            copied.add(child.deepCopy());
+            copiedChildren.add(child.deepCopy());
         }
-        return new OrderedList(label, name, copied);
+        Tree copiedOrderedList = new OrderedList(label, name, copiedChildren);
+        copiedOrderedList.assignment = assignment;
+        return copiedOrderedList;
     }
 
     @Override

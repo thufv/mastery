@@ -3,12 +3,19 @@ package mastery.merger;
 import mastery.tree.Conflict;
 import mastery.tree.Tree;
 import mastery.tree.UnorderedList;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
+import java.io.PrintStream;
+import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 import static mastery.merger.AST.leaf;
 import static mastery.merger.AST.unordered;
+import static org.junit.Assert.assertNotNull;
 
 public class UnorderedMergeTest extends MergeTest {
     @Test
@@ -113,5 +120,20 @@ public class UnorderedMergeTest extends MergeTest {
                Map.of(base1, right1, rightDeletion, rightChange));
     }
 
-    // TODO: insert the same element in both left and right
+    @Test
+    public void insertSameElement() {
+        final Tree[] bases = {leaf("y")};
+        final Tree[] lefts = {leaf("x"), leaf("y"), leaf("z")};
+        final Tree[] rights = {leaf("x"), leaf("x"), leaf("y")};
+        final Tree[] targets = {leaf("x"), leaf("x"), leaf("y"), leaf("z")};
+        
+        final UnorderedList base = unordered(bases);
+        final UnorderedList left = unordered(lefts);
+        final UnorderedList right = unordered(rights);
+        final UnorderedList target = unordered(targets);
+
+        testOn(base, left, right, target,
+            Map.of(bases[0], lefts[1]),
+            Map.of(bases[0], rights[2]));
+    }
 }

@@ -38,7 +38,9 @@ public class Leaf extends Tree {
 
     @Override
     public final Tree deepCopy() {
-        return new Leaf(label, name, code);
+        Tree copiedLeaf = new Leaf(label, name, code);
+        copiedLeaf.assignment = assignment;
+        return copiedLeaf;
     }
 
     @Override
@@ -63,6 +65,6 @@ public class Leaf extends Tree {
 
     @Override
     public String toString() {
-        return name + " '" + code + "'";
+        return name + " '" + code + "'" + " assignment " + assignment;
     }
 }

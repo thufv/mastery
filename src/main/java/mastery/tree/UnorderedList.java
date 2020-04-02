@@ -1,6 +1,7 @@
 package mastery.tree;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -23,11 +24,12 @@ public final class UnorderedList extends ListNode {
 
     @Override
     public Tree deepCopy() {
-        var copied = new ArrayList<Tree>();
+        var copiedChildren = new ArrayList<Tree>();
         for (var child : children) {
-            copied.add(child.deepCopy());
+            copiedChildren.add(child.deepCopy());
         }
-        return new Constructor(label, name, copied);
+        Tree copiedConstructor = new Constructor(label, name, copiedChildren);
+        return copiedConstructor;
     }
 
     @Override
@@ -43,5 +45,46 @@ public final class UnorderedList extends ListNode {
     @Override
     public String toString() {
         return name + " [unordered] height " + height + " assignment " + assignment;
+    }
+
+    @Override
+    public boolean identicalTo(Tree that) {
+        if (label != that.label || height != that.height || size != that.size
+                || children.size() != that.children.size() || !(that instanceof UnorderedList)) {
+            return false;
+        }
+
+        children.sort(new AssignmentComparator());
+        that.children.sort(new AssignmentComparator());
+
+        System.out.print("Sorted children of " + this + ":");
+        for (Tree child : children) {
+            System.out.print(" " + child);
+        }
+        System.out.println("");
+
+        System.out.print("Sorted children of " + that + ":");
+        for (Tree child : that.children) {
+            System.out.print(" " + child);
+        }
+        System.out.println("");
+
+
+        var it = children.iterator();
+        var jt = that.children.iterator();
+        while (it.hasNext()) {
+            if (!it.next().identicalTo(jt.next())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private class AssignmentComparator implements Comparator<Tree> {
+        @Override
+        public int compare(Tree o1, Tree o2) {
+            return  Integer.compare(o1.assignment, o2.assignment);
+        }
     }
 }
