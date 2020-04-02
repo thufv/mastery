@@ -28,7 +28,7 @@ public final class UnorderedList extends ListNode {
         for (var child : children) {
             copiedChildren.add(child.deepCopy());
         }
-        Tree copiedConstructor = new Constructor(label, name, copiedChildren);
+        Tree copiedConstructor = new UnorderedList(label, name, copiedChildren);
         return copiedConstructor;
     }
 
@@ -50,8 +50,19 @@ public final class UnorderedList extends ListNode {
 
     @Override
     public boolean identicalTo(Tree that) {
-        if (label != that.label || height != that.height || size != that.size
-                || children.size() != that.children.size() || !(that instanceof UnorderedList)) {
+        System.out.println("Check " + this + " if identical to " + that);
+
+        if (label != that.label) {
+            return false;
+        }
+        if (height != that.height) {
+            return false;
+        }
+        if (size != that.size) {
+            return false;
+        }
+        if (children.size() != that.children.size()) {
+            System.out.println("children.size = " + children.size() + ", that.children.size = " + that.children.size());
             return false;
         }
 

@@ -47,6 +47,7 @@ allprojects {
     }
 }
 
+// Uncomment the following if you want to debug the unit tests
 // test {
 //     testLogging.showStandardStreams = true
 // }

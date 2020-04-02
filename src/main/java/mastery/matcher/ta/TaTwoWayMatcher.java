@@ -196,8 +196,6 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         for (Tree node: tree2.preOrder()) {
             nodeInDfsOrdering2[node.dfsIndex] = node;
         }
-
-        System.out.println("length of nodeInDfsOrdering2 = " + (tree2.size + 1));
     }
     protected void match(Tree tree1, Tree tree2, MappingType type) {
         m.put(tree1, tree2);
@@ -428,6 +426,11 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     private int recoverydfs(Tree node) {
         assert node.postLCA == null || Interval.isSubinterval(node.postLCA.interval, node.preInterval);
 
+        if (node.name.equals("importDeclarations")) {
+            System.out.println("Now, let's recovery importDeclarations!");
+        }
+        System.out.println("Recovery " + node.name);
+
         int ans = 0;
 
         // node is not matched
@@ -442,18 +445,38 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                         if (checkMatchingOfConstructors(node, buddy)) {
                             match(node, buddy, MappingType.recovery);
                             matched = true;
+
+                            if (node.name.equals("importDeclarations")) {
+                                System.out.println("importDeclarations is matched to " + buddy);
+                            }
                         }
                         ++ans;
                     }
                 }
             }
             if (!matched) {
+                if (node.name.equals("importDeclarations")) {
+                    System.out.println("importDeclarations not match!");
+                }
+
                 Tree parent = node.getParent();
                 if (parent != null && parent.isConstructor()) {
+                    if (node.name.equals("importDeclarations")) {
+                        System.out.println("importDeclarations get parent!");
+                    }
+
                     int parentBuddyDfsIndex = matched1to2[parent.dfsIndex];
                     if (parentBuddyDfsIndex != 0) {
+                        if (node.name.equals("importDeclarations")) {
+                            System.out.println("importDeclarations get parent buddy");
+                        }
+
                         buddy = nodeInDfsOrdering2[parentBuddyDfsIndex].children.get(node.childno);
                         if (matched2to1[buddy.dfsIndex] == 0) {
+                            if (node.name.equals("importDeclarations")) {
+                                System.out.println("importDeclarations get its own buddy");
+                            }
+
                             match(node, buddy, MappingType.recovery);
                         }
                     }

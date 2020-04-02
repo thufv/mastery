@@ -24,12 +24,10 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             Log.finest("right-change %s", right.toReadableString());
             return right.deepCopy();
         }
-
         if (m.treesEqual(base, right)) {
             Log.finest("left-change %s", left.toReadableString());
             return left.deepCopy();
         }
-
         if (m.treesEqual(left, right)) {
             Log.finest("consistent change %s", left.toReadableString());
             return left.deepCopy();

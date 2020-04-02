@@ -36,7 +36,12 @@ I develop this tool with [clang format 8.0.0-3~ubuntu18.04.2](https://clang.llvm
     - [ ] LCA calculation: $O(n) \rightarrow O(\log n)$ per time
     - [ ] Dice function calculation: $O(n) \rightarrow O(\log^2 n) / O(\sqrt n)$ per time
     - [ ] Finding candidate of container mapping: $O(n) \rightarrow O(1)$
-- [ ] ZS algorithm: apply Hungary Algorithm for unordered list
+- [ ] Recovery Mapping
+    - [ ] JDime
+        - [ ] Compulsory mappings between children of the constructor
+        - [ ] Reuse the algorithm of JDime for ordered and unordered list
+        - [ ] Call ZS algorithm in small cases
+    - [ ] ZS algorithm: apply Hungary Algorithm for unordered list
 - [ ] Heuristics when adding isomorphism mapping: try including the information of ancestor path
 - [ ] Compulsory container mapping between method / classes / ... with the same identifier.
 - [ ] Find a theoretical bound of isomorphism mappings (or, isomorphism mapped subtrees) between ASTs

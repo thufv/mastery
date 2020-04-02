@@ -43,16 +43,16 @@ public class AST {
     }
 
     public static UnorderedList unordered(Tree... elements) {
-        System.out.println("Calculate the assignment of an unordered list: ");
+        // System.out.println("Calculate the assignment of an unordered list: ");
 
         UnorderedList node = new UnorderedList(5, "ulist", Arrays.asList(elements));
         node.assignment = 5 * 2333;
         for (Tree element: elements) {
-            System.out.print(node.assignment + " + " + element.assignment);
+            // System.out.print(node.assignment + " + " + element.assignment);
 
             node.assignment += element.assignment;
 
-            System.out.println(" = " + node.assignment);
+            // System.out.println(" = " + node.assignment);
         }
         return node;
     }
