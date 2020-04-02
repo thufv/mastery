@@ -10,6 +10,8 @@ A three-way (the newest version of two branches and the version exactly before b
 ./gradlew build
 ```
 
+> Note: If you failed to build, make sure your Java version is 11.
+
 If you want to modify and build java parser, you need to do this:
 ```bash
 cd ./src/main/java/mastery/translator/java

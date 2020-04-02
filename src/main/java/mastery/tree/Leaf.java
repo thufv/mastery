@@ -54,6 +54,7 @@ public class Leaf extends Tree {
     }
 
     @Override
+    @SafeVarargs
     public final <C> void accept(Visitor<C> visitor, C... ctx) {
         visitor.visitLeaf(this, ctx);
     }

@@ -116,12 +116,14 @@ public abstract class Tree {
      */
     public abstract boolean identicalTo(Tree that);
 
+    @SuppressWarnings("unchecked")
     public abstract <C> void accept(Visitor<C> visitor, C... ctx);
 
     /**
      * A visitor for visiting nodes by type.
      * You have the freedom to decide which nodes need be visited and the visiting order.
      */
+    @SuppressWarnings("unchecked")
     public interface Visitor<C> {
         default void visitLeaf(Leaf leaf, C... ctx) {
         }
