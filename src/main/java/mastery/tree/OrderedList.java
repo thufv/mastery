@@ -45,6 +45,6 @@ public final class OrderedList extends ListNode {
 
     @Override
     public String toString() {
-        return name + " [ordered] height " + height + " assignment " + assignment;
+        return name + " [ordered] assignment " + assignment;
     }
 }

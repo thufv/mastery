@@ -45,7 +45,7 @@ public final class UnorderedList extends ListNode {
 
     @Override
     public String toString() {
-        return name + " [unordered] height " + height + " assignment " + assignment;
+        return name + " [unordered] assignment " + assignment;
     }
 
     @Override

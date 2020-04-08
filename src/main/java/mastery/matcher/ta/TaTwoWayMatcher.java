@@ -484,7 +484,9 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                     if (parentBuddyDfsIndex != 0) {
                         buddy = nodeInDfsOrdering2[parentBuddyDfsIndex].children.get(node.childno);
                         if (matched2to1[buddy.dfsIndex] == 0 && node.label == buddy.label) {
-                            match(node, buddy, MappingType.recovery);
+                            if (node.postLCA == null || Interval.isSubinterval(node.postLCA.interval, buddy.interval)) {
+                                match(node, buddy, MappingType.recovery);
+                            }
                         }
                     }
                 }
