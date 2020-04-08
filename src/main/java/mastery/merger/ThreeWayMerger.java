@@ -47,25 +47,38 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             var l = left.childAt(i);
             var r = right.childAt(i);
 
-            boolean relevant = true;
-            Tree cLeft = m.getLeftMatch(b);
-            if (cLeft == null || !Interval.isSubinterval(cLeft.interval, l.interval)) {
-                relevant = false;
+            if (m.treesEqual(base, left)) {
+                Log.finest("right-change %s", right.toReadableString());
+                return right.deepCopy();
             }
-            Tree cRight = m.getRightMatch(b);
-            if (cRight == null || !Interval.isSubinterval(cRight.interval, r.interval)) {
-                relevant = false;
+            if (m.treesEqual(base, right)) {
+                Log.finest("left-change %s", left.toReadableString());
+                return left.deepCopy();
             }
-
-            if (relevant) {
-                Tree c = threeWay(b, l, r);
-                assertNotNull(c);
-                Log.finer("+ %s (3-way)", c.toReadableString());
-                targets.add(c);
-            } else {
-                var c = Conflict.of(l, r);
-                Log.finer("+ conflict %s", c.toReadableString());
-                targets.add(c);
+            if (m.treesEqual(left, right)) {
+                Log.finest("consistent change %s", left.toReadableString());
+                return left.deepCopy();
+            }
+            else {
+                boolean relevant = true;
+                Tree cLeft = m.getLeftMatch(b);
+                if (cLeft == null || !Interval.isSubinterval(cLeft.interval, l.interval)) {
+                    relevant = false;
+                }
+                Tree cRight = m.getRightMatch(b);
+                if (cRight == null || !Interval.isSubinterval(cRight.interval, r.interval)) {
+                    relevant = false;
+                }
+                if (relevant) {
+                    Tree c = threeWay(b, l, r);
+                    assertNotNull(c);
+                    Log.finer("+ %s (3-way)", c.toReadableString());
+                    targets.add(c);
+                } else {
+                    var c = Conflict.of(l, r);
+                    Log.finer("+ conflict %s", c.toReadableString());
+                    targets.add(c);
+                }
             }
         }
 

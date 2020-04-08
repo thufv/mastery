@@ -198,6 +198,8 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         }
     }
     protected void match(Tree tree1, Tree tree2, MappingType type) {
+        assert tree1.label == tree2.label;
+
         m.put(tree1, tree2);
 
         assertEquals(matched1to2[tree1.dfsIndex], 0);
@@ -213,21 +215,24 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         tree1.preInterval = tree2.interval;
         tree1.postLCA = tree2;
 
-        if (type != MappingType.isomorphic && tree1.isConstructor()) {
-            assert tree2.isConstructor();
-            for (int i = 0; i < tree1.children.size(); ++i) {
-                Tree child1 = tree1.children.get(i);
-                if (child1.height == 0) {
-                    Tree child2 = tree2.children.get(i);
-                    if (matched1to2[child1.dfsIndex] != 0) {
-                        assert matched1to2[child1.dfsIndex] == child2.dfsIndex;
-                    }
-                    else {
-                        match(child1, child2, MappingType.recovery);
-                    }
-                }
-            }
-        }
+        // The following code is supposed to be redundant
+        // if (type != MappingType.isomorphic && tree1.isConstructor()) {
+        //    assert tree2.isConstructor();
+        //    for (int i = 0; i < tree1.children.size(); ++i) {
+        //        Tree child1 = tree1.children.get(i);
+        //        if (child1.height == 0) {
+        //            System.out.println("Compulsory mappings between leaves when " + type + ".\nParents are " + tree1 + " <-> " + tree2);
+
+        //            Tree child2 = tree2.children.get(i);
+        //            if (matched1to2[child1.dfsIndex] != 0) {
+        //                assert matched1to2[child1.dfsIndex] == child2.dfsIndex;
+        //            }
+        //            else {
+        //                match(child1, child2, MappingType.recovery);
+        //            }
+        //        }
+        //    }
+        //}
 
         Log.finer("%s mapping: %s <-> %s", type, tree1, tree2);
     }
@@ -334,9 +339,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
             
             if (node == root1) {
                 match(root1, root2, MappingType.container);
-                if (Math.max(root1.size, root2.size) < maxSize) {
-                    mappingCount += recovery(node, root2);
-                }
+                mappingCount += containerDfs(node, root2);
             }
             else {
                 if (node.postLCA != null) {
@@ -352,15 +355,11 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                         // get the candidate!
                         // let's check the dice!
 
-                        // Log.finer("container mapping candidate: %s <-> %s (Jaccard Similarity = %f)", node, candidate, Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size));
-
                         if (Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size) > minDice) {
 
                             if (checkMatchingOfConstructors(node, candidate)) {
                                 match(node, candidate, MappingType.container);
-                                if (Math.max(node.size, candidate.size) < maxSize) {
-                                    mappingCount += recovery(node, candidate);
-                                }
+                                mappingCount += containerDfs(node, candidate);
                             }
                         }
                     }
@@ -368,6 +367,37 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
             }
         }
         return mappingCount;
+    }
+
+    int containerDfs(Tree node, Tree candidate) {
+        if (Math.max(node.size, candidate.size) < maxSize) {
+            return recovery(node, candidate);
+        }
+        else {
+           // System.out.println("containerDfs(" + node + ", " + candidate + ")");
+
+            int mappingCount = 0;
+            if (node.isConstructor()) {
+                assert candidate.isConstructor();
+
+          //      System.out.println("Yes, a pair of constructors!");
+
+                for (int i = 0; i < node.children.size(); ++i) {
+                    Tree child1 = node.children.get(i);
+                    Tree child2 = candidate.children.get(i);
+
+          //          System.out.println("A pair of children: " + child1 + " <-> " + child2);
+
+                    if (matched1to2[child1.dfsIndex] == 0 && matched2to1[child2.dfsIndex] == 0 && child1.label == child2.label) {
+          //              System.out.println("Both not matched!");
+
+                        match(child1, child2, MappingType.recovery);
+                        mappingCount += containerDfs(child1, child2);
+                    }
+                }
+            }
+            return mappingCount;
+        }
     }
 
     private ZsTree zsSrc;
@@ -424,12 +454,9 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     }
 
     private int recoverydfs(Tree node) {
-        assert node.postLCA == null || Interval.isSubinterval(node.postLCA.interval, node.preInterval);
+        System.out.println("recoverydfs " + node + " , postLCA = " + node.postLCA + ", preNode = " + nodeInDfsOrdering2[node.preInterval.l]);
 
-        if (node.name.equals("importDeclarations")) {
-            System.out.println("Now, let's recovery importDeclarations!");
-        }
-        System.out.println("Recovery " + node.name);
+        assert node.postLCA == null || Interval.isSubinterval(node.postLCA.interval, node.preInterval);
 
         int ans = 0;
 
@@ -445,38 +472,18 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                         if (checkMatchingOfConstructors(node, buddy)) {
                             match(node, buddy, MappingType.recovery);
                             matched = true;
-
-                            if (node.name.equals("importDeclarations")) {
-                                System.out.println("importDeclarations is matched to " + buddy);
-                            }
                         }
                         ++ans;
                     }
                 }
             }
             if (!matched) {
-                if (node.name.equals("importDeclarations")) {
-                    System.out.println("importDeclarations not match!");
-                }
-
                 Tree parent = node.getParent();
                 if (parent != null && parent.isConstructor()) {
-                    if (node.name.equals("importDeclarations")) {
-                        System.out.println("importDeclarations get parent!");
-                    }
-
                     int parentBuddyDfsIndex = matched1to2[parent.dfsIndex];
                     if (parentBuddyDfsIndex != 0) {
-                        if (node.name.equals("importDeclarations")) {
-                            System.out.println("importDeclarations get parent buddy");
-                        }
-
                         buddy = nodeInDfsOrdering2[parentBuddyDfsIndex].children.get(node.childno);
-                        if (matched2to1[buddy.dfsIndex] == 0) {
-                            if (node.name.equals("importDeclarations")) {
-                                System.out.println("importDeclarations get its own buddy");
-                            }
-
+                        if (matched2to1[buddy.dfsIndex] == 0 && node.label == buddy.label) {
                             match(node, buddy, MappingType.recovery);
                         }
                     }
@@ -621,7 +628,6 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 if ("".equals(l1.code) || "".equals(l2.code))
                     return 1D;
                 else {
-                    // System.out.println("Calculate update cost of " + l1.code + " and " + l2.code);
                     return 1D - StringMetrics.qGramsDistance().compare(l1.code, l2.code);
                 }
             }

@@ -39,7 +39,6 @@ I develop this tool with [clang format 8.0.0-3~ubuntu18.04.2](https://clang.llvm
 - [ ] Recovery Mapping
     - [ ] JDime
         - [ ] Compulsory mappings between children of the constructor
-        - [ ] Reuse the algorithm of JDime for ordered and unordered list
         - [ ] Call ZS algorithm in small cases
     - [ ] ZS algorithm: apply Hungary Algorithm for unordered list
 - [ ] Heuristics when adding isomorphism mapping: try including the information of ancestor path
@@ -55,17 +54,6 @@ I develop this tool with [clang format 8.0.0-3~ubuntu18.04.2](https://clang.llvm
 - [ ] Graphic AST mappings
 
 ### Wierd Inputs
-
-Here are input source files that maybe caused by bugs of algorithm design or implementation.
-
-Samples in papers
-- [ ] `./sample/ordering_conflict_JDime/`
-- [ ] `./sample/duplicated_jFSTMerge/`
-
-Samples in real merge scenarios
-- [ ] `./scenario/antlr4/TokenTagToken`
-- [ ] `./scenario/kotlin/ExtensionFunction2.java`
-- [ ] `./scenario/RxJava/Action3.java`
 
 ## Authors
 
