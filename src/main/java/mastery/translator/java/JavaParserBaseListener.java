@@ -1061,6 +1061,18 @@ public class JavaParserBaseListener implements JavaParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterQuestionOptionExtendsOrSuperTypeType(JavaParser.QuestionOptionExtendsOrSuperTypeTypeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitQuestionOptionExtendsOrSuperTypeType(JavaParser.QuestionOptionExtendsOrSuperTypeTypeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterOptionExtendsOrSuperTypeType(JavaParser.OptionExtendsOrSuperTypeTypeContext ctx) { }
 	/**
 	 * {@inheritDoc}

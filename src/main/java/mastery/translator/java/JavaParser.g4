@@ -263,7 +263,9 @@ memberSelections: memberSelection*;
 
 memberSelection: '.' IDENTIFIER optionTypeArguments;
 
-typeArgument: typeType | '?' optionExtendsOrSuperTypeType;
+typeArgument: typeType | questionOptionExtendsOrSuperTypeType;
+
+questionOptionExtendsOrSuperTypeType: '?' optionExtendsOrSuperTypeType;
 
 optionExtendsOrSuperTypeType: ((EXTENDS | SUPER) typeType)?;
 

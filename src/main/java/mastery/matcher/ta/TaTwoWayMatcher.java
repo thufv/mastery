@@ -199,6 +199,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     }
     protected void match(Tree tree1, Tree tree2, MappingType type) {
         assert tree1.label == tree2.label;
+        assert tree1.isConstructor() ? tree2.isConstructor() && tree1.children.size() == tree2.children.size(): true;
 
         m.put(tree1, tree2);
 
@@ -454,7 +455,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     }
 
     private int recoverydfs(Tree node) {
-        System.out.println("recoverydfs " + node + " , postLCA = " + node.postLCA + ", preNode = " + nodeInDfsOrdering2[node.preInterval.l]);
+        // System.out.println("recoverydfs " + node + " , postLCA = " + node.postLCA + ", preNode = " + nodeInDfsOrdering2[node.preInterval.l]);
 
         assert node.postLCA == null || Interval.isSubinterval(node.postLCA.interval, node.preInterval);
 
@@ -482,6 +483,8 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 if (parent != null && parent.isConstructor()) {
                     int parentBuddyDfsIndex = matched1to2[parent.dfsIndex];
                     if (parentBuddyDfsIndex != 0) {
+                        assert nodeInDfsOrdering2[parentBuddyDfsIndex].isConstructor();
+                        assert nodeInDfsOrdering2[parentBuddyDfsIndex].children.size() == parent.children.size();
                         buddy = nodeInDfsOrdering2[parentBuddyDfsIndex].children.get(node.childno);
                         if (matched2to1[buddy.dfsIndex] == 0 && node.label == buddy.label) {
                             if (node.postLCA == null || Interval.isSubinterval(node.postLCA.interval, buddy.interval)) {

@@ -8,18 +8,20 @@ import random
 results = []
 
 # load all files
-with open('../bases.json', 'r') as f:
+with open('../bases_100.json', 'r') as f:
     basefiles = json.load(f)
 basefiles = list(map(lambda basefile: path.join('../commits', basefile), basefiles))
-random.shuffle(basefiles)
+# random.shuffle(basefiles)
 
 # Run
-for basefile in basefiles[:50]:
+for basefile in basefiles:
     result = {}
 
     leftfile = basefile.replace('/base/', '/left/')
     rightfile = basefile.replace('/base/', '/right/')
     expectedfile = basefile.replace('/base/', '/expected/')
+
+    print("Working at " + basefile)
 
     result['basefile'] = basefile
 

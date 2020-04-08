@@ -10,7 +10,7 @@ public class AST {
         Leaf node = new Leaf(1, "token", value);
         node.assignment = 1 * 2333 + value.hashCode();
 
-        System.out.println("leaf(" + value + ").assignment = " + node.assignment);
+        // System.out.println("leaf(" + value + ").assignment = " + node.assignment);
 
         return node;
     }

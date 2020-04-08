@@ -32,13 +32,13 @@ public abstract class MergeTest {
         Tree tree = merger.apply(m);
         IndentPrinter printer = new IndentPrinter();
 
-        System.out.println("merged tree:");
-        TreePrinters.textTree(tree, printer);
-        printer.flush();
+        // System.out.println("merged tree:");
+        // TreePrinters.textTree(tree, printer);
+        // printer.flush();
 
-        System.out.println("target tree:");
-        TreePrinters.textTree(target, printer);
-        printer.flush();
+        // System.out.println("target tree:");
+        // TreePrinters.textTree(target, printer);
+        // printer.flush();
 
         assertTrue(tree.identicalTo(target));
     }

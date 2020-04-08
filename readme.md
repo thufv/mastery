@@ -4,6 +4,11 @@ A three-way (the newest version of two branches and the version exactly before b
 
 ## Getting Started
 
+### Tool Dependency
+
+- Java: 11
+- Antlr: 4.7.1
+
 ### Build
 
 ```bash
