@@ -80,29 +80,44 @@ public final class TreeBuilders {
 
             @Override
             public Tree visitConstructor(Constructor constructor) {
-                var updated = new ArrayList<Tree>();
-                for (var child : constructor.children) {
-                    updated.add(child.accept(this));
+                if (constructor == origin) {
+                    return update;
                 }
-                return new Constructor(constructor.label, constructor.name, updated);
+                else {
+                    var updated = new ArrayList<Tree>();
+                    for (var child : constructor.children) {
+                        updated.add(child.accept(this));
+                    }
+                    return new Constructor(constructor.label, constructor.name, updated);
+                }
             }
 
             @Override
             public Tree visitOrderedList(OrderedList ordered) {
-                var updated = new ArrayList<Tree>();
-                for (var child : ordered.children) {
-                    updated.add(child.accept(this));
+                if (ordered == origin) {
+                    return update;
                 }
-                return new OrderedList(ordered.label, ordered.name, updated);
+                else {
+                    var updated = new ArrayList<Tree>();
+                    for (var child : ordered.children) {
+                        updated.add(child.accept(this));
+                    }
+                    return new OrderedList(ordered.label, ordered.name, updated);
+                }
             }
 
             @Override
             public Tree visitUnorderedList(UnorderedList unordered) {
-                var updated = new ArrayList<Tree>();
-                for (var child : unordered.children) {
-                    updated.add(child.accept(this));
+                if (unordered == origin) {
+                    return update;
                 }
-                return new UnorderedList(unordered.label, unordered.name, updated);
+                else {
+                    var updated = new ArrayList<Tree>();
+                    for (var child : unordered.children) {
+                        updated.add(child.accept(this));
+                    }
+                    return new UnorderedList(unordered.label, unordered.name, updated);
+                }
             }
 
             @Override

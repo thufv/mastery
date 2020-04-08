@@ -3,6 +3,7 @@ package mastery.driver;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.logging.Level;
 import mastery.matcher.MatchingSet;
 import mastery.matcher.Matcher;
 import mastery.matcher.gum.GumMatcher;
@@ -61,6 +62,11 @@ public final class Driver {
             // Phase II: Merge
             BottomUpMerger merger = new BottomUpMerger();
             Tree target = merger.apply(mapping);
+
+            // Log.ifLoggable(Level.FINEST, printer -> {
+            //     printer.println("target");
+            //     target.prettyPrintTo(printer);
+            // });
 
             // Everything is done.
             // Valar Morghulis

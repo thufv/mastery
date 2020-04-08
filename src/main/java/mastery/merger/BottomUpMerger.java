@@ -5,6 +5,7 @@ import mastery.util.log.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Level;
 
 public final class BottomUpMerger extends Merger {
     @Override
@@ -56,6 +57,11 @@ public final class BottomUpMerger extends Merger {
         var merger = new ThreeWayMerger(m, targets);
         for (var scenario : scenarios) {
             targets.put(scenario.getBase(), scenario.accept(merger));
+
+            // Log.ifLoggable(Level.FINEST, printer -> {
+            //     printer.println("merging target");
+            //     targets.get(scenario.getBase()).prettyPrintTo(printer);
+            // });
         }
 
         return targets.get(m.base);
