@@ -9,14 +9,12 @@ public abstract class Matcher {
     public MatchingSet calc(TwoWayMatcher twoWayMatcher, MatchingSet matchingSet, Tree base, Tree left, Tree right) {
         Log.fine("2-way matching: base <-> left");
         var leftMapping = twoWayMatcher.apply(base, left);
-
-        // System.out.println("====== Above is left, following is right ========\n");
+        leftMapping.forEach(matchingSet::setLeftMatch);
 
         Log.fine("2-way matching: base <-> right");
         var rightMapping = twoWayMatcher.apply(base, right);
-
-        leftMapping.forEach(matchingSet::setLeftMatch);
         rightMapping.forEach(matchingSet::setRightMatch);
+        
         Log.fine("2-way matching: %d matches identified", matchingSet.size());
 
         return matchingSet;

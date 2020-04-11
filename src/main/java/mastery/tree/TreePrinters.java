@@ -2,6 +2,9 @@ package mastery.tree;
 
 import mastery.util.log.IndentPrinter;
 
+
+
+import java.util.*;
 import java.io.*;
 
 public class TreePrinters {
@@ -114,9 +117,10 @@ public class TreePrinters {
      *
      * @param tree
      * @param formatter
+     * @param language
      * @return The output as a string
      */
-    public static String prettyCode(Tree tree, String formatter) {
+    public static String prettyCode(Tree tree, String formatter, String language) {
         var sb = new StringBuilder();
         var tokenWalker = new Tree.Visitor<Object>() {
             @Override
@@ -154,7 +158,7 @@ public class TreePrinters {
         } else {
             try {
                 // Use clang-format
-                ProcessBuilder pb = new ProcessBuilder(formatter);
+                ProcessBuilder pb = new ProcessBuilder(Arrays.asList(formatter, "-assume-filename=" + "output." + fileExtension.get(language)));
                 Process p = pb.start();
 
                 OutputStream os = p.getOutputStream();
@@ -180,4 +184,9 @@ public class TreePrinters {
 
         return formattedCode;
     }
+    public static Map<String, String> fileExtension = Map.of(
+        "JAVA", "java",
+        "C#", "cs",
+        "C", "c"
+    );
 }

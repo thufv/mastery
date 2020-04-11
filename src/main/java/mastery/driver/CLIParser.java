@@ -27,14 +27,6 @@ public final class CLIParser {
             .desc("output file/directory")
             .build();
 
-    static final String EXPECTED = "e";
-    final Option expected = Option.builder(EXPECTED)
-            .longOpt("expected")
-            .hasArg()
-            .argName("file")
-            .desc("expected file/directory (enables auto check)")
-            .build();
-
     static final String LOG_LEVEL = "log-level";
     final Option logLevel = Option
             .builder(null)
@@ -67,10 +59,9 @@ public final class CLIParser {
     final Option algo = Option
             .builder(ALGO)
             .longOpt("algorithm")
-            .required()
             .hasArg()
             .argName("algorithm")
-            .desc("algorithm of mapping")
+            .desc("algorithm of mapping (default ta)")
             .build();
 
     static final String FORMATTER = "formatter";
@@ -94,11 +85,11 @@ public final class CLIParser {
         options = new Options();
         options.addOption(lang);
         options.addOption(output);
-        options.addOption(expected);
         // log related
         options.addOption(logLevel);
         options.addOption(logColorful);
         options.addOption(logFile);
+
         options.addOption(algo);
         options.addOption(formatter);
         options.addOption(help);
@@ -108,8 +99,7 @@ public final class CLIParser {
         String header = "\noptions:\n";
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp(
-            "mastery [options] -l java|c|c# -a gum|ta <left> <base> <right>\n"
-                + "  arguments should be all file paths",
+            "Do you want a matcher, or merger?\nmastery diff <file...> -l java|c|c#\nmastery merge <left> <base> <right> -l java|c|c# [options]\n",
             header, options, "");
     }
 
@@ -123,56 +113,71 @@ public final class CLIParser {
         CommandLine cli = parser.parse(options, args);
 
         String[] arguments = cli.getArgs();
-        if (arguments.length < 3) {
-            printHelp();
-            throw new ParseException("Please provide 3 files/directories as arguments.");
-        }
-
-        String left = arguments[0];
-        String base = arguments[1];
-        String right = arguments[2];
-        String output = cli.getOptionValue(OUTPUT);
-        var builder = Config.builder(base, left, right, output);
+        String mode = arguments[0];
 
         if (cli.hasOption(HELP)) {
             throw new HelpException();
         }
+        
+        Config config;
+        if (mode.equals("diff")) {
+            if (arguments.length < 3) {
+                throw new ParseException("Please provide at least 2 files as arguments.");
+            }
 
-        if (cli.hasOption(LANG)) {
+            String[] files = new String[arguments.length - 1];
+            for (int i = 1; i < arguments.length; ++i)
+                files[i - 1] = arguments[i];
+            
             String language = cli.getOptionValue(LANG).toUpperCase();
             if (!Arrays.asList(LANGS).contains(language)) {
-                printHelp();
                 throw new ParseException("Invalid language: " + lang.getDescription());
             }
-            builder.lang(language);
+            
+            config = new Config(files, language);
         }
+        else if (mode.equals("merge")) {
+            if (arguments.length < 4) {
+                throw new ParseException("Please provide 3 files/directories as arguments.");
+            }
 
-        if (cli.hasOption(EXPECTED)) {
-            builder.expected(cli.getOptionValue(EXPECTED));
+            String left = arguments[1];
+            String base = arguments[2];
+            String right = arguments[3];
+
+            String language = cli.getOptionValue(LANG).toUpperCase();
+            if (!Arrays.asList(LANGS).contains(language)) {
+                throw new ParseException("Invalid language: " + lang.getDescription());
+            }
+
+            config = new Config(left, base, right, language);
+
+            config.output = cli.getOptionValue(OUTPUT);
+            config.language = language;
+            if (cli.hasOption(ALGO)) {
+                config.algorithm = cli.getOptionValue(ALGO);
+            }
+
+            if (cli.hasOption(FORMATTER)) {
+                config.formatter = cli.getOptionValue(FORMATTER);
+            }
+        }
+        else {
+            throw new ParseException("Diff or merge? Please tell me what to do first.");
         }
 
         if (cli.hasOption(LOG_LEVEL)) {
             Level level = Level.parse(cli.getOptionValue(LOG_LEVEL).toUpperCase());
-            builder.logLevel(level);
+            config.logLevel = level;
         }
-
         if (cli.hasOption(LOG_COLORFUL)) {
-            builder.enableLogColor();
+            config.logColorful = true;
         }
-
         if (cli.hasOption(LOG_FILE)) {
-            builder.logDump(cli.getOptionValue(LOG_FILE));
+            config.logDump = cli.getOptionValue(LOG_FILE);
         }
 
-        if (cli.hasOption(ALGO)) {
-            builder.algorithm(cli.getOptionValue(ALGO));
-        }
-
-        if (cli.hasOption(FORMATTER)) {
-            builder.formatter(cli.getOptionValue(FORMATTER));
-        }
-
-        return builder.build();
+        return config;
     }
 
     private Options options;

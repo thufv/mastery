@@ -1,33 +1,21 @@
-import json
+import json, os
 from os import path
+from pathlib import Path
 import subprocess
-from timeit import timeit
 import datetime
 import random
+FNULL = open(os.devnull, 'w')
+jsonfile = path.join('results', datetime.datetime.now().strftime("%b_%d-%H%M") + '.json')
 
-results = []
+# --------------- Tool-related --------------------
+tool = 'mastery'
 
-# load all files
-with open('../bases_100.json', 'r') as f:
-    basefiles = json.load(f)
-basefiles = list(map(lambda basefile: path.join('../commits', basefile), basefiles))
-# random.shuffle(basefiles)
+# Note: the command time here is the command of LINUX, but not the one in bash
+def calc_command(leftfile, basefile, rightfile, outputfile):
+    return ['time', '-v', 'java', '-jar', 'build/libs/mastery-1.0-SNAPSHOT.jar', 'merge', leftfile, basefile, rightfile, '-l', 'java', '--log-level', 'off', '--output', outputfile, '--formatter', 'clang-format', '-a', 'ta']
 
-# Run
-for basefile in basefiles:
-    result = {}
-
-    leftfile = basefile.replace('/base/', '/left/')
-    rightfile = basefile.replace('/base/', '/right/')
-    expectedfile = basefile.replace('/base/', '/expected/')
-
-    print("Working at " + basefile)
-
-    result['basefile'] = basefile
-
-    result['time'] = timeit(stmt = "subprocess.run(['java', '-jar', 'build/libs/mastery-1.0-SNAPSHOT.jar', '" + leftfile + "', '" + basefile + "', '" + rightfile + "', '-l', 'java', '--log-file', 'debug.log', '--log-level', 'off', '--output', 'output.java', '--formatter', 'clang-format', '-a', 'ta'])", setup = "import subprocess", number = 1)
-
-    with open('output.java', 'r') as f:
+def calc_conflict(result):
+    with open(outputfile, 'r') as f:
         lines = f.readlines()
     result['conflict_num'] = len(list(filter(lambda line: '///// left' in line, lines)))
 
@@ -53,7 +41,61 @@ for basefile in basefiles:
 
         i = i + 1
 
+# --------------- Tool-unrelated -----------------
+results = []
+
+# load all files
+with open('../non-trivials.json', 'r') as f:
+    basefiles = json.load(f)
+basefiles = list(map(lambda basefile: path.join('..', basefile), basefiles))
+random.shuffle(basefiles)
+
+# Run
+for basefile in basefiles[:10]:
+    result = {}
+
+    # File information
+    leftfile = basefile.replace('/base/', '/left/')
+    rightfile = basefile.replace('/base/', '/right/')
+    outputfile = basefile.replace('/base/', '/' + tool + '/')
+    expectedfile = basefile.replace('/base/', '/expected/')
+    print("Working at " + basefile)
+    result['basefile'] = basefile
+    Path(path.dirname(outputfile)).mkdir(parents = True, exist_ok = True)
+
+    sp = subprocess.run(calc_command(leftfile, basefile, rightfile, outputfile), stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    err = sp.stderr.decode()
+
+    if len(err.split('\n')) == 24:
+        result['crash'] = False
+
+        result['time'] = 0
+        user_string = 'User time (seconds): '
+        user_pos = err.find(user_string) + len(user_string)
+        user_pos_eol = err.find('\n', user_pos)
+        result['time'] += float(err[user_pos: user_pos_eol])
+        system_string = 'System time (seconds): '
+        system_pos = err.find(system_string) + len(system_string)
+        system_pos_eol = err.find('\n', system_pos)
+        result['time'] += float(err[system_pos: system_pos_eol])
+
+        calc_conflict(result)
+
+        # Diff with the expected one
+        if result['conflict_num'] != 0:
+            result['expected'] = False
+        else:
+            return_code = subprocess.call(['java', '-jar', '/home/namasikanam/mastery/build/libs/mastery-1.0-SNAPSHOT.jar', 'diff', outputfile, expectedfile, '-l', 'java'], stdout = FNULL, stderr = FNULL)
+            result['expected'] = return_code == 0
+    else:
+        result['crash'] = True
+
     results.append(result)
 
-with open(path.join('results', datetime.datetime.now().strftime("%b_%d-%H%M") + '.json'), 'w') as f:
+    if bin(len(results)).count('1') == 1:
+        with open(jsonfile, 'w') as f:
+            json.dump(results, f, indent = "\t")
+
+
+with open(jsonfile, 'w') as f:
     json.dump(results, f, indent = "\t")

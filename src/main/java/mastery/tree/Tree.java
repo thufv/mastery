@@ -328,4 +328,10 @@ public abstract class Tree {
         }
         return node1;
     }
+
+    public final boolean equals(Tree node) {
+        assert assignment != 0;
+        assert node.assignment != 0;
+        return assignment == node.assignment;
+    }
 }
