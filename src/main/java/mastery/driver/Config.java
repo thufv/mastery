@@ -37,6 +37,7 @@ public final class Config {
 
     // algorithm
     public String algorithm = "ta";
+    public boolean topDown = false;
 
     public Config(String left, String base, String right, String language) {
         mode = Mode.MERGE;

@@ -54,7 +54,6 @@ public final class CLIParser {
             .desc("also dump log to a file")
             .build();
     
-    
     static final String ALGO = "a";
     final Option algo = Option
             .builder(ALGO)
@@ -62,6 +61,14 @@ public final class CLIParser {
             .hasArg()
             .argName("algorithm")
             .desc("algorithm of mapping (default ta)")
+            .build();
+    
+    static final String TOPDOWN = "top-down";
+    final Option topdown = Option
+            .builder(null)
+            .longOpt("top-down")
+            .argName("topdown pruning")
+            .desc("top down pruning before bottom up merge")
             .build();
 
     static final String FORMATTER = "formatter";
@@ -91,6 +98,7 @@ public final class CLIParser {
         options.addOption(logFile);
 
         options.addOption(algo);
+        options.addOption(topdown);
         options.addOption(formatter);
         options.addOption(help);
     }
@@ -154,13 +162,9 @@ public final class CLIParser {
 
             config.output = cli.getOptionValue(OUTPUT);
             config.language = language;
-            if (cli.hasOption(ALGO)) {
-                config.algorithm = cli.getOptionValue(ALGO);
-            }
-
-            if (cli.hasOption(FORMATTER)) {
-                config.formatter = cli.getOptionValue(FORMATTER);
-            }
+            if (cli.hasOption(ALGO)) config.algorithm = cli.getOptionValue(ALGO);
+            if (cli.hasOption(TOPDOWN)) config.topDown = true;
+            if (cli.hasOption(FORMATTER)) config.formatter = cli.getOptionValue(FORMATTER);
         }
         else {
             throw new ParseException("Diff or merge? Please tell me what to do first.");

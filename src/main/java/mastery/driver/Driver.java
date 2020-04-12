@@ -10,7 +10,9 @@ import mastery.matcher.Matcher;
 import mastery.matcher.Assigner;
 import mastery.matcher.gum.GumMatcher;
 import mastery.matcher.ta.TaMatcher;
+import mastery.merger.Merger;
 import mastery.merger.BottomUpMerger;
+import mastery.merger.TopDownPruningMerger;
 import mastery.tree.Tree;
 import mastery.tree.TreeBuilders;
 import mastery.tree.TreePrinters;
@@ -88,7 +90,7 @@ public final class Driver {
                 MatchingSet mapping = matcher.apply(base, left, right);
 
                 // Phase II: Merge
-                BottomUpMerger merger = new BottomUpMerger();
+                Merger merger = config.topDown ? new TopDownPruningMerger(): new BottomUpMerger();
                 Tree target = merger.apply(mapping);
 
                 // Log.ifLoggable(Level.FINEST, printer -> {

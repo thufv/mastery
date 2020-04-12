@@ -16,7 +16,9 @@ elif [ "$#" -eq 3 ]; then
     echo $BASE
     echo $RIGHT
 
-    time java -ea -jar ./build/libs/mastery-1.0-SNAPSHOT.jar merge $LEFT $BASE $RIGHT -l java --log-file debug.log --formatter $1 -a ta --output $3
+    echo "time java -ea -jar ./build/libs/mastery-1.0-SNAPSHOT.jar merge $LEFT $BASE $RIGHT -l java --log-file debug.log --formatter $1 -a ta --output $3 --top-down"
+
+    time java -ea -jar ./build/libs/mastery-1.0-SNAPSHOT.jar merge $LEFT $BASE $RIGHT -l java --log-file debug.log --formatter $1 -a ta --output $3 --top-down
 else
     echo "Illegal parameter number"
 fi
