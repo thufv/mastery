@@ -23,8 +23,9 @@ bin/
 .classpath
 .project
 
-# For namasikanam
+# Temporary files
 exp/
+tmp/
 
 # Antlr
 **/.antlr/
