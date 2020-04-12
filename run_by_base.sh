@@ -1,24 +1,28 @@
 #!/bin/bash
 
-# Usage: ./run_by_base.sh <formatter> <base> [output]
+# Usage: ./run_by_base.sh <formatter> <base> [output] [option]
 
-if [ "$#" -eq 2 ]; then
-    BASE=$2
-    LEFT=${BASE/base/left}
-    RIGHT=${BASE/base/right}
-    time java -ea -jar ./build/libs/mastery-1.0-SNAPSHOT.jar merge $LEFT $BASE $RIGHT -l java --log-file debug.log --formatter $1 -a ta
-elif [ "$#" -eq 3 ]; then
+if [ "$#" -gt 1 ]; then
     BASE=$2
     LEFT=${BASE/base/left}
     RIGHT=${BASE/base/right}
 
-    echo $LEFT
-    echo $BASE
-    echo $RIGHT
-
-    echo "time java -ea -jar ./build/libs/mastery-1.0-SNAPSHOT.jar merge $LEFT $BASE $RIGHT -l java --log-file debug.log --formatter $1 -a ta --output $3 --top-down"
-
-    time java -ea -jar ./build/libs/mastery-1.0-SNAPSHOT.jar merge $LEFT $BASE $RIGHT -l java --log-file debug.log --formatter $1 -a ta --output $3 --top-down
+    if [ "$#" -gt 2 ]; then
+        if [ "$#" -gt 3 ]; then
+            if [ "$#" -gt 4 ]; then
+                echo "Illegal parameter number"
+            else
+                echo "time java -ea -jar ./build/libs/mastery-1.0-SNAPSHOT.jar merge $LEFT $BASE $RIGHT -l java --log-file debug.log --formatter $1 -a ta --output $3 $4"
+                time java -ea -jar ./build/libs/mastery-1.0-SNAPSHOT.jar merge $LEFT $BASE $RIGHT -l java --log-file debug.log --formatter $1 -a ta --output $3 $4
+            fi
+        else
+            echo "time java -ea -jar ./build/libs/mastery-1.0-SNAPSHOT.jar merge $LEFT $BASE $RIGHT -l java --log-file debug.log --formatter $1 -a ta --output $3"
+            time java -ea -jar ./build/libs/mastery-1.0-SNAPSHOT.jar merge $LEFT $BASE $RIGHT -l java --log-file debug.log --formatter $1 -a ta --output $3
+        fi
+    else
+        echo "time java -ea -jar ./build/libs/mastery-1.0-SNAPSHOT.jar merge $LEFT $BASE $RIGHT -l java --log-file debug.log --formatter $1 -a ta"
+        time java -ea -jar ./build/libs/mastery-1.0-SNAPSHOT.jar merge $LEFT $BASE $RIGHT -l java --log-file debug.log --formatter $1 -a ta
+    fi
 else
     echo "Illegal parameter number"
 fi
