@@ -60,6 +60,8 @@ I develop this tool with [clang format 8.0.0-3~ubuntu18.04.2](https://clang.llvm
 
 ### Wierd Inputs
 
+- [ ] [Crashed results](https://git.tsinghua.edu.cn/snippets/10)
+
 ## Authors
 
 - Fengmin Zhu
