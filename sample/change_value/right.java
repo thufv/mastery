@@ -1,5 +1,10 @@
-public class A {
-    public String foo(int i) {
+public class  A {
+	public String foo(int i) {
+<<<<<<< MINE
+        int x = 2;
+=======
         int x = 3;
+>>>>>>> YOURS
     }
+
 }

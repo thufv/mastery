@@ -899,6 +899,16 @@ public interface JavaParserListener extends ParseTreeListener {
 	 */
 	void exitOptionExtendsOrSuperTypeType(JavaParser.OptionExtendsOrSuperTypeTypeContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link JavaParser#extendsOrSuperTypeType}.
+	 * @param ctx the parse tree
+	 */
+	void enterExtendsOrSuperTypeType(JavaParser.ExtendsOrSuperTypeTypeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaParser#extendsOrSuperTypeType}.
+	 * @param ctx the parse tree
+	 */
+	void exitExtendsOrSuperTypeType(JavaParser.ExtendsOrSuperTypeTypeContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link JavaParser#qualifiedNameList}.
 	 * @param ctx the parse tree
 	 */

@@ -265,9 +265,12 @@ memberSelection: '.' IDENTIFIER optionTypeArguments;
 
 typeArgument: typeType | questionOptionExtendsOrSuperTypeType;
 
-questionOptionExtendsOrSuperTypeType: '?' optionExtendsOrSuperTypeType;
+questionOptionExtendsOrSuperTypeType:
+	'?' optionExtendsOrSuperTypeType;
 
-optionExtendsOrSuperTypeType: ((EXTENDS | SUPER) typeType)?;
+optionExtendsOrSuperTypeType: extendsOrSuperTypeType?;
+
+extendsOrSuperTypeType: (EXTENDS | SUPER) typeType;
 
 qualifiedNameList: qualifiedName otherQualifiedNames;
 
@@ -404,8 +407,7 @@ blockStatement:
 	| statement
 	| localTypeDeclaration;
 
-localVariableDeclarationStatement:
-    localVariableDeclaration ';';
+localVariableDeclarationStatement: localVariableDeclaration ';';
 
 localVariableDeclaration:
 	variableModifiers typeType variableDeclarators;
