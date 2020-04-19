@@ -243,21 +243,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
 
             if (valid.size() == 1) {
                 if (!leftSuspended.isEmpty() || !rightSuspended.isEmpty()) { // handle suspended
-                    ArrayList<Tree> finalLeftSuspended = leftSuspended;
-                    ArrayList<Tree> finalRightSuspended = rightSuspended;
-                    Log.ifLoggable(Level.FINER, printer -> {
-                        printer.println("conflict");
-                        printer.incIndent();
-                        finalLeftSuspended.forEach(printer::println);
-                        printer.decIndent();
-                        printer.println("<->");
-                        printer.incIndent();
-                        finalRightSuspended.forEach(printer::println);
-                        printer.decIndent();
-                    });
-                    targets.add(Conflict.of(leftSuspended, rightSuspended));
-                    leftSuspended = new ArrayList<>();
-                    rightSuspended = new ArrayList<>();
+                    handleSuspended(leftSuspended, rightSuspended, targets);
                 }
                 Log.finer("unique choice: %s", valid.get(0).target);
                 targets.add(valid.get(0).target);
@@ -273,19 +259,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             }
         }
         if (!leftSuspended.isEmpty() || !rightSuspended.isEmpty()) { // handle suspended
-            ArrayList<Tree> finalLeftSuspended1 = leftSuspended;
-            ArrayList<Tree> finalRightSuspended1 = rightSuspended;
-            Log.ifLoggable(Level.FINER, printer -> {
-                printer.println("conflict");
-                printer.incIndent();
-                finalLeftSuspended1.forEach(printer::println);
-                printer.decIndent();
-                printer.println("<->");
-                printer.incIndent();
-                finalRightSuspended1.forEach(printer::println);
-                printer.decIndent();
-            });
-            targets.add(Conflict.of(leftSuspended, rightSuspended));
+            handleSuspended(leftSuspended, rightSuspended, targets);
         }
 
         if (issued.size() < candidates.size()) { // cyclic
@@ -305,19 +279,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
                 }
             }
 
-            ArrayList<Tree> finalLeftSuspended2 = leftSuspended;
-            ArrayList<Tree> finalRightSuspended2 = rightSuspended;
-            Log.ifLoggable(Level.FINER, printer -> {
-                printer.println("conflict");
-                printer.incIndent();
-                finalLeftSuspended2.forEach(printer::println);
-                printer.decIndent();
-                printer.println("<->");
-                printer.incIndent();
-                finalRightSuspended2.forEach(printer::println);
-                printer.decIndent();
-            });
-            targets.add(Conflict.of(leftSuspended, rightSuspended));
+            handleSuspended(leftSuspended, rightSuspended, targets);
         }
 
         return new OrderedList(base.label, base.name, targets);
@@ -366,6 +328,45 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
         public String toString() {
             return target + (valid ? "" : " (removed)");
         }
+    }
+
+    private void handleSuspended(List<Tree> leftSuspended, List<Tree> rightSuspended, List<Tree> targets) {
+        List<Tree> finalLeftSuspended = leftSuspended;
+        List<Tree> finalRightSuspended = rightSuspended;
+
+        boolean identical = true;
+        if (leftSuspended.size() == rightSuspended.size()) {
+            var leftIt = leftSuspended.iterator();
+            var rightIt = rightSuspended.iterator();
+            while (leftIt.hasNext()) {
+                if (!m.treesEqual(leftIt.next(), rightIt.next())) {
+                    identical = false;
+                    break;
+                }
+            }
+        } else {
+            identical = false;
+        }
+
+        if (identical) {
+            Log.finer("identical insertions made by two variants");
+            leftSuspended.forEach(e -> targets.add(e.deepCopy()));
+        } else {
+            Log.ifLoggable(Level.FINER, printer -> {
+                printer.println("conflict");
+                printer.incIndent();
+                finalLeftSuspended.forEach(printer::println);
+                printer.decIndent();
+                printer.println("<->");
+                printer.incIndent();
+                finalRightSuspended.forEach(printer::println);
+                printer.decIndent();
+            });
+            targets.add(Conflict.of(leftSuspended, rightSuspended));
+        }
+
+        leftSuspended.clear();
+        rightSuspended.clear();
     }
 
     @Override
