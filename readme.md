@@ -58,9 +58,11 @@ I develop this tool with [clang format 8.0.0-3~ubuntu18.04.2](https://clang.llvm
 - [ ] More supported languages
 - [ ] Graphic AST mappings
 
-### Wierd Inputs
+### Wierd Cases
 
+The following results are relative path of basefiles in the dataset that is used in OOPSLA'18
 - [ ] [Crashed results](https://git.tsinghua.edu.cn/snippets/10)
+- [ ] [False positive results](https://git.tsinghua.edu.cn/snippets/11)
 
 ## Authors
 

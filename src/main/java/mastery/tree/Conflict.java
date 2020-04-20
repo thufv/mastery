@@ -15,19 +15,23 @@ public class Conflict extends Tree {
     }
 
     public static Conflict of(Tree left, Tree right) {
-        return new Conflict(List.of(left), List.of(right));
+        return new Conflict(List.of(left.deepCopy()), List.of(right.deepCopy()));
     }
 
     public static Conflict ofLeft(Tree left) {
-        return new Conflict(List.of(left), Collections.emptyList());
+        return new Conflict(List.of(left.deepCopy()), Collections.emptyList());
     }
 
     public static Conflict ofRight(Tree right) {
-        return new Conflict(Collections.emptyList(), List.of(right));
+        return new Conflict(Collections.emptyList(), List.of(right.deepCopy()));
     }
 
     public static Conflict of(List<Tree> left, List<Tree> right) {
-        return new Conflict(left, right);
+        List<Tree> l = new ArrayList<>();
+        List<Tree> r = new ArrayList<>();
+        left.forEach(e -> l.add(e.deepCopy()));
+        right.forEach(e -> r.add(e.deepCopy()));
+        return new Conflict(l, r);
     }
 
     @Override
