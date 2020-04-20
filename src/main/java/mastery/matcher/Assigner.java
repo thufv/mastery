@@ -15,9 +15,8 @@ public class Assigner {
 
     private void addNodesAtHeight(Tree tree) {
         for (Tree node: tree.postOrder()) {
-            while (node.height >= nodesOfHeight.size()) {
+            while (node.height >= nodesOfHeight.size())
                 nodesOfHeight.add(new ArrayList<Tree>());
-            }
             nodesOfHeight.get(node.height).add(node);
         }
     }
@@ -43,16 +42,13 @@ public class Assigner {
                 nodesOfAssignment.get(compressedAssignment[childAssignment] - 1).add(node);
             }
         }
-        for (Tree node: nodes) {
-            if (node.children.size() > childStart) {
+        for (Tree node: nodes)
+            if (node.children.size() > childStart)
                 compressedAssignment[node.children.get(childStart).assignment] = 0;
-            }
-        }
         // [assignmentStart, assignmentEnd) is the assigned interval
         int assignmentEnd = assignmentStart + (noChildExists ? 1: 0);
-        for (var undistinguishableNodes: nodesOfAssignment) {
+        for (var undistinguishableNodes: nodesOfAssignment)
             assignmentEnd += assign(undistinguishableNodes, childStart + 1, assignmentEnd);
-        }
         return assignmentEnd - assignmentStart;
     }
     // Classify nodes by the children starting at [childStart],
@@ -75,16 +71,13 @@ public class Assigner {
                 nodesOfAssignment.get(compressedAssignment[childAssignment] - 1).add(node);
             }
         }
-        for (Leaf node: nodes) {
-            if (node.code.length() > charStart) {
+        for (Leaf node: nodes)
+            if (node.code.length() > charStart)
                 compressedAssignment[node.code.charAt(charStart)] = 0;
-            }
-        }
         // [assignmentStart, assignmentEnd) is the assigned interval
         int assignmentEnd = assignmentStart + (noCharExists ? 1: 0);
-        for (var undistinguishableNodes: nodesOfAssignment) {
+        for (var undistinguishableNodes: nodesOfAssignment)
             assignmentEnd += assignLeaf(undistinguishableNodes, charStart + 1, assignmentEnd);
-        }
         return assignmentEnd - assignmentStart;
     }
     public void apply(Tree ... trees)
@@ -106,12 +99,10 @@ public class Assigner {
                 List<Integer> compressedLabel = new ArrayList<>();
                 Integer labelCount = 0;
                 for (Tree node: nodes) {
-                    while (compressedLabel.size() <= node.label) {
+                    while (compressedLabel.size() <= node.label)
                         compressedLabel.add(0);
-                    }
-                    if (compressedLabel.get(node.label) == 0) {
+                    if (compressedLabel.get(node.label) == 0)
                         compressedLabel.set(node.label, ++labelCount);
-                    }
                     node.assignment = compressedLabel.get(node.label);
                 }
             }
@@ -119,9 +110,8 @@ public class Assigner {
             Integer assignmentCount = 0;
             for (Tree node: nodesOfHeight.get(0)) {
                 if (node instanceof UnorderedList) {
-                    if (compressedAssignment[node.assignment] == 0) {
+                    if (compressedAssignment[node.assignment] == 0)
                         compressedAssignment[node.assignment] = ++assignmentCount;
-                    }
                     node.assignment = compressedAssignment[node.assignment];
                 }
             }
@@ -142,9 +132,8 @@ public class Assigner {
 
             Arrays.fill(compressedAssignment, 0);
 
-            for (var nodes: nodesOfAssignment) {
+            for (var nodes: nodesOfAssignment)
                 assignmentEnd += assignLeaf(nodes, 0, assignmentEnd);
-            }
         }
 
         
@@ -170,17 +159,13 @@ public class Assigner {
                     }
                 }
 
-                for (var nodes: childrenOfAssignment) {
-                    for (Tree node: nodes) {
+                for (var nodes: childrenOfAssignment)
+                    for (Tree node: nodes)
                         node.getParent().children.add(node);
-                    }
-                }
 
-                for (var nodes: childrenOfAssignment) {
-                    for (Tree node: nodes) {
+                for (var nodes: childrenOfAssignment)
+                    for (Tree node: nodes)
                         compressedAssignment[node.assignment] = 0;
-                    }
-                }
             }
 
             // Assign

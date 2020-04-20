@@ -13,17 +13,14 @@ public class TaMatcher extends Matcher {
     private Integer dfsIndex;
     private void dfs(Tree node) {
         node.dfsIndex = ++dfsIndex;
-        for (Tree child: node.children) {
+        for (Tree child: node.children)
             dfs(child);
-        }
         Integer rightIndex = dfsIndex;
         node.interval = Interval.of(node.dfsIndex, rightIndex);
 
-        if (node.isOrderedList()) {
-            for (Tree child: node.children) {
+        if (node.isOrderedList())
+            for (Tree child: node.children)
                 child.interval = Interval.of(node.dfsIndex, rightIndex);
-            }
-        }
     }
     private void calDfs(Tree tree) {
         dfsIndex = 0;

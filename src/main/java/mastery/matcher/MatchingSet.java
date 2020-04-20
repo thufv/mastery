@@ -25,7 +25,6 @@ public abstract class MatchingSet {
     public final boolean hasLeftMatch(Tree base) {
         return leftMatches.containsKey(base);
     }
-
     public final boolean hasRightMatch(Tree base) {
         return rightMatches.containsKey(base);
     }
@@ -35,9 +34,7 @@ public abstract class MatchingSet {
       Tree leftMatch = leftMatches.get(base);
       if (leftMatch == null) return null;
       else if (base.getClass() == leftMatch.getClass()) return (E) leftMatch;
-      else {
-          throw new IllegalStateException("class " + base.getClass().getName() + " and class " + leftMatch.getClass().getName() + " are mapped.");
-      }
+      else throw new IllegalStateException("class " + base.getClass().getName() + " and class " + leftMatch.getClass().getName() + " are mapped.");
     }
 
     @SuppressWarnings("unchecked")
@@ -45,9 +42,7 @@ public abstract class MatchingSet {
         Tree rightMatch = rightMatches.get(base);
         if (rightMatch == null) return null;
         else if (base.getClass() == rightMatch.getClass()) return (E) rightMatch;
-        else {
-            throw new IllegalStateException("class " + base.getClass().getName() + " and class " + rightMatch.getClass().getName() + " are mapped.");
-        }
+        else throw new IllegalStateException("class " + base.getClass().getName() + " and class " + rightMatch.getClass().getName() + " are mapped.");
     }
 
     public final boolean matched(Tree base, Tree variant) {

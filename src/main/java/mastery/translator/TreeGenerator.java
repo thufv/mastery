@@ -68,9 +68,8 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
     public int getNonTerminalLabelId(int ruleIndex, String name) {
         int LabelId = ruleIndex + 1;
 
-        if (alternativeLabels.indexOf(name) != -1) {
+        if (alternativeLabels.indexOf(name) != -1)
             LabelId = 1 + rulesNum + alternativeLabels.indexOf(name);
-        }
 
         return LabelId;
     }
@@ -128,23 +127,18 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
             Tree o = child.accept(this);
 
             // check if the child is terminal node <EOF>
-            if (o == null) {
-                continue;
-            }
+            if (o == null) continue;
             // EOF is not welcomed
-            if (o instanceof Leaf && ((Leaf)o).code.equals("<EOF>")) {
-              continue;
-            }
+            if (o instanceof Leaf && ((Leaf)o).code.equals("<EOF>")) continue;
 
             children.add(o);
         }
 
         if (ListNodeNames.contains(name)) { // means it is a list
-            if (OrderedListNodeNames.contains(name)) {
+            if (OrderedListNodeNames.contains(name))
                 return new OrderedList(label, name, children);
-            } else {
+            else
                 return new UnorderedList(label, name, children);
-            }
         } else { // means it is a node
             return new Constructor(label, name, children);
         }
