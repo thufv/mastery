@@ -13,8 +13,7 @@ import java.util.*;
 public class JavaParsingStrategy implements ParsingStrategy {
     @Override
     public Pair<Parser, ParserRuleContext> apply(String srcFile) throws IOException {
-        JavaLexer lexer = null;
-        lexer = new JavaLexer(CharStreams.fromFileName(srcFile));
+        JavaLexer lexer = new JavaLexer(CharStreams.fromFileName(srcFile));
         JavaParser parser = new JavaParser(new CommonTokenStream(lexer));
         parser.setBuildParseTree(true); // save parse tree
         ParserRuleContext ctx = parser.compilationUnit(); // invoke parsing

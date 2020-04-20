@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Usage: ./run_by_base.sh <formatter> <base> [output]
+# Usage: ./copy.sh <project> <base>
 
 if [ "$#" -eq 2 ]; then
     PROJECT=$1
@@ -13,7 +13,7 @@ if [ "$#" -eq 2 ]; then
     EXTENSION="${FILENAME##*.}"
     FILENAME="${FILENAME%.*}"
 
-    mkdir scenario/$PROJECT
+    mkdir -p scenario/$PROJECT
     cp $BASE scenario/$PROJECT/$FILENAME\_base.$EXTENSION
     cp $LEFT scenario/$PROJECT/$FILENAME\_left.$EXTENSION
     cp $RIGHT scenario/$PROJECT/$FILENAME\_right.$EXTENSION
