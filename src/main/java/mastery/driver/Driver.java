@@ -99,7 +99,7 @@ public final class Driver {
                 // });
 
                 // Show our output
-                String code = TreePrinters.prettyCode(target, config.formatter, config.language);
+                String code = TreePrinters.prettyCode(target, config.formatter, config.language, config.left, config.right);
                 if (config.output == null) {
                     System.out.println(code);
                 } else {

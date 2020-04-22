@@ -120,7 +120,7 @@ public class TreePrinters {
      * @param language
      * @return The output as a string
      */
-    public static String prettyCode(Tree tree, String formatter, String language) {
+    public static String prettyCode(Tree tree, String formatter, String language, String leftfile, String rightfile) {
         var sb = new StringBuilder();
         var tokenWalker = new Tree.Visitor<Object>() {
             @Override
@@ -138,15 +138,15 @@ public class TreePrinters {
 
             @Override
             public void visitConflict(Conflict conflict, Object... ctx) {
-                sb.append("\n///// left\n");
+                sb.append("\n<<<<<<< " + leftfile + "\n");
                 for (Tree node : conflict.left) {
                     node.accept(this);
                 }
-                sb.append("\n///// right\n");
+                sb.append("\n=======\n");
                 for (Tree node : conflict.right) {
                     node.accept(this);
                 }
-                sb.append("\n/////\n");
+                sb.append("\n>>>>>>> " + rightfile + "\n");
             }
         };
         tree.accept(tokenWalker);
