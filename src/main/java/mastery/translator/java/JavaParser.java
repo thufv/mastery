@@ -1602,8 +1602,8 @@ public class JavaParser extends Parser {
 			return getRuleContext(AnnotationsContext.class,0);
 		}
 		public TerminalNode IDENTIFIER() { return getToken(JavaParser.IDENTIFIER, 0); }
-		public OptionExtendsTypeTypeContext optionExtendsTypeType() {
-			return getRuleContext(OptionExtendsTypeTypeContext.class,0);
+		public OptionExtendsTypeBoundContext optionExtendsTypeBound() {
+			return getRuleContext(OptionExtendsTypeBoundContext.class,0);
 		}
 		public TypeParameterContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -1630,7 +1630,7 @@ public class JavaParser extends Parser {
 			setState(617);
 			match(IDENTIFIER);
 			setState(618);
-			optionExtendsTypeType();
+			optionExtendsTypeBound();
 			}
 		}
 		catch (RecognitionException re) {
@@ -14615,7 +14615,7 @@ public class JavaParser extends Parser {
 		"\u0261\u0263\5.\30\2\u0262\u0261\3\2\2\2\u0263\u0266\3\2\2\2\u0264\u0262"+
 		"\3\2\2\2\u0264\u0265\3\2\2\2\u0265-\3\2\2\2\u0266\u0264\3\2\2\2\u0267"+
 		"\u0268\7F\2\2\u0268\u0269\5\60\31\2\u0269/\3\2\2\2\u026a\u026b\5\f\7\2"+
-		"\u026b\u026c\7q\2\2\u026c\u026d\5\"\22\2\u026d\61\3\2\2\2\u026e\u0270"+
+		"\u026b\u026c\7q\2\2\u026c\u026d\5\62\32\2\u026d\61\3\2\2\2\u026e\u0270"+
 		"\5\64\33\2\u026f\u026e\3\2\2\2\u026f\u0270\3\2\2\2\u0270\63\3\2\2\2\u0271"+
 		"\u0272\7\23\2\2\u0272\u0273\5\66\34\2\u0273\65\3\2\2\2\u0274\u0275\5\u01c6"+
 		"\u00e4\2\u0275\u0276\58\35\2\u0276\67\3\2\2\2\u0277\u0279\5:\36\2\u0278"+

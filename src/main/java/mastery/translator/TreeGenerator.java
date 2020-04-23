@@ -154,6 +154,14 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
         Integer label = getTerminalLabelId(t.getType());
         String name = parser.getVocabulary().getSymbolicName(t.getType());
         String code = t.getText();
+        byte[] data = new byte[0];
+        try {
+            data = code.getBytes("ASCII");
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        code = new String(data);
 
         return new Leaf(label, name, code);
     }

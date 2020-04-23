@@ -170,9 +170,8 @@ public class TreePrinters {
                 InputStream is = p.getInputStream();
                 BufferedReader br = new BufferedReader(new InputStreamReader(is));
                 String line = null;
-                while ((line = br.readLine()) != null) {
+                while ((line = br.readLine()) != null)
                     formattedCode += line + "\n";
-                }
                 br.close();
                 int r = p.waitFor(); // Let the process finish.
                 assert (r == 0);

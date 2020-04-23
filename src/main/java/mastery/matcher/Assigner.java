@@ -3,7 +3,6 @@ package mastery.matcher;
 import mastery.tree.Leaf;
 import mastery.tree.Tree;
 import mastery.tree.UnorderedList;
-import mastery.util.Interval;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,6 +63,12 @@ public class Assigner {
             }
             else {
                 int childAssignment = node.code.charAt(charStart);
+
+                if (childAssignment > compressedAssignment.length) {
+                    System.out.println("char: " + node.code.charAt(charStart));
+                    System.out.println("int: " + node.code.charAt(charStart));
+                }
+
                 if (compressedAssignment[childAssignment] == 0) {
                     compressedAssignment[childAssignment] = ++assignmentCount;
                     nodesOfAssignment.add(new ArrayList<>());
