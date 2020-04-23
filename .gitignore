@@ -37,3 +37,4 @@ test.log
 # Experiment
 results/
 output.java
+exp*

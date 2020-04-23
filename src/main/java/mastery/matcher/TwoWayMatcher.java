@@ -12,7 +12,8 @@ public abstract class TwoWayMatcher{
     protected enum MappingType {
         isomorphic,
         container,
-        recovery
+        recovery,
+        compulsory
     }
 
     protected Map<Tree, Tree> m;

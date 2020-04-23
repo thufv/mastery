@@ -93,7 +93,7 @@ otherTypeParameters: anotherTypeParameter*;
 
 anotherTypeParameter: ',' typeParameter;
 
-typeParameter: annotations IDENTIFIER optionExtendsTypeType;
+typeParameter: annotations IDENTIFIER optionExtendsTypeBound;
 
 optionExtendsTypeBound: extendsTypeBound?;
 

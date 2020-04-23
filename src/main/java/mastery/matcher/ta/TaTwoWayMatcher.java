@@ -164,6 +164,11 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
             }    
         }
 
+        for (Tree node: tree1.preOrder())
+            for (Tree child: node.children)
+                if (child.preInterval == null)
+                    child.preInterval = node.preInterval;
+
         // Bottom-up Phase
         bottomUpDfs(tree1);
 
@@ -189,7 +194,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
             nodeInDfsOrdering2[node.dfsIndex] = node;
     }
     protected void match(Tree tree1, Tree tree2, MappingType type) {
-        Log.finer("want %s mapping: %s <-> %s", type, tree1, tree2);
+        // Log.finer("want %s mapping: %s <-> %s", type, tree1, tree2);
 
         assert tree1.label == tree2.label;
         assert tree1.isConstructor() ? tree2.isConstructor() && tree1.children.size() == tree2.children.size(): true;
@@ -209,24 +214,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         tree1.preInterval = tree2.interval;
         tree1.postLCA = tree2;
 
-        // The following code is supposed to be redundant
-        // if (type != MappingType.isomorphic && tree1.isConstructor()) {
-        //    assert tree2.isConstructor();
-        //    for (int i = 0; i < tree1.children.size(); ++i) {
-        //        Tree child1 = tree1.children.get(i);
-        //        if (child1.height == 0) {
-        //            System.out.println("Compulsory mappings between leaves when " + type + ".\nParents are " + tree1 + " <-> " + tree2);
-
-        //            Tree child2 = tree2.children.get(i);
-        //            if (matched1to2[child1.dfsIndex] != 0) {
-        //                assert matched1to2[child1.dfsIndex] == child2.dfsIndex;
-        //            }
-        //            else {
-        //                match(child1, child2, MappingType.recovery);
-        //            }
-        //        }
-        //    }
-        //}
+        // System.out.println("For " + tree1 + ", preInterval = " + nodeInDfsOrdering1[tree1.preInterval.l] + ", postLCA = " + tree1.postLCA);
 
         Log.finer("%s mapping: %s <-> %s", type, tree1, tree2);
     }
@@ -308,8 +296,11 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         if (matched1to2[node.dfsIndex] != 0) {
             ++mappingCount;
 
-            for (int i = node.children.size() - 1; i >= 0; --i)
-                mappingCount += bottomUpDfs(node.children.get(i));
+            for (int i = node.children.size() - 1; i >= 0; --i) {
+                Tree child = node.children.get(i);
+                mappingCount += bottomUpDfs(child);
+                node.postLCA = Tree.getLCA(node.postLCA, child.postLCA);
+            }
         }
         else {
             for (Tree child: node.children) {
@@ -364,11 +355,17 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 for (int i = 0; i < node.children.size(); ++i) {
                     Tree child1 = node.children.get(i);
                     Tree child2 = candidate.children.get(i);
+
+                    if (matched1to2[child1.dfsIndex] == 0) {
+                        child1.preInterval = node.preInterval;
+                    }
+
                     if (matched1to2[child1.dfsIndex] == 0 && matched2to1[child2.dfsIndex] == 0 && child1.label == child2.label) {
                         // check the monotonicity
                         if (Interval.isSubinterval(child2.interval, child1.preInterval) && (child1.postLCA == null || Interval.isSubinterval(child1.postLCA.interval, child2.interval))) {
-                            match(child1, child2, MappingType.recovery);
+                            match(child1, child2, MappingType.compulsory);
                             mappingCount += containerDfs(child1, child2);
+                            node.postLCA = Tree.getLCA(node.postLCA, child1.postLCA);
                         }
                     }
                 }
@@ -377,11 +374,16 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 assert candidate.children.size() == 1;
                 Tree child1 = node.children.get(0);
                 Tree child2 = candidate.children.get(0);
+
+                if (matched1to2[child1.dfsIndex] == 0)
+                    child1.preInterval = node.preInterval;
+
                 if (matched1to2[child1.dfsIndex] == 0 && matched2to1[child2.dfsIndex] == 0 && child1.label == child2.label) {
                     // check the monotonicity
                     if (Interval.isSubinterval(child2.interval, child1.preInterval) && (child1.postLCA == null || Interval.isSubinterval(child1.postLCA.interval, child2.interval))) {
-                        match(child1, child2, MappingType.recovery);
+                        match(child1, child2, MappingType.compulsory);
                         mappingCount += containerDfs(child1, child2);
+                        node.postLCA = Tree.getLCA(node.postLCA, child1.postLCA);
                     }
                 }
             }
@@ -440,7 +442,13 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     }
 
     private int recoverydfs(Tree node) {
-        // System.out.println("recoverydfs " + node + " , postLCA = " + node.postLCA + ", preNode = " + nodeInDfsOrdering2[node.preInterval.l]);
+        // if (Interval.isSubinterval(node.interval, Interval.of(909, 1589))) {
+        //     System.out.print("recoverydfs " + node + "[" + node.interval.l + ", " + node.interval.r + "]" + ", postLCA = " + node.postLCA + ", preNode = " + nodeInDfsOrdering2[node.preInterval.l]);
+        //     if (matched1to2[node.dfsIndex] != 0)
+        //         System.out.println(", buddy = " + nodeInDfsOrdering2[matched1to2[node.dfsIndex]]);
+        //     else
+        //         System.out.println("");
+        // }
 
         assert node.postLCA == null || Interval.isSubinterval(node.postLCA.interval, node.preInterval);
 
@@ -488,8 +496,13 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                         child.preInterval = node.preInterval;
                 }
                 else {
-                    if (matched1to2[child.dfsIndex] == 0)
+                    if (matched1to2[child.dfsIndex] == 0) {
                         child.preInterval = brother.preInterval;
+
+                        if (child.assignment == 1905) {
+                            System.out.println("update preInterval to " + nodeInDfsOrdering2[child.preInterval.l] + " by preInterval of " + brother);
+                        }
+                    }
                 }
 
                 ans += recoverydfs(child);
