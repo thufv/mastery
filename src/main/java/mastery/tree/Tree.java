@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
+import mastery.util.log.Log;
+
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -316,16 +318,19 @@ public abstract class Tree {
     public final static Tree getLCA(Tree node1, Tree node2) {
         if (node1 == null) return node2;
         if (node2 == null) return node1;
+
+        // Log.finer("LCA(%s, %s) = ", node1, node2);
+
         while (node1 != node2) {
             assertNotNull(node1);
             assertNotNull(node2);
 
-            if (node1.size < node2.size) {
-                node1 = node1.parent;
-            } else {
-                node2 = node2.parent;
-            }
+            if (node1.size < node2.size) node1 = node1.parent;
+            else node2 = node2.parent;
         }
+
+        // Log.finer("%s", node1);
+
         return node1;
     }
 

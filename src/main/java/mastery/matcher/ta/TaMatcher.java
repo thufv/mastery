@@ -36,12 +36,12 @@ public class TaMatcher extends Matcher {
 
         // log
         Log.ifLoggable(Level.FINEST, printer -> {
-            printer.println("base");
-            base.prettyPrintTo(printer);
-        });
-        Log.ifLoggable(Level.FINEST, printer -> {
             printer.println("left");
             left.prettyPrintTo(printer);
+        });
+        Log.ifLoggable(Level.FINEST, printer -> {
+            printer.println("base");
+            base.prettyPrintTo(printer);
         });
         Log.ifLoggable(Level.FINEST, printer -> {
             printer.println("right");

@@ -5,13 +5,7 @@ import static org.junit.Assert.assertFalse;
 
 import org.simmetrics.StringMetrics;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import mastery.matcher.TwoWayMatcher;
 import mastery.matcher.Similarities;
@@ -108,6 +102,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                     var list2 = nodes2Of.get(assignment);
 
                     if (list1.size() <= list2.size()) {
+                        // Collections.shuffle(list1, new Random(somePredefinedSeed));
                         Collections.shuffle(list1);
                         for (var node1: list1) {
                             assertFalse(list2.isEmpty());
@@ -118,7 +113,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                                 double maxDice = getMemoizedDice(node1.getParent(), maxNode.getParent());
                                 for (int i = 1; i < list2.size(); ++i) {
                                     Tree tmpNode = list2.get(i);
-                                    double tmpDice = getMemoizedDice(node1, tmpNode);
+                                    double tmpDice = getMemoizedDice(node1.getParent(), tmpNode.getParent());
                                     if (maxDice < tmpDice) {
                                         maxNode = tmpNode;
                                         maxDice = tmpDice;
@@ -132,6 +127,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                         }
                     }
                     else {
+                        // Collections.shuffle(list2, new Random(somePredefinedSeed));
                         Collections.shuffle(list2);
                         for (var node2: list2) {
                             assertFalse(list2.isEmpty());
@@ -140,7 +136,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                             double maxDice = getMemoizedDice(maxNode.getParent(), node2.getParent());
                             for (int i = 1; i < list1.size(); ++i) {
                                 Tree tmpNode = list1.get(i);
-                                double tmpDice = getMemoizedDice(tmpNode, node2);
+                                double tmpDice = getMemoizedDice(tmpNode.getParent(), node2.getParent());
                                 if (maxDice < tmpDice) {
                                     maxNode = tmpNode;
                                     maxDice = tmpDice;
@@ -194,7 +190,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
             nodeInDfsOrdering2[node.dfsIndex] = node;
     }
     protected void match(Tree tree1, Tree tree2, MappingType type) {
-        Log.finer("want %s mapping: %s <-> %s", type, tree1, tree2);
+        // Log.finer("want %s mapping: %s <-> %s", type, tree1, tree2);
 
         assert tree1.label == tree2.label;
         assert tree1.isConstructor() ? tree2.isConstructor() && tree1.children.size() == tree2.children.size(): true;
@@ -267,9 +263,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         // }
     }
     private int interMappingCount(Tree tree1, Tree tree2) {
-        int ans = 0;
-        if (Interval.in(matched1to2[tree1.dfsIndex], tree2.interval))
-            ans = 1;
+        int ans = Interval.in(matched1to2[tree1.dfsIndex], tree2.interval) ? 1 : 0;
         for (Tree child: tree1.children)
             ans += interMappingCount(child, tree2);
         return ans;
@@ -293,12 +287,16 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 Tree child = node.children.get(i);
                 mappingCount += bottomUpDfs(child);
                 node.postLCA = Tree.getLCA(node.postLCA, child.postLCA);
+
+                // Log.finer("after calculate %s, postLCA of %s is %s", child, node, node.postLCA);
             }
         }
         else {
             for (Tree child: node.children) {
                 mappingCount += bottomUpDfs(child);
                 node.postLCA = Tree.getLCA(node.postLCA, child.postLCA);
+
+                // Log.finer("after calculate %s, postLCA of %s is %s", child, node, node.postLCA);
             }
             
             if (node == root1) {
@@ -311,8 +309,17 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
 
                     Tree candidate = node.postLCA;
 
+                    // Log.finer("postLCA of %s is %s", node, node.postLCA);
+
                     while (candidate != null && (matched2to1[candidate.dfsIndex] != 0 || node.label != candidate.label))
                         candidate = candidate.getParent();
+
+                    // if (candidate != null) {
+                    //     Log.finer("candidate of %s[%d, %d] is %s[%d, %d]", node, node.preInterval.l, node.preInterval.r, candidate, candidate.interval.l, candidate.interval.r);
+                    // }
+                    // else {
+                    //     Log.finer("candidate of %s[%d, %d] is null", node, node.preInterval.l, node.preInterval.r);
+                    // }
 
                     if (candidate != null && Interval.isProperSubinterval(candidate.interval, node.preInterval)) {
                         // get the candidate!
@@ -353,6 +360,8 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                             match(child1, child2, MappingType.compulsory);
                             mappingCount += containerDfs(child1, child2);
                             node.postLCA = Tree.getLCA(node.postLCA, child1.postLCA);
+
+                            // Log.finer("after calculate %s, postLCA of %s is %s", child1, node, node.postLCA);
                         }
                     }
                 }
@@ -371,6 +380,8 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                         match(child1, child2, MappingType.compulsory);
                         mappingCount += containerDfs(child1, child2);
                         node.postLCA = Tree.getLCA(node.postLCA, child1.postLCA);
+
+                        // Log.finer("after calculate %s, postLCA of %s is %s", child1, node, node.postLCA);
                     }
                 }
             }

@@ -7,6 +7,8 @@ if [ "$#" -gt 1 ]; then
     LEFT=${BASE/base/left}
     RIGHT=${BASE/base/right}
 
+    rm debug.log
+
     if [ "$#" -gt 2 ]; then
         if [ "$#" -gt 3 ]; then
             if [ "$#" -gt 4 ]; then
