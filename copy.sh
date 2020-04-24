@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Usage: ./copy.sh <project> <base>
+# Usage: ./copy.sh <base>
 
-if [ "$#" -eq 2 ]; then
-    PROJECT=$1
-    BASE=../commits/${2//\./\/}.java
+if [ "$#" -eq 1 ]; then
+    PROJECT="${1%%/*}"
+    BASE=../commits/$1.java
     LEFT=${BASE/base/left}
     RIGHT=${BASE/base/right}
     EXPECTED=${BASE/base/expected}

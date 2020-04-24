@@ -129,10 +129,6 @@ public final class CLIParser {
         
         Config config;
         if (mode.equals("diff")) {
-            if (arguments.length < 3) {
-                throw new ParseException("Please provide at least 2 files as arguments.");
-            }
-
             String[] files = new String[arguments.length - 1];
             for (int i = 1; i < arguments.length; ++i)
                 files[i - 1] = arguments[i];

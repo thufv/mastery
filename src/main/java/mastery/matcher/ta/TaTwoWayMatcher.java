@@ -339,6 +339,8 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     }
 
     int containerDfs(Tree node, Tree candidate) {
+        // Log.finer("containerDfs(%s, %s)", node, candidate);
+
         if (Math.max(node.size, candidate.size) < maxSize) {
             return recovery(node, candidate);
         }
@@ -366,8 +368,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                     }
                 }
             }
-            else if (node.children.size() == 1) {
-                assert candidate.children.size() == 1;
+            else if (node.children.size() == 1 && candidate.children.size() == 1) {
                 Tree child1 = node.children.get(0);
                 Tree child2 = candidate.children.get(0);
 
