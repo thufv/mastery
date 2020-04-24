@@ -17,10 +17,6 @@ public class TaMatcher extends Matcher {
             dfs(child);
         Integer rightIndex = dfsIndex;
         node.interval = Interval.of(node.dfsIndex, rightIndex);
-
-        if (node.isOrderedList())
-            for (Tree child: node.children)
-                child.interval = Interval.of(node.dfsIndex, rightIndex);
     }
     private void calDfs(Tree tree) {
         dfsIndex = 0;

@@ -235,15 +235,8 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         if (node.preInterval == null) {
             Tree parent = node.getParent();
             if (parent != null) {
-                if (parent.isOrderedList() && node.childno != 0) {
-                    Tree brother = parent.children.get(node.childno - 1);
-                    getPreInterval(brother);
-                    node.preInterval = brother.preInterval;
-                }
-                else {
-                    getPreInterval(parent);
-                    node.preInterval = parent.preInterval;
-                }
+                getPreInterval(parent);
+                node.preInterval = parent.preInterval;
             }
         }
     }
@@ -306,12 +299,6 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
             for (Tree child: node.children) {
                 mappingCount += bottomUpDfs(child);
                 node.postLCA = Tree.getLCA(node.postLCA, child.postLCA);
-            }
-            
-            {
-                Tree parent = node.getParent();
-                if (parent != null && parent.isOrderedList() && node.childno != parent.children.size() - 1)
-                    node.postLCA = Tree.getLCA(node.postLCA, parent.children.get(node.childno + 1).postLCA);
             }
             
             if (node == root1) {
@@ -488,46 +475,11 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
             }
         }
 
-        if (node.isOrderedList()) {
-            Tree brother = null;
-            for (Tree child: node.children) {
-                if (brother == null) {
-                    if (matched1to2[child.dfsIndex] == 0)
-                        child.preInterval = node.preInterval;
-                }
-                else {
-                    if (matched1to2[child.dfsIndex] == 0) {
-                        child.preInterval = brother.preInterval;
-
-                        if (child.assignment == 1905) {
-                            System.out.println("update preInterval to " + nodeInDfsOrdering2[child.preInterval.l] + " by preInterval of " + brother);
-                        }
-                    }
-                }
-
-                ans += recoverydfs(child);
-                
-                brother = child;
-            }
-
-            brother = null;
-            for (int i = node.children.size() - 1; i >= 0; --i) {
-                Tree child = node.children.get(i);
-                if (brother != null)
-                    child.postLCA = Tree.getLCA(child.postLCA, brother.postLCA);
-                brother = child;
-            }
-
-            if (brother != null)
-                node.postLCA = Tree.getLCA(node.postLCA, brother.postLCA);
-        }
-        else {
-            for (Tree child: node.children) {
-                if (matched1to2[child.dfsIndex] == 0)
-                    child.preInterval = node.preInterval;
-                ans += recoverydfs(child);
-                node.postLCA = Tree.getLCA(node.postLCA, child.postLCA);
-            }
+        for (Tree child: node.children) {
+            if (matched1to2[child.dfsIndex] == 0)
+                child.preInterval = node.preInterval;
+            ans += recoverydfs(child);
+            node.postLCA = Tree.getLCA(node.postLCA, child.postLCA);
         }
         return ans;
     }
