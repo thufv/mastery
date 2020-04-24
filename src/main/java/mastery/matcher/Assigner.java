@@ -94,7 +94,7 @@ public class Assigner {
         // Enumerate nodes by height increasing order
 
         // Initialize compressedAssignment
-        int compressedAssignmentSize = Math.max(256, nodesOfHeight.stream().mapToInt((List<Tree> nodes)->nodes.size()).max().getAsInt());
+        int compressedAssignmentSize = Math.max(256, Arrays.stream(trees).mapToInt((Tree tree)->tree.size).sum() + 1);
         compressedAssignment = new int[compressedAssignmentSize];
 
         // Initialize assign as label
@@ -140,7 +140,6 @@ public class Assigner {
             for (var nodes: nodesOfAssignment)
                 assignmentEnd += assignLeaf(nodes, 0, assignmentEnd);
         }
-
         
         for (int height = 0; height < nodesOfHeight.size(); ++height) {
             if (height > 0) {
@@ -153,6 +152,13 @@ public class Assigner {
                 for (Tree node: nodesOfHeight.get(height)) {
                     if (node.isUnorderedList()) {
                         for (Tree child: node.children) {
+                            
+                            if (child.assignment >= compressedAssignmentSize) {
+                                System.out.println("height = " + height);
+                                System.out.println("child = " + child);
+                                System.out.println("compressedAssignmentSize = " + compressedAssignmentSize);
+                            }
+
                             if (compressedAssignment[child.assignment] == 0) {
                                 compressedAssignment[child.assignment] = ++assignmentCount;
                                 childrenOfAssignment.add(new ArrayList<>());
