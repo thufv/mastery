@@ -101,6 +101,9 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                     var list1 = nodes1Of.get(assignment);
                     var list2 = nodes2Of.get(assignment);
 
+                    if (Math.max(list1.size(), list2.size()) > 1)
+                        break;
+
                     if (list1.size() <= list2.size()) {
                         // Collections.shuffle(list1, new Random(somePredefinedSeed));
                         Collections.shuffle(list1);

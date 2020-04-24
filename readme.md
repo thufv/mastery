@@ -41,28 +41,32 @@ I develop this tool with [clang format 8.0.0-3~ubuntu18.04.2](https://clang.llvm
     - [ ] LCA calculation: $O(n) \rightarrow O(\log n)$ per time
     - [ ] Dice function calculation: $O(n) \rightarrow O(\log^2 n) / O(\sqrt n)$ per time
     - [ ] Finding candidate of container mapping: $O(n) \rightarrow O(1)$
-- [ ] Recovery Mapping
-    - [ ] JDime
-        - [ ] Compulsory mappings between children of the constructor
-        - [ ] Call ZS algorithm in small cases
-    - [ ] ZS algorithm: apply Hungary Algorithm for unordered list
+- [ ] Recovery Mapping: apply Hungary Algorithm for unordered list to improve the behavior of ZS algorithm
 - [ ] Heuristics when adding isomorphism mapping: try including the information of ancestor path
 - [ ] Compulsory container mapping between method / classes / ... with the same identifier.
 - [ ] Find a theoretical bound of isomorphism mappings (or, isomorphism mapped subtrees) between ASTs
 
 ### Engineering
 
-- [ ] Pretty Printer to follow convention
 - [ ] Only output mapping
 - [ ] Keep the order of children of unordered lists
 - [ ] More supported languages
 - [ ] Graphic AST mappings
 
-### Wierd Cases
+### Representative scenarios
 
-The following results are relative path of basefiles in the dataset that is used in OOPSLA'18
-- [ ] [Crashed results](https://git.tsinghua.edu.cn/snippets/10)
-- [ ] [False positive results](https://git.tsinghua.edu.cn/snippets/11)
+#### Old Benchmarks
+```bash
+glide.a93a9410a720adbfcf76e280db4ed3fda5e939d7.base.library.src.main.java.com.bumptech.glide.request.target.ViewTarget
+# A counterexample of our merge scenarios.
+# "right" put `private static final int PENDING_SIZE = 0;` into comments,
+# which exists normally in both "base" and "right".
+# In this case, this statement will be deleted in our strategy, which happens indeed.
+# But in the "expected", as a developer can reasonably expect, it's not deleted.
+
+
+```
+#### New Benchmarks
 
 ## Authors
 
