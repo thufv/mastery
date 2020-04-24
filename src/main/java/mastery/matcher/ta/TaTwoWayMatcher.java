@@ -194,7 +194,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
             nodeInDfsOrdering2[node.dfsIndex] = node;
     }
     protected void match(Tree tree1, Tree tree2, MappingType type) {
-        // Log.finer("want %s mapping: %s <-> %s", type, tree1, tree2);
+        Log.finer("want %s mapping: %s <-> %s", type, tree1, tree2);
 
         assert tree1.label == tree2.label;
         assert tree1.isConstructor() ? tree2.isConstructor() && tree1.children.size() == tree2.children.size(): true;

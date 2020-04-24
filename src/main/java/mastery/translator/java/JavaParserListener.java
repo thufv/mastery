@@ -1849,16 +1849,6 @@ public interface JavaParserListener extends ParseTreeListener {
 	 */
 	void exitForInit(JavaParser.ForInitContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link JavaParser#enhancedForControl}.
-	 * @param ctx the parse tree
-	 */
-	void enterEnhancedForControl(JavaParser.EnhancedForControlContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link JavaParser#enhancedForControl}.
-	 * @param ctx the parse tree
-	 */
-	void exitEnhancedForControl(JavaParser.EnhancedForControlContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link JavaParser#parExpression}.
 	 * @param ctx the parse tree
 	 */

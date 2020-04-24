@@ -4,7 +4,7 @@
 
 if [ "$#" -eq 2 ]; then
     PROJECT=$1
-    BASE=$2
+    BASE=../commits/${2//\./\/}.java
     LEFT=${BASE/base/left}
     RIGHT=${BASE/base/right}
     EXPECTED=${BASE/base/expected}

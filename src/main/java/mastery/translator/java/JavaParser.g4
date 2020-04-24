@@ -528,7 +528,7 @@ switchLabel:
 	| DEFAULT ':';
 
 forControl:
-	enhancedForControl
+	variableModifiers typeType variableDeclaratorId ':' expression
 	| optionforInit ';' optionExpression ';' forUpdate = optionExpressionList;
 
 optionforInit: forInit?;
@@ -536,9 +536,6 @@ optionforInit: forInit?;
 optionExpressionList: expressionList?;
 
 forInit: localVariableDeclaration | expressionList;
-
-enhancedForControl:
-	variableModifiers typeType variableDeclaratorId ':' expression;
 
 // EXPRESSIONS
 
