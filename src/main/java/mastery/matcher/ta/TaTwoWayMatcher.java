@@ -1,7 +1,6 @@
 package mastery.matcher.ta;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 import org.simmetrics.StringMetrics;
 
@@ -221,7 +220,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         tree1.preInterval = tree2.interval;
         tree1.postLCA = tree2;
 
-        if (Interval.in(tree1.dfsIndex, Interval.of(1592, 2632)) && !Interval.in(tree2.dfsIndex, Interval.of(2667, 3982))) {
+        if (Interval.in(tree1.dfsIndex, Interval.of(160, 371)) && !Interval.in(tree2.dfsIndex, Interval.of(160, 255))) {
             Log.finer("An unexpected mapping!");
         }
         // System.out.println("For " + tree1 + ", preInterval = " + nodeInDfsOrdering1[tree1.preInterval.l] + ", postLCA = " + tree1.postLCA);
