@@ -163,10 +163,17 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
             }
 
             cartesianProducts.sort(new TreePairComparator());
-            for (var p: cartesianProducts)
+            for (int i = cartesianProducts.size() - 1; i >= 0; --i) {
+                var p = cartesianProducts.get(i);
                 if (matched1to2[p.first.dfsIndex] == 0 && matched2to1[p.second.dfsIndex] == 0) {
+                    // Log.finer("matchSubTree(%s [%d, %d], %s [%d, %d]) with Jaccard Similarity of parents %f", p.first, p.first.interval.l, p.first.interval.r, p.second, p.second.interval.l, p.second.interval.r, getMemoizedDice(p.first.getParent(), p.second.getParent()));
+
                     matchSubTree(p.first, p.second);
                 }
+                else {
+                    // Log.finer("A matched mapping: (%s [%d, %d], %s [%d, %d]) with Jaccad Similarity of parents %f", p.first, p.first.interval.l, p.first.interval.r, p.second, p.second.interval.l, p.second.interval.r, getMemoizedDice(p.first.getParent(), p.second.getParent()));
+                }
+            }
         }
 
         tree1.preInterval = Interval.of(1, tree2.size);
@@ -220,9 +227,13 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         tree1.preInterval = tree2.interval;
         tree1.postLCA = tree2;
 
-        if (Interval.in(tree1.dfsIndex, Interval.of(160, 371)) && !Interval.in(tree2.dfsIndex, Interval.of(160, 255))) {
+        if (Interval.in(tree1.dfsIndex, Interval.of(715, 3545)) && !Interval.in(tree2.dfsIndex, Interval.of(=790, 5180))) {
             Log.finer("An unexpected mapping!");
         }
+        if (Interval.in(tree1.dfsIndex, Interval.of(715, 3545)) && Interval.in(tree2.dfsIndex, Interval.of(790, 5180))) {
+            Log.finer("An expected mapping!");
+        }
+
         // System.out.println("For " + tree1 + ", preInterval = " + nodeInDfsOrdering1[tree1.preInterval.l] + ", postLCA = " + tree1.postLCA);
 
         Log.finer("%s mapping: %s interval [%d, %d] <-> %s interval [%d, %d]", type, tree1, tree1.interval.l, tree1.interval.r, tree2, tree2.interval.l, tree2.interval.r);
@@ -261,6 +272,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 first2 = first2.getParent();
                 second2 = second2.getParent();
 
+                // 1 means p1 is more similar than p2
                 if (first1 == null && second1 == null && first2 == null && second2 == null) return 0;
                 else if (first1 == null && second1 == null) return 1;
                 else if (first2 == null && second2 == null) return -1;
