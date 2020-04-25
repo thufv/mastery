@@ -28,6 +28,7 @@ public class TreePrinters {
 
                 sb.append(inherited).append(prompt);
                 sb.append(leaf.name).append(" '").append(leaf.code).append("'");
+                sb.append(" dfsIndex ").append(leaf.dfsIndex);
                 sb.append('\n');
             }
 
@@ -39,6 +40,7 @@ public class TreePrinters {
                 sb.append(inherited).append(prompt);
                 sb.append(internal.toString());
                 sb.append(" size ").append(internal.size);
+                sb.append(" interval [").append(internal.interval.l).append(", ").append(internal.interval.r).append("]");
                 sb.append('\n');
 
                 if (!internal.children.isEmpty()) {

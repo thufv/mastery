@@ -1,9 +1,6 @@
 package mastery.matcher;
 
 import mastery.tree.Tree;
-import mastery.util.Interval;
-
-import static org.junit.Assert.assertNotNull;
 
 import java.util.HashMap;
 import java.util.Map;

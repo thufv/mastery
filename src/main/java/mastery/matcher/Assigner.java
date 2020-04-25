@@ -3,6 +3,7 @@ package mastery.matcher;
 import mastery.tree.Leaf;
 import mastery.tree.Tree;
 import mastery.tree.UnorderedList;
+import mastery.util.Interval;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,6 +88,10 @@ public class Assigner {
     }
     public void apply(Tree ... trees)
     {
+        // Calculate information about dfs ordering
+        for (Tree tree: trees)
+            calDfs(tree);
+
         // put nodes into the 2D-list
         for (Tree tree: trees)
             addNodesAtHeight(tree);
@@ -195,5 +200,18 @@ public class Assigner {
             for (var nodes: nodesOfAssignment)
                 assignmentEnd += assign(nodes, 0, assignmentEnd);
         }
+    }
+
+    private Integer dfsIndex;
+    private void dfs(Tree node) {
+        node.dfsIndex = ++dfsIndex;
+        for (Tree child: node.children)
+            dfs(child);
+        Integer rightIndex = dfsIndex;
+        node.interval = Interval.of(node.dfsIndex, rightIndex);
+    }
+    private void calDfs(Tree tree) {
+        dfsIndex = 0;
+        dfs(tree);
     }
 }

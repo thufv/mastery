@@ -48,6 +48,7 @@ public final class UnorderedList extends ListNode {
         return name + " [unordered] assignment " + assignment;
     }
 
+    // This method is only for debug
     @Override
     public boolean identicalTo(Tree that) {
         // System.out.println("Check " + this + " if identical to " + that);

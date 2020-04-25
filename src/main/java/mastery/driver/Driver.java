@@ -57,10 +57,19 @@ public final class Driver {
                 // Mapping
                 Assigner assigner = new Assigner();
                 assigner.apply(trees);
-                boolean equivalent = true;
-                for (Tree tree: trees) {
-                    equivalent &= tree.equals(trees[0]);
+
+                for (int i = 0; i < config.files.length; ++i) {
+                    final String file = config.files[i];
+                    final Tree tree = trees[i];
+                    Log.ifLoggable(Level.FINEST, printer -> {
+                        printer.println(file);
+                        tree.prettyPrintTo(printer);
+                    });
                 }
+
+                boolean equivalent = true;
+                for (Tree tree: trees)
+                    equivalent &= tree.equals(trees[0]);
                 if (equivalent) {
                     System.out.println("Yes! They're equal.");
                     System.exit(0);

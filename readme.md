@@ -64,7 +64,9 @@ glide.a93a9410a720adbfcf76e280db4ed3fda5e939d7.base.library.src.main.java.com.bu
 # In this case, this statement will be deleted in our strategy, which happens indeed.
 # But in the "expected", as a developer can reasonably expect, it's not deleted.
 
-
+kotlin.b182d61a03552ca982a098bb5d8330ab3997487c.base.idea.src.org.jetbrains.jet.plugin.references.JetSimpleNameReference
+# An example of correct (reasonable) conflict of order changing in an ordered list,
+# that means conflict resolving is not reasonable, a manually checking for semantic is necessary
 ```
 #### New Benchmarks
 

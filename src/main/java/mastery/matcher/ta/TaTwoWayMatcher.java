@@ -14,6 +14,7 @@ import mastery.tree.Tree;
 import mastery.util.WeightedQueue;
 import mastery.util.log.Log;
 import mastery.util.Interval;
+import mastery.util.Pair;
 
 public class TaTwoWayMatcher extends TwoWayMatcher{
     // Parameters
@@ -54,8 +55,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
 
         // Top-down Phase
         {
-            // Initializations
-            tree1.preInterval = Interval.of(1, tree2.size);
+            var cartesianProducts = new ArrayList<Pair<Tree, Tree>>();
 
             var queue1 = new WeightedQueue<Tree>(Tree -> Tree.height);
             var queue2 = new WeightedQueue<Tree>(Tree -> Tree.height);
@@ -97,72 +97,80 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                     nodes2Of.get(node.assignment).add(node);
                 }
     
-                for (int assignment = 1; assignment < Math.min(nodes1Of.size(), nodes2Of.size()); ++assignment) {
-                    var list1 = nodes1Of.get(assignment);
-                    var list2 = nodes2Of.get(assignment);
+                for (int assignment = 1; assignment < Math.max(nodes1Of.size(), nodes2Of.size()); ++assignment) {
+                    var list1 = assignment < nodes1Of.size() ? nodes1Of.get(assignment): new ArrayList<Tree>();
+                    var list2 = assignment < nodes2Of.size() ? nodes2Of.get(assignment): new ArrayList<Tree>();
 
-                    if (Math.max(list1.size(), list2.size()) > 1)
-                        break;
-
-                    if (list1.size() <= list2.size()) {
-                        // Collections.shuffle(list1, new Random(somePredefinedSeed));
-                        Collections.shuffle(list1);
-                        for (var node1: list1) {
-                            assertFalse(list2.isEmpty());
-
-                            Tree maxNode = list2.get(0);
-
-                            if (maxNode != root2) {
-                                double maxDice = getMemoizedDice(node1.getParent(), maxNode.getParent());
-                                for (int i = 1; i < list2.size(); ++i) {
-                                    Tree tmpNode = list2.get(i);
-                                    double tmpDice = getMemoizedDice(node1.getParent(), tmpNode.getParent());
-                                    if (maxDice < tmpDice) {
-                                        maxNode = tmpNode;
-                                        maxDice = tmpDice;
+                    if (list1.size() >= 1 && list2.size() >= 1) {
+                        if (list1.size() == 1 && list2.size() == 1) {
+                            matchSubTree(list1.get(0), list2.get(0));
+                        }
+                        else {
+                            for (boolean continueFlag = true; continueFlag;) {
+                                continueFlag = false;
+                                for (int i = 0; i < list1.size(); ++i) {
+                                    int checkedCount = 0;
+                                    for (int j = 0; j < list2.size(); ++j)
+                                        if (checkMatchingOfConstructors(list1.get(i), list2.get(j)))
+                                            ++checkedCount;
+                                    if (checkedCount <= 1) {
+                                        continueFlag = true;
+                                        for (int j = 0; j < list2.size(); ++j)
+                                            if (checkMatchingOfConstructors(list1.get(i), list2.get(j))) {
+                                                matchSubTree(list1.get(i), list2.get(j));
+                                                list2.remove(j--);
+                                            }
+                                        list1.remove(i--);
+                                    }
+                                }
+                                for (int j = 0; j < list2.size(); ++j) {
+                                    int checkedCount = 0;
+                                    for (int i = 0; i < list1.size(); ++i)
+                                        if (checkMatchingOfConstructors(list1.get(i), list2.get(j)))
+                                            ++checkedCount;
+                                    if (checkedCount <= 1) {
+                                        continueFlag = true;
+                                        for (int i = 0; i < list1.size(); ++i)
+                                            if (checkMatchingOfConstructors(list1.get(i), list2.get(j))) {
+                                                matchSubTree(list1.get(i), list2.get(j));
+                                                list1.remove(i--);
+                                            }
+                                        list2.remove(j--);
                                     }
                                 }
                             }
-
-                            preMatch(node1, maxNode);
-
-                            list2.remove(maxNode);
+                            for (Tree node1: list1)
+                                for (Tree node2: list2)
+                                    if (checkMatchingOfConstructors(node1, node2))
+                                        cartesianProducts.add(Pair.of(node1, node2));
                         }
                     }
                     else {
-                        // Collections.shuffle(list2, new Random(somePredefinedSeed));
-                        Collections.shuffle(list2);
-                        for (var node2: list2) {
-                            assertFalse(list2.isEmpty());
-                            
-                            Tree maxNode = list1.get(0);
-                            double maxDice = getMemoizedDice(maxNode.getParent(), node2.getParent());
-                            for (int i = 1; i < list1.size(); ++i) {
-                                Tree tmpNode = list1.get(i);
-                                double tmpDice = getMemoizedDice(tmpNode.getParent(), node2.getParent());
-                                if (maxDice < tmpDice) {
-                                    maxNode = tmpNode;
-                                    maxDice = tmpDice;
-                                }
-                            }
+                        // push their children (if not handled) into queue
+                        for (var node : list1) {
+                            // System.out.println("Add children of " + node);
 
-                            preMatch(maxNode, node2);
+                            assert matched1to2[node.dfsIndex] == 0;
+                            queue1.addAll(node.children);
+                        }
+                        for (var node : list2) {
+                            // System.out.println("Add children of " + node);
 
-                            list1.remove(maxNode);
+                            assert matched2to1[node.dfsIndex] == 0;
+                            queue2.addAll(node.children);
                         }
                     }
                 }
-    
-                // push their children (if not handled) into queue
-                for (var node : nodes1) 
-                    if (matched1to2[node.dfsIndex] == 0)
-                        queue1.addAll(node.children);
-                for (var node : nodes2)
-                    if (matched2to1[node.dfsIndex] == 0)
-                        queue2.addAll(node.children);
-            }    
+            }
+
+            cartesianProducts.sort(new TreePairComparator());
+            for (var p: cartesianProducts)
+                if (matched1to2[p.first.dfsIndex] == 0 && matched2to1[p.second.dfsIndex] == 0) {
+                    matchSubTree(p.first, p.second);
+                }
         }
 
+        tree1.preInterval = Interval.of(1, tree2.size);
         for (Tree node: tree1.preOrder())
             for (Tree child: node.children)
                 if (child.preInterval == null)
@@ -213,9 +221,12 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         tree1.preInterval = tree2.interval;
         tree1.postLCA = tree2;
 
+        if (Interval.in(tree1.dfsIndex, Interval.of(1592, 2632)) && !Interval.in(tree2.dfsIndex, Interval.of(2667, 3982))) {
+            Log.finer("An unexpected mapping!");
+        }
         // System.out.println("For " + tree1 + ", preInterval = " + nodeInDfsOrdering1[tree1.preInterval.l] + ", postLCA = " + tree1.postLCA);
 
-        Log.finer("%s mapping: %s <-> %s", type, tree1, tree2);
+        Log.finer("%s mapping: %s interval [%d, %d] <-> %s interval [%d, %d]", type, tree1, tree1.interval.l, tree1.interval.r, tree2, tree2.interval.l, tree2.interval.r);
     }
     private boolean checkMatchingOfConstructors(Tree tree1, Tree tree2) {
         Tree parent1 = tree1.getParent();
@@ -230,15 +241,6 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         }
     }
 
-    private void getPreInterval(Tree node) {
-        if (node.preInterval == null) {
-            Tree parent = node.getParent();
-            if (parent != null) {
-                getPreInterval(parent);
-                node.preInterval = parent.preInterval;
-            }
-        }
-    }
     private void matchSubTree(Tree tree1, Tree tree2) {
         match(tree1, tree2, MappingType.isomorphic);
         
@@ -246,11 +248,38 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         for (int i = 0; i < tree1.children.size(); ++i)
             matchSubTree(tree1.children.get(i), tree2.children.get(i));
     }
-    private void preMatch(Tree tree1, Tree tree2) {
-        getPreInterval(tree1);
 
-        if (Interval.isSubinterval(tree2.interval, tree1.preInterval) && checkMatchingOfConstructors(tree1, tree2))
-            matchSubTree(tree1, tree2);
+    private final class TreePairComparator implements Comparator<Pair<Tree, Tree>>{
+        @Override
+        public int compare(Pair<Tree, Tree> p1, Pair<Tree, Tree> p2) {
+            Tree first1 = p1.first;
+            Tree second1 = p1.second;
+            Tree first2 = p2.first;
+            Tree second2 = p2.second;
+            for (;;) {
+                first1 = first1.getParent();
+                second1 = second1.getParent();
+                first2 = first2.getParent();
+                second2 = second2.getParent();
+
+                if (first1 == null && second1 == null && first2 == null && second2 == null) return 0;
+                else if (first1 == null && second1 == null) return 1;
+                else if (first2 == null && second2 == null) return -1;
+                if ((first1 == null || second1 == null) && (first2 == null || second2 == null)) return 0;
+                else if (first1 == null || second1 == null) return -1;
+                else if (first2 == null || second2 == null) return 1;
+                
+                boolean equivalence1 = first1.label == second1.label;
+                boolean equivalence2 = first2.label == second2.label;
+                if (equivalence1 && !equivalence2) return 1;
+                else if (equivalence2 && !equivalence1) return -1;
+
+                double similarity1 = getMemoizedDice(first1, second1);
+                double similarity2 = getMemoizedDice(first2, second2);
+                if (similarity1 > similarity2 + 1e-8) return 1;
+                else if (similarity1 < similarity2 - 1e-8) return -1;
+            }
+        }
     }
     
     // utils of dice function
@@ -312,17 +341,17 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
 
                     Tree candidate = node.postLCA;
 
-                    // Log.finer("postLCA of %s is %s", node, node.postLCA);
+                    Log.finer("postLCA of %s is %s", node, node.postLCA);
 
                     while (candidate != null && (matched2to1[candidate.dfsIndex] != 0 || node.label != candidate.label))
                         candidate = candidate.getParent();
 
-                    // if (candidate != null) {
-                    //     Log.finer("candidate of %s[%d, %d] is %s[%d, %d]", node, node.preInterval.l, node.preInterval.r, candidate, candidate.interval.l, candidate.interval.r);
-                    // }
-                    // else {
-                    //     Log.finer("candidate of %s[%d, %d] is null", node, node.preInterval.l, node.preInterval.r);
-                    // }
+                    if (candidate != null) {
+                        Log.finer("candidate of %s[%d, %d] is %s[%d, %d]", node, node.interval.l, node.interval.r, candidate, candidate.interval.l, candidate.interval.r);
+                    }
+                    else {
+                        Log.finer("candidate of %s[%d, %d] is null", node, node.interval.l, node.interval.r);
+                    }
 
                     if (candidate != null && Interval.isProperSubinterval(candidate.interval, node.preInterval)) {
                         // get the candidate!
