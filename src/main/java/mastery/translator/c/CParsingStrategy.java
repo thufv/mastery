@@ -9,8 +9,7 @@ import org.antlr.v4.runtime.misc.Pair;
 import mastery.translator.ParsingStrategy;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public class CParsingStrategy implements ParsingStrategy {
     @Override
@@ -47,5 +46,11 @@ public class CParsingStrategy implements ParsingStrategy {
     public HashSet<String> getStopLabels() {
         HashSet<String> stopLabels = new HashSet<>();
         return stopLabels;
+    }
+
+    @Override
+    public Map<String, Integer> getDeclarationLabels() {
+        Map<String, Integer> declarationLabels = new HashMap<>();
+        return declarationLabels;
     }
 }

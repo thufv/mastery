@@ -32,7 +32,7 @@ tmp/
 
 # Debug
 debug*
-test.log
+*.log
 
 # Experiment
 results/

@@ -10,6 +10,8 @@ import mastery.translator.ParsingStrategy;
 import java.io.IOException;
 import java.util.*;
 
+import static java.util.Map.entry;
+
 public class JavaParsingStrategy implements ParsingStrategy {
     @Override
     public Pair<Parser, ParserRuleContext> apply(String srcFile) throws IOException {
@@ -78,5 +80,23 @@ public class JavaParsingStrategy implements ParsingStrategy {
     @Override
     public HashSet<String> getStopLabels() {
         return stopLabels;
+    }
+
+    // delcarations that probable unique
+    // that is, declarations that have both identifier and body as its child
+    private static final Map<String, Integer> declarationLabels = Map.ofEntries(
+        entry("classDeclaration", 1),
+        entry("enumDeclaration", 1),
+        entry("enumConstant", 1),
+        entry("interfaceDeclaration", 1),
+        entry("methodDeclaration", 1),
+        entry("interfaceMethodDeclaration", 3),
+        entry("constructorDeclaration", 0),
+        entry("annotationTypeDeclaration", 2),
+        entry("catchClause", 4));
+
+    @Override
+    public Map<String, Integer> getDeclarationLabels() {
+        return declarationLabels;
     }
 }

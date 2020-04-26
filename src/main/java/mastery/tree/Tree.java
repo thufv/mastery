@@ -8,8 +8,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
-import mastery.util.log.Log;
-
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -98,6 +96,12 @@ public abstract class Tree {
      * stop means this is a relative complete syntax unit
      */
     public boolean stop = false;
+
+    /**
+     * if the node is a declaration with identifier,
+     * the identifier will not be null.
+     */
+    public String identifier = null;
 
     /**
      * Parent.

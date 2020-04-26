@@ -6,12 +6,9 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Pair;
 import mastery.translator.ParsingStrategy;
-import mastery.translator.cs.CSharpLexer;
-import mastery.translator.cs.CSharpParser;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public class CSharpParsingStrategy implements ParsingStrategy {
     @Override
@@ -57,5 +54,11 @@ public class CSharpParsingStrategy implements ParsingStrategy {
     public HashSet<String> getStopLabels() {
         HashSet<String> stopLabels = new HashSet<>();
         return stopLabels;
+    }
+
+    @Override
+    public Map<String, Integer> getDeclarationLabels() {
+        Map<String, Integer> declarationLabels = new HashMap<>();
+        return declarationLabels;
     }
 }

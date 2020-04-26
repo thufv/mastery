@@ -13,7 +13,8 @@ public abstract class TwoWayMatcher{
         isomorphic,
         container,
         recovery,
-        compulsory
+        compulsory,
+        homonymy
     }
 
     protected Map<Tree, Tree> m;

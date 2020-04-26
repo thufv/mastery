@@ -153,7 +153,8 @@ public final class TreeBuilders {
                 strategy.getListNodeNames(),
                 strategy.getOrderedListNodeNames(),
                 strategy.getAlternativeLabels(),
-                strategy.getStopLabels());
+                strategy.getStopLabels(),
+                strategy.getDeclarationLabels());
 
         Tree tree = generator.generate();
         return tree;

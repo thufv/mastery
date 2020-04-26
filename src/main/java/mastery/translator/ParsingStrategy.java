@@ -5,8 +5,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Pair;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * Parsing strategy.
@@ -45,4 +44,6 @@ public interface ParsingStrategy {
     List<String> getAlternativeLabels();
 
     HashSet<String> getStopLabels();
+
+    Map<String, Integer> getDeclarationLabels();
 }

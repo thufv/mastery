@@ -16,9 +16,7 @@ import mastery.tree.OrderedList;
 
 import org.antlr.v4.runtime.tree.ErrorNode;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * Generate a AST (represented as JSON) from source code.
@@ -34,6 +32,7 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
     // all alternative labels
     private final List<String> alternativeLabels;
     private final HashSet<String> stopLabels;
+    private final Map<String, Integer> declarationLabels;
 
     /**
      * Constructor.
@@ -41,13 +40,14 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
      * @param ctx context
      */
     public TreeGenerator(Parser parser, ParserRuleContext ctx, HashSet<String> ListNodeNames,
-            HashSet<String> OrderedListNodeNames, List<String> alternativeLabels, HashSet<String> stopLabels) {
+            HashSet<String> OrderedListNodeNames, List<String> alternativeLabels, HashSet<String> stopLabels, Map<String, Integer> declarationLabels) {
         this.parser = parser;
         this.context = ctx;
         this.ListNodeNames = ListNodeNames;
         this.OrderedListNodeNames = OrderedListNodeNames;
         this.alternativeLabels = alternativeLabels;
         this.stopLabels = stopLabels;
+        this.declarationLabels = declarationLabels;
 
         this.rulesNum = parser.getRuleNames().length;
     }
@@ -136,14 +136,20 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
             children.add(o);
         }
 
+        Tree ans;
         if (ListNodeNames.contains(name)) { // means it is a list
             if (OrderedListNodeNames.contains(name))
-                return new OrderedList(label, name, children);
+                ans = new OrderedList(label, name, children);
             else
-                return new UnorderedList(label, name, children);
-        } else { // means it is a node
-            return new Constructor(label, name, children, stopLabels.contains(name));
+                ans = new UnorderedList(label, name, children);
+        } else // means it is a node
+            ans = new Constructor(label, name, children, stopLabels.contains(name));
+        if (declarationLabels.containsKey(name)) {
+            Tree identifier = children.get(declarationLabels.get(name));
+            assert identifier instanceof Leaf;
+            ans.identifier = ((Leaf)identifier).code;
         }
+        return ans;
     }
 
     @Override

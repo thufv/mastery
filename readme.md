@@ -53,6 +53,11 @@ I develop this tool with [clang format 8.0.0-3~ubuntu18.04.2](https://clang.llvm
 - [ ] More supported languages
 - [ ] Graphic AST mappings
 
+### Wierd Cases
+
+- [ ] elasticsearch/56b61578bc0-server-src-main-java-org-elasticsearch-node-Node: ??????? ordered list ? bug
+- [ ] jadx/e1f49552-jadx-core-src-main-java-jadx-core-dex-attributes-AFlag?????“??”????????????????
+
 ### Representative scenarios
 
 #### Old Benchmarks
@@ -117,6 +122,11 @@ cpachecker.1f4ec82c33b2c28faa760f422f739f7a15ed7e3a.base.src.org.sosy_lab.cpache
 public IntEqualCollectingVisitor(CFANode pre, boolean onlyOneExp)
 ```
 #### New Benchmarks
+
+```bash
+jadx/e1f49552-jadx-core-src-test-java-jadx-tests-integration-arith-TestArith
+# We can discover a conflict that other tools can't find
+```
 
 ## Authors
 
