@@ -25,6 +25,7 @@ public class CSharpParsingStrategy implements ParsingStrategy {
         return new Pair<>(parser, ctx);
     }
 
+    @Override
     public HashSet<String> getListNodeNames() {
         HashSet<String> ListNodeNames = new HashSet<String>();
         ListNodeNames.add("statement_list");
@@ -38,15 +39,23 @@ public class CSharpParsingStrategy implements ParsingStrategy {
         return ListNodeNames;
     }
 
+    @Override
     public HashSet<String> getOrderedListNodeNames() {
         HashSet<String> OrderedListNodeNames = new HashSet<String>();
         // TODO: Add C# ordered ListNodes
         return OrderedListNodeNames;
     }
 
+    @Override
     public List<String> getAlternativeLabels() {
         List<String> AlternativeLabels = List.of();
         // TODO: Add C# alternative labels
         return AlternativeLabels;
+    }
+
+    @Override
+    public HashSet<String> getStopLabels() {
+        HashSet<String> stopLabels = new HashSet<>();
+        return stopLabels;
     }
 }

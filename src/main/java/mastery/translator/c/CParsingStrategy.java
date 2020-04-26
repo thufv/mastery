@@ -24,6 +24,7 @@ public class CParsingStrategy implements ParsingStrategy {
         return new Pair<>(parser, ctx);
     }
 
+    @Override
     public HashSet<String> getListNodeNames() {
         HashSet<String> ListNodeNames = new HashSet<String>();
         // TODO: Add C ListNodes
@@ -40,5 +41,11 @@ public class CParsingStrategy implements ParsingStrategy {
         List<String> AlternativeLabels = List.of();
         // TODO: Add C# alternative labels
         return AlternativeLabels;
+    }
+
+    @Override
+    public HashSet<String> getStopLabels() {
+        HashSet<String> stopLabels = new HashSet<>();
+        return stopLabels;
     }
 }

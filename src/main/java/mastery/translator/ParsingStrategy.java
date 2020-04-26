@@ -42,5 +42,7 @@ public interface ParsingStrategy {
      * 
      * @return alternative labels.
      */
-    public List<String> getAlternativeLabels();
+    List<String> getAlternativeLabels();
+
+    HashSet<String> getStopLabels();
 }

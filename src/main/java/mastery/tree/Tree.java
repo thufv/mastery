@@ -95,6 +95,11 @@ public abstract class Tree {
     public Tree recoveryBuddy;
 
     /**
+     * stop means this is a relative complete syntax unit
+     */
+    public boolean stop = false;
+
+    /**
      * Parent.
      *
      * @return parent if exists, or else null.

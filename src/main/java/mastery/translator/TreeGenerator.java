@@ -33,6 +33,7 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
     private final int rulesNum;
     // all alternative labels
     private final List<String> alternativeLabels;
+    private final HashSet<String> stopLabels;
 
     /**
      * Constructor.
@@ -40,12 +41,13 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
      * @param ctx context
      */
     public TreeGenerator(Parser parser, ParserRuleContext ctx, HashSet<String> ListNodeNames,
-            HashSet<String> OrderedListNodeNames, List<String> alternativeLabels) {
+            HashSet<String> OrderedListNodeNames, List<String> alternativeLabels, HashSet<String> stopLabels) {
         this.parser = parser;
         this.context = ctx;
         this.ListNodeNames = ListNodeNames;
         this.OrderedListNodeNames = OrderedListNodeNames;
         this.alternativeLabels = alternativeLabels;
+        this.stopLabels = stopLabels;
 
         this.rulesNum = parser.getRuleNames().length;
     }
@@ -140,7 +142,7 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
             else
                 return new UnorderedList(label, name, children);
         } else { // means it is a node
-            return new Constructor(label, name, children);
+            return new Constructor(label, name, children, stopLabels.contains(name));
         }
     }
 

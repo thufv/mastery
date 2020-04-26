@@ -149,8 +149,11 @@ public final class TreeBuilders {
 
         Pair<Parser, ParserRuleContext> p = strategy.apply(srcFile);
         TreeGenerator generator = new TreeGenerator(
-                p.a, p.b, strategy.getListNodeNames(),
-                strategy.getOrderedListNodeNames(), strategy.getAlternativeLabels());
+                p.a, p.b,
+                strategy.getListNodeNames(),
+                strategy.getOrderedListNodeNames(),
+                strategy.getAlternativeLabels(),
+                strategy.getStopLabels());
 
         Tree tree = generator.generate();
         return tree;

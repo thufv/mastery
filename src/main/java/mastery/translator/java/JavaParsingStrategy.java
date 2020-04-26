@@ -71,4 +71,12 @@ public class JavaParsingStrategy implements ParsingStrategy {
     public List<String> getAlternativeLabels() {
         return alternativeLabelList;
     }
+
+    private static final String[] stopStrings = { "compilationUnit", "importDeclaration", "typeDeclaration", "packageDeclaration", "classDeclaration", "enumDeclaration", "interfaceDeclaration", "classBodyDeclaration", "memberDeclaration", "methodDeclaration", "genericMethodDeclaration", "fieldDeclaration", "constructorDeclaration", "genericConstructorDeclaration", "interfaceDeclaration", "annotationTypeDeclaration", "constDeclaration", "interfaceMethodDeclaration", "annotationTypeElementDeclaration", "statement", "blockStmt", "assertStmt", "ifStmt", "forStmt", "whileStmt", "doWhileStmt", "tryStmt", "tryRscSpecStmt", "switchStmt", "synchronizedStmt", "returnStmt", "throwStmt", "breakStmt", "continueStmt", 	"semiStmt", "exprStmt", "identifierStmt", "localVariableDeclarationStatement", "statement", "localTypeDeclaration", "localVariableDeclaration"};
+    private static final HashSet<String> stopLabels = new HashSet<>(Arrays.asList(stopStrings));
+
+    @Override
+    public HashSet<String> getStopLabels() {
+        return stopLabels;
+    }
 }

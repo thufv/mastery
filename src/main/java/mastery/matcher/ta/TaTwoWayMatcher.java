@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.simmetrics.StringMetrics;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import mastery.matcher.TwoWayMatcher;
 import mastery.matcher.Similarities;
@@ -54,7 +55,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
 
         // Top-down Phase
         {
-            var cartesianProducts = new ArrayList<Pair<Tree, Tree>>();
+            List<Pair<Tree, Tree>> cartesianProducts = new ArrayList<Pair<Tree, Tree>>();
 
             var queue1 = new WeightedQueue<Tree>(Tree -> Tree.height);
             var queue2 = new WeightedQueue<Tree>(Tree -> Tree.height);
@@ -101,41 +102,36 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                     var list2 = assignment < nodes2Of.size() ? nodes2Of.get(assignment): new ArrayList<Tree>();
 
                     if (list1.size() >= 1 && list2.size() >= 1) {
+                        Log.finer("The sizes of lists of assignment %d are %d and %d", assignment, list1.size(), list2.size());
+
                         if (list1.size() == 1 && list2.size() == 1) {
+                            Log.finer("matchSubTree(%s [%d, %d], %s [%d, %d]) becase of list1.size() == 1 && list2.size() == 1", list1.get(0), list1.get(0).interval.l, list1.get(0).interval.r, list2.get(0), list2.get(0).interval.l, list2.get(0).interval.r);
+
                             matchSubTree(list1.get(0), list2.get(0));
                         }
                         else {
                             for (boolean continueFlag = true; continueFlag;) {
                                 continueFlag = false;
                                 for (int i = 0; i < list1.size(); ++i) {
-                                    int checkedCount = 0;
+                                    Integer checkedCount = 0;
                                     for (int j = 0; j < list2.size(); ++j)
                                         if (checkMatchingOfConstructors(list1.get(i), list2.get(j)))
                                             ++checkedCount;
-                                    if (checkedCount <= 1) {
-                                        continueFlag = true;
+                                    if (checkedCount == 1)
                                         for (int j = 0; j < list2.size(); ++j)
                                             if (checkMatchingOfConstructors(list1.get(i), list2.get(j))) {
-                                                matchSubTree(list1.get(i), list2.get(j));
-                                                list2.remove(j--);
+                                                boolean only_i = true;
+                                                for (int _i = 0; _i < list1.size(); ++_i)
+                                                    if (i != _i && checkMatchingOfConstructors(list1.get(_i), list2.get(j)))
+                                                        only_i = false;
+                                                if (only_i) {
+                                                    matchSubTree(list1.get(i), list2.get(j));
+                                                    list1.remove(i--);
+                                                    list2.remove(j);
+                                                    continueFlag = true;
+                                                }
+                                                break;
                                             }
-                                        list1.remove(i--);
-                                    }
-                                }
-                                for (int j = 0; j < list2.size(); ++j) {
-                                    int checkedCount = 0;
-                                    for (int i = 0; i < list1.size(); ++i)
-                                        if (checkMatchingOfConstructors(list1.get(i), list2.get(j)))
-                                            ++checkedCount;
-                                    if (checkedCount <= 1) {
-                                        continueFlag = true;
-                                        for (int i = 0; i < list1.size(); ++i)
-                                            if (checkMatchingOfConstructors(list1.get(i), list2.get(j))) {
-                                                matchSubTree(list1.get(i), list2.get(j));
-                                                list1.remove(i--);
-                                            }
-                                        list2.remove(j--);
-                                    }
                                 }
                             }
                             for (Tree node1: list1)
@@ -162,16 +158,21 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 }
             }
 
+            Log.finer("Sort!");
+
+            cartesianProducts = cartesianProducts.stream().filter(p -> checkStop(p.first, p.second)).collect(Collectors.toList());
             cartesianProducts.sort(new TreePairComparator());
             for (int i = cartesianProducts.size() - 1; i >= 0; --i) {
                 var p = cartesianProducts.get(i);
                 if (matched1to2[p.first.dfsIndex] == 0 && matched2to1[p.second.dfsIndex] == 0) {
-                    // Log.finer("matchSubTree(%s [%d, %d], %s [%d, %d]) with Jaccard Similarity of parents %f", p.first, p.first.interval.l, p.first.interval.r, p.second, p.second.interval.l, p.second.interval.r, getMemoizedDice(p.first.getParent(), p.second.getParent()));
+                    if (checkStop(p.first, p.second)) {
+                        Log.finer("matchSubTree(%s [%d, %d], %s [%d, %d]) with Jaccard Similarity of parents %f", p.first, p.first.interval.l, p.first.interval.r, p.second, p.second.interval.l, p.second.interval.r, getMemoizedDice(p.first.getParent(), p.second.getParent()));
 
-                    matchSubTree(p.first, p.second);
+                        matchSubTree(p.first, p.second);
+                    }
                 }
                 else {
-                    // Log.finer("A matched mapping: (%s [%d, %d], %s [%d, %d]) with Jaccad Similarity of parents %f", p.first, p.first.interval.l, p.first.interval.r, p.second, p.second.interval.l, p.second.interval.r, getMemoizedDice(p.first.getParent(), p.second.getParent()));
+                    Log.finer("A matched mapping: (%s [%d, %d], %s [%d, %d]) with Jaccad Similarity of parents %f", p.first, p.first.interval.l, p.first.interval.r, p.second, p.second.interval.l, p.second.interval.r, getMemoizedDice(p.first.getParent(), p.second.getParent()));
                 }
             }
         }
@@ -227,7 +228,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         tree1.preInterval = tree2.interval;
         tree1.postLCA = tree2;
 
-        if (Interval.in(tree1.dfsIndex, Interval.of(715, 3545)) && !Interval.in(tree2.dfsIndex, Interval.of(=790, 5180))) {
+        if (Interval.in(tree1.dfsIndex, Interval.of(715, 3545)) && !Interval.in(tree2.dfsIndex, Interval.of(790, 5180))) {
             Log.finer("An unexpected mapping!");
         }
         if (Interval.in(tree1.dfsIndex, Interval.of(715, 3545)) && Interval.in(tree2.dfsIndex, Interval.of(790, 5180))) {
@@ -250,7 +251,22 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
             }
         }
     }
+    private boolean checkStop(Tree node1, Tree node2) {
+        for (;;) {
+            Tree parent1 = node1.getParent();
+            Tree parent2 = node2.getParent();
 
+            // System.out.println("checkStop(" + parent1 + ", " + parent2 + ")");
+
+            if (parent1 == null || parent2 == null) return false;
+            else if (parent1.label != parent2.label) return false;
+            else if (getMemoizedDice(parent1, parent2) > 1e-8) return true;
+            
+            if (parent1.stop) return false;
+            node1 = parent1;
+            node2 = parent2;
+        }
+    }
     private void matchSubTree(Tree tree1, Tree tree2) {
         match(tree1, tree2, MappingType.isomorphic);
         
