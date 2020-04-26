@@ -72,6 +72,16 @@ antlr4.b14ca56441196d63b8974455c0050bfaee4cb3a4.base.tool.src.org.antlr.v4.autom
 # An example to show the difficulty of merging ordered list:
 # If "left" add one statement and "right" add two same statement,
 # what should I do?
+
+MPAndroidChart.b28aae50fc6b0dd48a812831d6ef0c5c98ef8c0f.base.MPChartExample.src.com.xxmassdeveloper.mpchartexample.BarChartActivitySinus
+# An counterexample to show the flaw in the cases
+# that "base" is very different from "left" and "right",
+# but "left" and "right" and similar enough.
+# Our algorithm unfortunately can't handle this case properly.
+
+cpachecker.70675412d1cefbed8965dc7ac68facea7eb00889.base.src.org.sosy_lab.cpachecker.cfa.objectmodel.c.FunctionDefinitionNode
+# A good example to show that we could explosure some conflicts
+# that jdime will just merge without any hint for developer
 ```
 #### New Benchmarks
 

@@ -180,7 +180,6 @@ public class CEGARAlgorithm implements Algorithm, StatisticsProvider {
         boolean refinementResult;
         try {
           refinementResult = mRefiner.performRefinement(reached);
-          
         } catch (RefinementFailedException e) {
           stats.countFailedRefinements++;
           throw e;

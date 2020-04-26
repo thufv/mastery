@@ -30,7 +30,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     public TaTwoWayMatcher() {
         // default parameters in the paper of GumTree
         this.minHeight = 1;
-        this.minDice = 0.5;
+        this.minDice = 0.4;
         this.maxSize = 1000;
     }
 
@@ -228,10 +228,10 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         tree1.preInterval = tree2.interval;
         tree1.postLCA = tree2;
 
-        if (Interval.in(tree1.dfsIndex, Interval.of(715, 3545)) && !Interval.in(tree2.dfsIndex, Interval.of(790, 5180))) {
+        if (Interval.in(tree1.dfsIndex, Interval.of(296, 515)) && !Interval.in(tree2.dfsIndex, Interval.of(536, 749))) {
             Log.finer("An unexpected mapping!");
         }
-        if (Interval.in(tree1.dfsIndex, Interval.of(715, 3545)) && Interval.in(tree2.dfsIndex, Interval.of(790, 5180))) {
+        if (Interval.in(tree1.dfsIndex, Interval.of(296, 515)) && Interval.in(tree2.dfsIndex, Interval.of(536, 749))) {
             Log.finer("An expected mapping!");
         }
 
@@ -384,7 +384,10 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                         // get the candidate!
                         // let's check the dice!
 
+                        Log.finer("Jaccad Similarity = %f, Dice Similarity = %f, minDice = %f", Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size), Similarities.diceSimilarity(mappingCount, node.size, candidate.size), minDice);
+
                         if (Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size) > minDice) {
+
                             if (checkMatchingOfConstructors(node, candidate)) {
                                 match(node, candidate, MappingType.container);
                                 mappingCount += containerDfs(node, candidate);
