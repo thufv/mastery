@@ -19,18 +19,18 @@ import mastery.util.Pair;
 public class TaTwoWayMatcher extends TwoWayMatcher{
     // Parameters
     public final int minHeight;
-    public final double minDice;
+    public final double minJaccard;
     public final int maxSize;
 
-    public TaTwoWayMatcher(int minHeight, double minDice, int maxSize) {
+    public TaTwoWayMatcher(int minHeight, double minJaccard, int maxSize) {
         this.minHeight = minHeight;
-        this.minDice = minDice;
+        this.minJaccard = minJaccard;
         this.maxSize = maxSize;
     }
     public TaTwoWayMatcher() {
         // default parameters in the paper of GumTree
         this.minHeight = 1;
-        this.minDice = 0.4;
+        this.minJaccard = 0.4;
         this.maxSize = 1000;
     }
 
@@ -384,9 +384,9 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                         // get the candidate!
                         // let's check the dice!
 
-                        Log.finer("Jaccad Similarity = %f, Dice Similarity = %f, minDice = %f", Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size), Similarities.diceSimilarity(mappingCount, node.size, candidate.size), minDice);
+                        Log.finer("Jaccad Similarity = %f, Dice Similarity = %f, minJaccard = %f", Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size), Similarities.diceSimilarity(mappingCount, node.size, candidate.size), minJaccard);
 
-                        if (Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size) > minDice) {
+                        if (Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size) > minJaccard) {
 
                             if (checkMatchingOfConstructors(node, candidate)) {
                                 match(node, candidate, MappingType.container);

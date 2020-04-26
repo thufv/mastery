@@ -82,6 +82,39 @@ MPAndroidChart.b28aae50fc6b0dd48a812831d6ef0c5c98ef8c0f.base.MPChartExample.src.
 cpachecker.70675412d1cefbed8965dc7ac68facea7eb00889.base.src.org.sosy_lab.cpachecker.cfa.objectmodel.c.FunctionDefinitionNode
 # A good example to show that we could explosure some conflicts
 # that jdime will just merge without any hint for developer
+
+cpachecker.c1f3b114de7be82be6526e49d5acac0fd9605940.base.src.org.sosy_lab.cpachecker.core.CoreComponentsFactory
+# An unfornate example that violates our hypothesis that:
+# for some statement s.t. "base" = "left" ≠ "right",
+# we should have "expected" = "right".
+# You can look into `SpecAutomatonCompositionType` to find the pity.
+
+cpachecker.ebe779a5dbc35b6d5e303b39dfa632b4f7d3540e.base.src.org.sosy_lab.cpachecker.util.predicates.OptProversTestSuite
+# Just like the above one
+# You can find the pity at "Suite.SuiteClasses"
+
+cpachecker.5adaa2ebaecd5e03398e1e299ec84e5e7f8a658c.base.src.org.sosy_lab.cpachecker.cpa.explicit.refiner.utils.ExplicitInterpolator
+# Perhaps is an example of bad software development paradigm.
+currentOffset = pOffset;
+# The above statement exists in "base", "left", and "right".
+# However, in "expected", it's deleted.
+
+cpachecker.48cc9b3a7d4f9323408b7a58346e164f224777c7.base.src.org.sosy_lab.cpachecker.core.MainCPAStatistics
+# Just like the above one,
+# the following statement is added in "expected" unexpectedly
+if (locs > 0)
+
+cpachecker.168a626b8038a40d64241811421adf725fbae4d5.base.src.org.sosy_lab.cpachecker.cpa.value.refiner.utils.ValueAnalysisFeasibilityChecker
+# Just as the above
+# see `enum BasisStrategy`
+
+cpachecker.1b901bf6a7b61780e5e55210311265b812077497.base.src.org.sosy_lab.cpachecker.util.VariableClassification
+# Just as the above
+# see `IAInitializer`
+
+cpachecker.1f4ec82c33b2c28faa760f422f739f7a15ed7e3a.base.src.org.sosy_lab.cpachecker.util.VariableClassification
+# Just as above
+public IntEqualCollectingVisitor(CFANode pre, boolean onlyOneExp)
 ```
 #### New Benchmarks
 
