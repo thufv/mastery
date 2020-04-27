@@ -57,6 +57,8 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         for (Tree node: tree2.preOrder())
             if (node.identifier != null)
                 identifierCount2.put(node.identifier, identifierCount2.getOrDefault(node.identifier, 0) + 1);
+        nodeOfIdentifier1.clear();
+        nodeOfIdentifier2.clear();
         for (Tree node: tree1.preOrder()) {
             if (node.identifier != null
                 && identifierCount1.getOrDefault(node.identifier, 0) == 1
@@ -81,8 +83,11 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         }
         
         for (Tree node: tree1.preOrder())
-            if (node.identifier != null && nodeOfIdentifier1.containsKey(node.identifier))
+            if (node.identifier != null && nodeOfIdentifier1.containsKey(node.identifier)) {
                 node.preInterval = nodeOfIdentifier2.get(node.identifier).interval;
+
+                // System.out.println("preInterval of " + node + " is [" + node.preInterval.l + ", " + node.preInterval.r + "]");
+            }
             else if (node.getParent() == null)
                 node.preInterval = Interval.of(1, tree2.size);
             else node.preInterval = node.getParent().preInterval;
@@ -421,6 +426,10 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
             }
             else {
                 if (node.postLCA != null) {
+                    if (!Interval.isSubinterval(node.postLCA.interval, node.preInterval)) {
+                        System.out.println(node + ", postLCA = " + node.postLCA + ", preInterval = " + node.preInterval);
+                    }
+
                     assert Interval.isSubinterval(node.postLCA.interval, node.preInterval);
 
                     Tree candidate = node.postLCA;
