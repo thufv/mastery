@@ -299,23 +299,20 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         if (node1.label != node2.label) return false;
 
         // monotonicity checking
-        if (!Interval.isSubinterval(node2.interval, node1.preInterval))
-            return false;
-        if (node1.postLCA != null && !Interval.isSubinterval(node1.postLCA.interval, node2.interval))
-            return false;
+        if (!Interval.isSubinterval(node2.interval, node1.preInterval)) return false;
+        if (node1.postLCA != null && !Interval.isSubinterval(node1.postLCA.interval, node2.interval)) return false;
         
         // compulsory checking
         Tree parent1 = node1.getParent();
         Tree parent2 = node2.getParent();
-        if (parent1 == null) {
-            if(parent2 != null) return false;
-        }
+        if (parent1 == null) { if(parent2 != null) return false; }
         else {
             if (parent2 == null) return false;
-            else
-                if (parent1.isConstructor() && parent2.isConstructor() && parent1.label == parent2.label && node1.childno != node2.childno)
-                    return false;
+            else if (parent1.isConstructor() && parent2.isConstructor() && parent1.label == parent2.label && node1.childno != node2.childno) return false;
         }
+
+        // homonymy checking
+        if (node2.identifier != null && nodeOfIdentifier2.containsKey(node2.identifier) && nodeOfIdentifier1.get(node2.identifier) != node1) return false;
 
         return true;
     }
@@ -419,6 +416,8 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
             else if (node.identifier != null && nodeOfIdentifier1.containsKey(node.identifier)) {
                 Tree candidate = nodeOfIdentifier2.get(node.identifier);
 
+                System.out.println("Candidate identifier mapping: " + node + " <-> " + candidate);
+
                 assert checkMapping(node, candidate);
 
                 match(node, candidate, MappingType.homonymy);
@@ -436,12 +435,10 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
 
                     Log.finer("postLCA of %s is %s", node, node.postLCA);
 
-                    while (candidate != null
-                        && (matched2to1[candidate.dfsIndex] != 0
-                            || node.label != candidate.label)
-                        && (candidate.identifier == null
-                            || !nodeOfIdentifier2.containsKey(candidate.identifier)
-                            || nodeOfIdentifier1.get(candidate.identifier) != node))
+                    while (candidate != null &&
+                        (matched2to1[candidate.dfsIndex] != 0
+                        || node.label != candidate.label
+                        || (candidate.identifier != null && nodeOfIdentifier2.containsKey(candidate.identifier) && nodeOfIdentifier1.get(candidate.identifier) != node)))
                         candidate = candidate.getParent();
 
                     if (candidate != null) {
