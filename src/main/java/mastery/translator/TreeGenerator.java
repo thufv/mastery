@@ -140,14 +140,14 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
         if (ListNodeNames.contains(name)) { // means it is a list
             if (OrderedListNodeNames.contains(name))
                 ans = new OrderedList(label, name, children);
-            else
-                ans = new UnorderedList(label, name, children);
+            else ans = new UnorderedList(label, name, children);
         } else // means it is a node
             ans = new Constructor(label, name, children, stopLabels.contains(name));
         if (declarationLabels.containsKey(name)) {
             Tree identifier = children.get(declarationLabels.get(name));
-            assert identifier instanceof Leaf;
-            ans.identifier = ans.name + ":" + ((Leaf)identifier).code;
+            if (identifier.isLeaf())
+                ans.identifier = ans.name + ":" + ((Leaf)identifier).code;
+            else ans.identifier = ans.name + ":" + identifier.identifier.substring(identifier.identifier.indexOf(":"));
         }
         return ans;
     }

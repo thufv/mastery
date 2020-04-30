@@ -83,7 +83,8 @@ public class JavaParsingStrategy implements ParsingStrategy {
     }
 
     // delcarations that probable unique
-    // that is, declarations that have both identifier and body as its child
+    // that is, declarations that (have both identifier and body as its child)
+    // or (have both identifier and body as its child)
     private static final Map<String, Integer> declarationLabels = Map.ofEntries(
         entry("classDeclaration", 1),
         entry("enumDeclaration", 1),
@@ -93,7 +94,9 @@ public class JavaParsingStrategy implements ParsingStrategy {
         entry("interfaceMethodDeclaration", 3),
         entry("constructorDeclaration", 0),
         entry("annotationTypeDeclaration", 2),
-        entry("catchClause", 4));
+        entry("catchClause", 4),
+        entry("typeDeclaration", 1)
+    );
 
     @Override
     public Map<String, Integer> getDeclarationLabels() {
