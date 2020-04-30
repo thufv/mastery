@@ -86,6 +86,14 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
     public Tree visitOrderedLists(OrderedList base, OrderedList left, OrderedList right) {
         Log.finer("merging ordered %s", base.name);
 
+        if (m.treesEqual(base, left)) {
+            Log.finest("right-change %s", right.toReadableString());
+            return right.deepCopy();
+        }
+        if (m.treesEqual(base, right)) {
+            Log.finest("left-change %s", left.toReadableString());
+            return left.deepCopy();
+        }
         if (m.treesEqual(left, right)) {
             Log.finer("trivial case: consistent change %s", left.toReadableString());
             return left.deepCopy();
@@ -180,7 +188,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
         var succ = new MultiMap<Candidate, Candidate>();
         var pred = new MultiMap<Candidate, Candidate>();
 
-        // be careful that in pi, some elements may not mapped to a candidate
+        // be careful that in pi, some elements may not be mapped to a candidate
         for (var list : List.of(base, left, right)) {
             var it = list.iterator();
             Candidate prev = null;
@@ -263,7 +271,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
         }
 
         if (issued.size() < candidates.size()) { // cyclic
-            Log.finer("detect cycle");
+            Log.config("detect cycle");
 
             for (var l : left) {
                 var c = pi.get(l);
@@ -373,6 +381,14 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
     public Tree visitUnorderedLists(UnorderedList base, UnorderedList left, UnorderedList right) {
         Log.finer("merging unordered %s", base.name);
 
+        if (m.treesEqual(base, left)) {
+            Log.finest("right-change %s", right.toReadableString());
+            return right.deepCopy();
+        }
+        if (m.treesEqual(base, right)) {
+            Log.finest("left-change %s", left.toReadableString());
+            return left.deepCopy();
+        }
         if (m.treesEqual(left, right)) {
             Log.finer("trivial case: consistent-change %s", left.toReadableString());
             return left.deepCopy();

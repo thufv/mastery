@@ -147,7 +147,7 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
         if (declarationLabels.containsKey(name)) {
             Tree identifier = children.get(declarationLabels.get(name));
             assert identifier instanceof Leaf;
-            ans.identifier = ((Leaf)identifier).code;
+            ans.identifier = ans.name + ":" + ((Leaf)identifier).code;
         }
         return ans;
     }

@@ -387,7 +387,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         return Similarities.jaccardSimilarity(interMappingCount(tree1, tree2), tree1.size, tree2.size);
     }
 
-    // utils of identifier mapping
+    // utils of homo mapping
     Map<String, Tree> nodeOfIdentifier1 = new HashMap<String, Tree>();
     Map<String, Tree> nodeOfIdentifier2 = new HashMap<String, Tree>();
 
