@@ -1565,25 +1565,25 @@ public class JavaParserBaseListener implements JavaParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAnnotationMethodOrConstantRest(JavaParser.AnnotationMethodOrConstantRestContext ctx) { }
+	@Override public void enterTypeTypeAnnotationMethodRest(JavaParser.TypeTypeAnnotationMethodRestContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitAnnotationMethodOrConstantRest(JavaParser.AnnotationMethodOrConstantRestContext ctx) { }
+	@Override public void exitTypeTypeAnnotationMethodRest(JavaParser.TypeTypeAnnotationMethodRestContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAnnotationMethodRest(JavaParser.AnnotationMethodRestContext ctx) { }
+	@Override public void enterTypeTypeAnnotationConstantRest(JavaParser.TypeTypeAnnotationConstantRestContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitAnnotationMethodRest(JavaParser.AnnotationMethodRestContext ctx) { }
+	@Override public void exitTypeTypeAnnotationConstantRest(JavaParser.TypeTypeAnnotationConstantRestContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

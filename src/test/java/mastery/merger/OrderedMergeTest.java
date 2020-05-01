@@ -140,9 +140,13 @@ public class OrderedMergeTest extends MergeTest {
         final Tree leftInsertion1 = leaf("u1");
         final Tree leftInsertion2 = leaf("u2");
 
+        // base: x y
         final OrderedList base = ordered(baseDeletion, base1);
+        // left: u1 u2 y
         final OrderedList left = ordered(leftInsertion1, leftInsertion2, left1);
+        // right: x y1
         final OrderedList right = ordered(rightDeletion, right1);
+        // target: u1 u2 y1
         final OrderedList target = ordered(leftInsertion1.deepCopy(), leftInsertion2.deepCopy(), right1.deepCopy());
 
         testOn(base, left, right, target,
@@ -202,12 +206,16 @@ public class OrderedMergeTest extends MergeTest {
         final Tree leftInsertion = leaf("u");
         final Tree rightInsertion = leaf("v");
 
+        // base: y x z
         final OrderedList base = ordered(base1, leftDeletion, rightDeletion);
+        // left: y u x1
         final OrderedList left = ordered(left1, leftInsertion, leftChange);
+        // right: y1 z1 v   
         final OrderedList right = ordered(right1, rightChange, rightInsertion);
 
         final Tree conflict1 = Conflict.ofLeft(leftChange);
         final Tree conflict2 = Conflict.ofRight(rightChange);
+        // target: y1 u [x1 | ] [ | z1] v
         final OrderedList target = ordered(right1.deepCopy(), leftInsertion.deepCopy(), conflict1, conflict2,
                                            rightInsertion.deepCopy());
 
@@ -259,7 +267,7 @@ public class OrderedMergeTest extends MergeTest {
     }
 
     @Test
-    public void cyclicConflict() {
+    public void cyclicResolve() {
         final Tree base1 = leaf("y");
         final Tree left1 = base1.deepCopy();
         final Tree right1 = leaf("y1");
@@ -269,14 +277,22 @@ public class OrderedMergeTest extends MergeTest {
         final Tree right2 = base2.deepCopy();
 
         final Tree baseCross = leaf("z");
+        final Tree leftCross = baseCross.deepCopy();
         final Tree rightCross = baseCross.deepCopy();
 
-        final OrderedList base = ordered(base1, base2, baseCross);
-        final OrderedList left = ordered(left1, left2);
-        final OrderedList right = ordered(right1, rightCross, right2);
+        final Tree base4 = leaf("w");
+        final Tree left4 = base4.deepCopy();
+        final Tree right4 = base4.deepCopy();
 
-        final Tree conflict = Conflict.of(List.of(left2), List.of(rightCross, right2));
-        final OrderedList target = ordered(right1.deepCopy(), conflict);
+        // base: y x z
+        final OrderedList base = ordered(base1, base2, baseCross, base4);
+        // left: y x z
+        final OrderedList left = ordered(left1, left2, leftCross, left4);
+        // right: y1 z x
+        final OrderedList right = ordered(right1, rightCross, right2, right4);
+
+        // target: y1 [x | z x]
+        final OrderedList target = ordered(right1.deepCopy(), rightCross.deepCopy(), right2.deepCopy(), base4.deepCopy());
 
         testOn(base, left, right, target,
                Map.of(base1, left1, base2, left2),

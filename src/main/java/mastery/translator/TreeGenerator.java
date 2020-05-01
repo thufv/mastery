@@ -141,13 +141,15 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
             if (OrderedListNodeNames.contains(name))
                 ans = new OrderedList(label, name, children);
             else ans = new UnorderedList(label, name, children);
-        } else // means it is a node
+        }
+        else // means it is a node
             ans = new Constructor(label, name, children, stopLabels.contains(name));
         if (declarationLabels.containsKey(name)) {
-            Tree identifier = children.get(declarationLabels.get(name));
-            if (identifier.isLeaf())
-                ans.identifier = ans.name + ":" + ((Leaf)identifier).code;
-            else ans.identifier = ans.name + ":" + identifier.identifier.substring(identifier.identifier.indexOf(":"));
+            Tree idNode = children.get(declarationLabels.get(name));
+            if (idNode.isLeaf())
+                ans.identifier = ans.name + ":" + ((Leaf)idNode).code;
+            else if (idNode.identifier != null)
+                ans.identifier = ans.name + ":" + idNode.identifier.substring(idNode.identifier.indexOf(":"));
         }
         return ans;
     }

@@ -1299,25 +1299,25 @@ public interface JavaParserListener extends ParseTreeListener {
 	 */
 	void exitAnnotationTypeElementRest(JavaParser.AnnotationTypeElementRestContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link JavaParser#annotationMethodOrConstantRest}.
+	 * Enter a parse tree produced by {@link JavaParser#typeTypeAnnotationMethodRest}.
 	 * @param ctx the parse tree
 	 */
-	void enterAnnotationMethodOrConstantRest(JavaParser.AnnotationMethodOrConstantRestContext ctx);
+	void enterTypeTypeAnnotationMethodRest(JavaParser.TypeTypeAnnotationMethodRestContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link JavaParser#annotationMethodOrConstantRest}.
+	 * Exit a parse tree produced by {@link JavaParser#typeTypeAnnotationMethodRest}.
 	 * @param ctx the parse tree
 	 */
-	void exitAnnotationMethodOrConstantRest(JavaParser.AnnotationMethodOrConstantRestContext ctx);
+	void exitTypeTypeAnnotationMethodRest(JavaParser.TypeTypeAnnotationMethodRestContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link JavaParser#annotationMethodRest}.
+	 * Enter a parse tree produced by {@link JavaParser#typeTypeAnnotationConstantRest}.
 	 * @param ctx the parse tree
 	 */
-	void enterAnnotationMethodRest(JavaParser.AnnotationMethodRestContext ctx);
+	void enterTypeTypeAnnotationConstantRest(JavaParser.TypeTypeAnnotationConstantRestContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link JavaParser#annotationMethodRest}.
+	 * Exit a parse tree produced by {@link JavaParser#typeTypeAnnotationConstantRest}.
 	 * @param ctx the parse tree
 	 */
-	void exitAnnotationMethodRest(JavaParser.AnnotationMethodRestContext ctx);
+	void exitTypeTypeAnnotationConstantRest(JavaParser.TypeTypeAnnotationConstantRestContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link JavaParser#annotationConstantRest}.
 	 * @param ctx the parse tree

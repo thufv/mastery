@@ -77,7 +77,95 @@ public class TreePrinters {
                     var it = conflict.left.iterator();
                     for (int i = 0; i < conflict.left.size() - 1; i++) {
                         it.next().accept(this, prefix1, CONSECUTIVE_PROMPT);
+                    }
+                    it.next().accept(this, prefix1, LAST_PROMPT);
+                }
 
+                // print right
+                sb.append(prefix).append(LAST_PROMPT);
+                sb.append("<right>").append('\n');
+                if (!conflict.right.isEmpty()) {
+                    var prefix1 = prefix + EMPTY_PROMPT;
+                    var it = conflict.right.iterator();
+                    for (int i = 0; i < conflict.right.size() - 1; i++) {
+                        it.next().accept(this, prefix1, CONSECUTIVE_PROMPT);
+                    }
+                    it.next().accept(this, prefix1, LAST_PROMPT);
+                }
+            }
+        };
+
+        tree.accept(textTreePrinter, "", "");
+        printer.println(textTreePrinter.get());
+    }
+
+    // for unit test
+    public static void rawTree(Tree tree, IndentPrinter printer) {
+        var textTreePrinter = new Tree.Visitor<String>() {
+            private static final String CONSECUTIVE_PROMPT = "├── ";
+            private static final String LAST_PROMPT = "└── ";
+            private static final String DASHED_PROMPT = "╎   ";
+            private static final String EMPTY_PROMPT = "    ";
+
+            private StringBuilder sb = new StringBuilder();
+
+            public String get() {
+                return sb.toString();
+            }
+
+            @Override
+            public void visitLeaf(Leaf leaf, String... ctx) {
+                String inherited = ctx[0];
+                String prompt = ctx[1];
+
+                sb.append(inherited).append(prompt);
+                sb.append(leaf.name).append(" '").append(leaf.code).append("'");
+                sb.append('\n');
+            }
+
+            @Override
+            public void visitInternal(InternalNode internal, String... ctx) {
+                String inherited = ctx[0];
+                String prompt = ctx[1];
+
+                sb.append(inherited).append(prompt);
+                sb.append(internal.toString());
+                sb.append('\n');
+
+                if (!internal.children.isEmpty()) {
+                    var prefix = inherited;
+                    if (prompt.equals(CONSECUTIVE_PROMPT)) prefix += DASHED_PROMPT;
+                    else if (prompt.equals(LAST_PROMPT)) prefix += EMPTY_PROMPT;
+
+                    var it = internal.children.iterator();
+                    for (int i = 0; i < internal.children.size() - 1; i++) {
+                        it.next().accept(this, prefix, CONSECUTIVE_PROMPT);
+                    }
+                    it.next().accept(this, prefix, LAST_PROMPT);
+                }
+            }
+
+            @Override
+            public void visitConflict(Conflict conflict, String... ctx) {
+                String inherited = ctx[0];
+                String prompt = ctx[1];
+
+                sb.append(inherited).append(prompt);
+                sb.append("<conflict>");
+                sb.append('\n');
+
+                var prefix = inherited;
+                if (prompt.equals(CONSECUTIVE_PROMPT)) prefix += DASHED_PROMPT;
+                else if (prompt.equals(LAST_PROMPT)) prefix += EMPTY_PROMPT;
+
+                // print left
+                sb.append(prefix).append(CONSECUTIVE_PROMPT);
+                sb.append("<left>").append('\n');
+                if (!conflict.left.isEmpty()) {
+                    var prefix1 = prefix + DASHED_PROMPT;
+                    var it = conflict.left.iterator();
+                    for (int i = 0; i < conflict.left.size() - 1; i++) {
+                        it.next().accept(this, prefix1, CONSECUTIVE_PROMPT);
                     }
                     it.next().accept(this, prefix1, LAST_PROMPT);
                 }

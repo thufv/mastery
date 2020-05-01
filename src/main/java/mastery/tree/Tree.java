@@ -85,7 +85,7 @@ public abstract class Tree {
     /**
      * The number of child that the node is
      */
-    public int childno;
+    public Integer childno;
 
     /**
      * The buddy of recovery mapping (if the current node is one node of recovery mapping)
@@ -242,10 +242,10 @@ public abstract class Tree {
         var sb = new StringBuilder();
         sb.append(name).append(" `");
         var code = TreePrinters.rawCode(this).strip();
-        if (code.length() < 30) {
+        if (code.length() < 50) {
             sb.append(code);
         } else {
-            sb.append(code, 0, 30).append("...");
+            sb.append(code, 0, 50).append("...");
         }
         sb.append('`');
         return sb.toString();

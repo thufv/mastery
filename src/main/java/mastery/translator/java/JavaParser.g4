@@ -378,17 +378,18 @@ annotationTypeElementDeclaration:
 // this is not allowed by the grammar, but apparently allowed by the actual compiler
 
 annotationTypeElementRest:
-	typeType annotationMethodOrConstantRest ';'
+	typeTypeAnnotationMethodRest ';'
+	| typeTypeAnnotationConstantRest ';'
 	| classDeclaration optionSemicolon
 	| interfaceDeclaration optionSemicolon
 	| enumDeclaration optionSemicolon
 	| annotationTypeDeclaration optionSemicolon;
 
-annotationMethodOrConstantRest:
-	annotationMethodRest
-	| annotationConstantRest;
+typeTypeAnnotationMethodRest:
+	typeType IDENTIFIER '(' ')' optionDefaultValue;
 
-annotationMethodRest: IDENTIFIER '(' ')' optionDefaultValue;
+typeTypeAnnotationConstantRest:
+	typeType IDENTIFIER '(' ')' optionDefaultValue;
 
 annotationConstantRest: variableDeclarators;
 

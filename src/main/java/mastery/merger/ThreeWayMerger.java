@@ -8,6 +8,7 @@ import mastery.util.log.Log;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.stream.*;
 import java.util.logging.Level;
 
 import static org.junit.Assert.assertNotNull;
@@ -115,8 +116,10 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
                 var t = threeWay(b, l, r);
                 Log.finer("+ %s (3-way)", t.toReadableString());
 
-                var c = Candidate.of(t, l, r);
+                var c = Candidate.of(t, b, l, r);
                 candidates.add(c);
+
+                Log.finer("candidates.size() = %d", candidates.size());
 
                 pi.put(b, c);
                 pi.put(l, c);
@@ -131,12 +134,14 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
                 Candidate c;
                 if (t.isPresent()) {
                     Log.finer("+ conflict %s <-> ε", l.toReadableString());
-                    c = Candidate.ofLeft(t.get(), l);
+                    c = Candidate.ofLeft(t.get(), b, l);
                 } else {
                     Log.finer("- %s (left)", l.toReadableString());
-                    c = Candidate.ofRightDeletion(l);
+                    c = Candidate.ofRightDeletion(b, l);
                 }
                 candidates.add(c);
+
+                Log.finer("candidates.size() = %d", candidates.size());
 
                 pi.put(b, c);
                 pi.put(l, c);
@@ -150,12 +155,15 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
                 Candidate c;
                 if (t.isPresent()) {
                     Log.finer("+ conflict ε <-> %s", r.toReadableString());
-                    c = Candidate.ofRight(t.get(), r);
+                    c = Candidate.ofRight(t.get(), b, r);
                 } else {
                     Log.finer("- %s (right)", r.toReadableString());
-                    c = Candidate.ofLeftDeletion(r);
+                    c = Candidate.ofLeftDeletion(b, r);
                 }
                 candidates.add(c);
+
+                Log.finer("candidates.size() = %d", candidates.size());
+
                 pi.put(b, c);
                 pi.put(r, c);
                 continue;
@@ -167,8 +175,10 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
         for (var l : left) {
             if (!visited.contains(l)) {
                 Log.finer("+ %s (left)", l.toReadableString());
-                var c = Candidate.ofLeft(l.deepCopy(), l);
+                var c = Candidate.ofLeft(l.deepCopy(), null, l);
                 candidates.add(c);
+
+                Log.finer("candidates.size() = %d", candidates.size());
 
                 pi.put(l, c);
             }
@@ -177,16 +187,18 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
         for (var r : right) {
             if (!visited.contains(r)) {
                 Log.finer("+ %s (right)", r.toReadableString());
-                var c = Candidate.ofRight(r.deepCopy(), r);
+                var c = Candidate.ofRight(r.deepCopy(), null, r);
                 candidates.add(c);
+
+                Log.finer("candidates.size() = %d", candidates.size());
 
                 pi.put(r, c);
             }
         }
 
         // encode
-        var succ = new MultiMap<Candidate, Candidate>();
-        var pred = new MultiMap<Candidate, Candidate>();
+        succ = new MultiMap<Candidate, Candidate>();
+        pred = new MultiMap<Candidate, Candidate>();
 
         // be careful that in pi, some elements may not be mapped to a candidate
         for (var list : List.of(base, left, right)) {
@@ -212,40 +224,56 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             }
         }
 
+        // calculate strongly connected component by tarjan algorithm
+        sccs = new ArrayList<>();
+        sccOf = new HashMap<>();
+        dfn = new HashMap<>();
+        low = new HashMap<>();
+        in_stack = new HashSet<>();
+        stack = new Stack<>();
+        dfncnt = 0;
+        Log.finer("candidates.size() = %d", candidates.size());
+        for (Candidate candidate: candidates) {
+            Log.finer("A candidate %s", candidate);
+            if (!dfn.containsKey(candidate))
+                tarjan(candidate);
+        }
+
         // topology sort
         var targets = new ArrayList<Tree>();
         var leftSuspended = new ArrayList<Tree>();
         var rightSuspended = new ArrayList<Tree>();
 
-        var inDeg = new HashMap<Candidate, Integer>();
-        Queue<Candidate> zero = new LinkedList<>();
-        for (var c : candidates) {
-            int deg = pred.get(c).size();
-            inDeg.put(c, deg);
-            if (deg == 0) {
-                zero.add(c);
-            }
+        Log.finer("topo sort");
+
+        var inDeg = new HashMap<StronglyConnectedComponent, Integer>();
+        Queue<StronglyConnectedComponent> zero = new LinkedList<>();
+        for (var scc : sccs) {
+            int deg = scc.countPred();
+            inDeg.put(scc, deg);
+            if (deg == 0) zero.add(scc);
         }
 
-        Set<Candidate> issued = new HashSet<>();
+        Set<StronglyConnectedComponent> issued = new HashSet<>();
         while (!zero.isEmpty()) {
-            var valid = new ArrayList<Candidate>();
+            var valid = new ArrayList<StronglyConnectedComponent>();
             final int choices = zero.size();
+            Log.finer("there're %d choices", choices);
             for (int i = 0; i < choices; i++) {
                 var u = zero.poll();
                 issued.add(u);
 
-                if (u.valid) {
+                Log.finer("%s", u);
+
+                if (u.hasValid()) {
                     valid.add(u);
                 }
 
-                for (var v : succ.get(u)) {
+                for (var v : u.getSuccs()) {
                     int deg = inDeg.get(v);
                     deg--;
                     inDeg.put(v, deg);
-                    if (deg == 0) {
-                        zero.add(v);
-                    }
+                    if (deg == 0) zero.add(v);
                 }
             }
 
@@ -253,16 +281,42 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
                 if (!leftSuspended.isEmpty() || !rightSuspended.isEmpty()) { // handle suspended
                     handleSuspended(leftSuspended, rightSuspended, targets);
                 }
-                Log.finer("unique choice: %s", valid.get(0).target);
-                targets.add(valid.get(0).target);
-            } else if (valid.size() > 1) { // conflict
-                Log.finer("disambiguated choices: %s", valid);
-                for (var node : valid) {
-                    if (node.hasLeftOrigin()) {
-                        leftSuspended.add(node.leftOrigin);
-                    } else {
-                        rightSuspended.add(node.rightOrigin);
+                var scc = valid.get(0);
+                if (scc.countValid() == 1) {
+                    for (Candidate node: scc.nodes)
+                        if (node.valid) {
+                            Log.finer("unique choice: %s", node.target);
+                            targets.add(node.target);
+                            break;
+                        }
+                }
+                else {
+                    if (scc.leftIsAnswer()) {
+                        Log.finer("left is answer");
+                        for (Candidate node: scc.sortedByLeft())
+                            targets.add(node.target);
                     }
+                    else if (scc.rightIsAnswer()) {
+                        Log.finer("right is answer");
+                        for (Candidate node: scc.sortedByRight())
+                            targets.add(node.target);
+                    }
+                    else {
+                        Log.finer("there is no answer");
+                        for (Candidate node: scc.sortedByLeft())
+                            leftSuspended.add(node.getLeftOrigin());
+                        for (Candidate node: scc.sortedByRight())
+                            rightSuspended.add(node.getRightOrigin());
+                    }
+                }
+            } else if (valid.size() > 1) { // conflict
+                // In fact, in this case, valid.size() == 2, a LeftOrigin and a RightOrigin
+                Log.finer("disambiguated choices: %s", valid);
+                for (var scc : valid) {
+                    for (Candidate node: scc.sortedByLeft())
+                        leftSuspended.add(node.getLeftOrigin());
+                    for (Candidate node: scc.sortedByRight())
+                        rightSuspended.add(node.getRightOrigin());
                 }
             }
         }
@@ -270,66 +324,248 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             handleSuspended(leftSuspended, rightSuspended, targets);
         }
 
-        if (issued.size() < candidates.size()) { // cyclic
-            Log.config("detect cycle");
+        return new OrderedList(base.label, base.name, targets);
+    }
 
-            for (var l : left) {
-                var c = pi.get(l);
-                if (!issued.contains(c)) {
-                    leftSuspended.add(l);
-                }
+    MultiMap<Candidate, Candidate> succ;
+    MultiMap<Candidate, Candidate> pred;
+    List<StronglyConnectedComponent> sccs;
+    Map<Candidate, StronglyConnectedComponent> sccOf;
+    Map<Candidate, Integer> dfn;
+    Map<Candidate, Integer> low;
+    Integer dfncnt;
+    Set<Candidate> in_stack;
+    Stack<Candidate> stack;
+
+    private final void tarjan(Candidate u) {
+        Log.finer("tarjan %s", u);
+
+        low.put(u, ++dfncnt);
+        dfn.put(u, dfncnt);
+        stack.push(u);
+        in_stack.add(u);
+        for (Candidate v: succ.get(u))
+            if (!dfn.containsKey(v)) {
+                tarjan(v);
+                if (low.get(v) < low.get(u))
+                    low.put(u, low.get(v));
+            }
+            else if (in_stack.contains(v)) {
+                if (low.get(v) < low.get(u))
+                    low.put(u, low.get(v));
+            }
+        
+        Log.finer("for %s, dfn = %d, low = %d", u, dfn.get(u), low.get(u));
+
+        if (dfn.get(u) == low.get(u)) {
+            StronglyConnectedComponent scc = new StronglyConnectedComponent();
+            Log.finer("nodes in a scc:");
+            for (Candidate top; (top = stack.pop()) != u;) {
+                Log.finer("%s", top);
+
+                in_stack.remove(top);
+                scc.nodes.add(top);
+                sccOf.put(top, scc);
             }
 
-            for (var r : right) {
-                var c = pi.get(r);
-                if (!issued.contains(c)) {
-                    rightSuspended.add(r);
-                }
-            }
+            Log.finer("%s", u);
 
-            handleSuspended(leftSuspended, rightSuspended, targets);
+            in_stack.remove(u);
+            scc.nodes.add(u);
+            sccOf.put(u, scc);
+
+            scc.calStart();
+
+            sccs.add(scc);
+        }
+    }
+
+    private final class StronglyConnectedComponent {
+        public List<Candidate> nodes = new ArrayList<>();
+        public Integer left_start, base_start, right_start;
+
+        StronglyConnectedComponent() {}
+
+        public void calStart() {
+            left_start = nodes.stream()
+                .filter(node -> node.hasLeftOrigin())
+                .mapToInt(node -> Integer.valueOf(node.getLeftOrigin().childno))
+                .min()
+                .orElse(-1);
+            base_start = nodes.stream()
+                .filter(node -> node.hasBaseOrigin())
+                .mapToInt(node -> Integer.valueOf(node.getBaseOrigin().childno))
+                .min()
+                .orElse(-1);
+            right_start = nodes.stream()
+                .filter(node -> node.hasRightOrigin())
+                .mapToInt(node -> Integer.valueOf(node.getRightOrigin().childno))
+                .min()
+                .orElse(-1);
         }
 
-        return new OrderedList(base.label, base.name, targets);
+        public int countPred() {
+            var sscc = new HashSet<StronglyConnectedComponent>();
+            for (Candidate node: nodes)
+                for (Candidate prev: pred.get(node)) {
+                    var v = sccOf.get(prev);
+                    if (v != this)
+                        sscc.add(v);
+                }
+            return sscc.size();
+        }
+        public List<StronglyConnectedComponent> getSuccs() {
+            var lscc = new HashSet<StronglyConnectedComponent>();
+            for (Candidate node: nodes)
+                for (Candidate successor: succ.get(node)) {
+                    var v = sccOf.get(successor);
+                    if (v != this)
+                        lscc.add(v);
+                }
+            return new ArrayList<StronglyConnectedComponent>(lscc);
+        }
+
+        public boolean hasValid() {
+            for (Candidate node: nodes)
+                if (node.valid)
+                    return true;
+            return false;
+        }
+
+        public boolean leftIsAnswer() {
+            var rightbases = new ArrayList<Candidate>();
+            for (Candidate node: nodes) {
+                if (!node.hasRightOrigin() && node.hasBaseOrigin()
+                    || node.hasRightOrigin() && !node.hasBaseOrigin()) return false;
+                if (node.hasRightOrigin() && node.hasBaseOrigin())
+                    rightbases.add(node);
+            }
+            for (Candidate rightbase: rightbases)
+                if (rightbase.getRightOrigin().childno - right_start != rightbase.getBaseOrigin().childno - base_start)
+                    return false;
+            return true;
+        }
+
+        public boolean rightIsAnswer() {
+            var leftbases = new ArrayList<Candidate>();
+            for (Candidate node: nodes) {
+                if (!node.hasLeftOrigin() && node.hasBaseOrigin()
+                    || node.hasLeftOrigin() && !node.hasBaseOrigin()) return false;
+                if (node.hasLeftOrigin() && node.hasBaseOrigin())
+                    leftbases.add(node);
+            }
+            for (Candidate leftbase: leftbases)
+                if (leftbase.getLeftOrigin().childno - left_start != leftbase.getBaseOrigin().childno - base_start)
+                    return false;
+            return true;
+        }
+
+        public List<Candidate> sortedByLeft() {
+            List<Candidate> sorted = new ArrayList<Candidate>();
+            for (Candidate node: nodes)
+                if (node.hasLeftOrigin()) {
+                    int i = node.getLeftOrigin().childno - left_start;
+                    while (sorted.size() <= i) sorted.add(null);
+                    sorted.set(i, node);
+                }
+            
+            for (Candidate node: sorted)
+                assertNotNull(node);
+            
+            sorted = sorted.stream().filter(node -> node.valid).collect(Collectors.toList());
+
+            return sorted;
+        }
+
+        public List<Candidate> sortedByRight() {
+            List<Candidate> sorted = new ArrayList<Candidate>();
+            for (Candidate node: nodes)
+                if (node.hasRightOrigin()) {
+                    int i = node.getRightOrigin().childno - right_start;
+                    while (sorted.size() <= i) sorted.add(null);
+                    sorted.set(i, node);
+                }
+            
+            for (Candidate node: sorted)
+                assertNotNull(node);
+            
+            sorted = sorted.stream().filter(node -> node.valid).collect(Collectors.toList());
+
+            return sorted;
+        }
+
+        public int countValid() {
+            return (int)nodes.stream().filter(node -> node.valid).count();
+        }
+
+        @Override
+        public String toString() {
+            String ans = "strongly connected component (size " + nodes.size() + ")\n";
+            for (Candidate node: nodes) ans += node + "\n";
+            return ans;
+        }
     }
 
     private static final class Candidate {
         final boolean valid;
         final Tree target;
         @Nullable
+        final Tree baseOrigin;
+        @Nullable
         final Tree leftOrigin;
         @Nullable
         final Tree rightOrigin;
 
-        private Candidate(boolean valid, Tree target, @Nullable Tree leftOrigin, @Nullable Tree rightOrigin) {
+        private Candidate(boolean valid, Tree target, @Nullable Tree baseOrigin, @Nullable Tree leftOrigin, @Nullable Tree rightOrigin) {
             this.valid = valid;
             this.target = target;
+            this.baseOrigin = baseOrigin;
             this.leftOrigin = leftOrigin;
             this.rightOrigin = rightOrigin;
         }
 
-        static Candidate of(Tree target, Tree left, Tree right) {
-            return new Candidate(true, target, left, right);
+        static Candidate of(Tree target, Tree base, Tree left, Tree right) {
+            return new Candidate(true, target, base, left, right);
         }
 
-        static Candidate ofLeft(Tree target, Tree left) {
-            return new Candidate(true, target, left, null);
+        static Candidate ofLeft(Tree target, Tree base, Tree left) {
+            return new Candidate(true, target, base, left, null);
         }
 
-        static Candidate ofRight(Tree target, Tree right) {
-            return new Candidate(true, target, null, right);
+        static Candidate ofRight(Tree target, Tree base, Tree right) {
+            return new Candidate(true, target, base, null, right);
         }
 
-        static Candidate ofLeftDeletion(Tree right) {
-            return new Candidate(false, right, null, right);
+        static Candidate ofLeftDeletion(Tree base, Tree right) {
+            return new Candidate(false, right, base, null, right);
         }
 
-        static Candidate ofRightDeletion(Tree left) {
-            return new Candidate(false, left, left, null);
+        static Candidate ofRightDeletion(Tree base, Tree left) {
+            return new Candidate(false, left, base, left, null);
         }
 
-        boolean hasLeftOrigin() {
+        public boolean hasLeftOrigin() {
             return leftOrigin != null;
+        }
+
+        public boolean hasRightOrigin() {
+            return rightOrigin != null;
+        }
+
+        public boolean hasBaseOrigin() {
+            return baseOrigin != null;
+        }
+
+        public Tree getLeftOrigin() {
+            return leftOrigin;
+        }
+
+        public Tree getRightOrigin() {
+            return rightOrigin;
+        }
+
+        public Tree getBaseOrigin() {
+            return baseOrigin;
         }
 
         @Override
@@ -398,6 +634,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
         var visited = new HashSet<Tree>();
 
         for (var b : base) {
+            Log.finer("considering %s (base)", b.toReadableString());
             Tree l = m.hasLeftMatch(b) ? lift(m.getLeftMatch(b), left) : null;
             Tree r = m.hasRightMatch(b) ? lift(m.getRightMatch(b), right) : null;
 

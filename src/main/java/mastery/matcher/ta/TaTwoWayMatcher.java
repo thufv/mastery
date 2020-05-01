@@ -661,7 +661,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                         Tree tSrc = zsSrc.tree(row);
                         Tree tDst = zsDst.tree(col);
 
-                        // Log.config("ZS: rename %s <-> %s", tSrc, tDst);
+                        Log.config("ZS: rename %s <-> %s", tSrc, tDst);
 
                         if (tSrc.label == tDst.label) tSrc.recoveryBuddy = tDst;
                         else throw new RuntimeException("Should not map incompatible nodes.");
