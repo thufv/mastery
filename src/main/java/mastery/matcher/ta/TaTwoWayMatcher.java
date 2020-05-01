@@ -31,7 +31,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         // default parameters in the paper of GumTree
         this.minHeight = 1;
         this.minJaccard = 0.4;
-        this.maxSize = 1000;
+        this.maxSize = 250;
     }
 
     private Tree root1;
