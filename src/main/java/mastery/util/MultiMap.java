@@ -27,6 +27,10 @@ public class MultiMap<K, V> {
         return Collections.emptyList();
     }
 
+    public boolean containsKey(K key) {
+        return map.containsKey(key);
+    }
+
     public Set<K> keySet() {
         return map.keySet();
     }

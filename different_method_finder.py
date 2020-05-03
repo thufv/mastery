@@ -1,7 +1,7 @@
 with open('diff.log', 'r') as f:
     lines = f.readlines()
 
-expectedline = [i for i in range(len(lines)) if 'expected' in lines[i]][0]
+expectedline = [i for i in range(len(lines)) if 'expected.java' in lines[i]][0]
 
 for line in lines[:expectedline]:
     if 'classBodyDeclaration ' in line:
@@ -28,7 +28,9 @@ for line in lines[expectedline:]:
         found = False
         for output_line in lines[:expectedline]:
             if assignment in output_line:
-                found = True
+                if found:
+                    print('Error: double found.')
                 print('output:', output_line, end = '')
+                found = True
         if not found:
             print('Error: not found.')

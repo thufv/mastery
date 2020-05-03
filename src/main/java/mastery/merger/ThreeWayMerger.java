@@ -102,7 +102,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
 
         // collect
         var candidates = new ArrayList<Candidate>();
-        var pi = new HashMap<Tree, Candidate>();
+        var pi = new MultiMap<Tree, Candidate>();
         var visited = new HashSet<Tree>();
 
         for (var b : base) {
@@ -207,7 +207,16 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             while (it.hasNext()) {
                 var e = it.next();
                 if (pi.containsKey(e)) {
-                    prev = pi.get(e);
+                    var nodes = pi.get(e);
+                    for (int i = 0; i + 1 < nodes.size(); ++i) {
+                         succ.put(nodes.get(i), nodes.get(i + 1));
+                         pred.put(nodes.get(i + 1), nodes.get(i));
+                    }
+                    if (nodes.size() > 1) {
+                        succ.put(nodes.get(nodes.size() - 1), nodes.get(0));
+                        succ.put(nodes.get(0), nodes.get(nodes.size() - 1));
+                    }
+                    prev = nodes.get(0);
                     break;
                 }
             }
@@ -215,7 +224,17 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             while (it.hasNext()) {
                 var e = it.next();
                 if (pi.containsKey(e)) {
-                    var next = pi.get(e);
+                    var nodes = pi.get(e);
+                    for (int i = 0; i + 1 < nodes.size(); ++i) {
+                         succ.put(nodes.get(i), nodes.get(i + 1));
+                         pred.put(nodes.get(i + 1), nodes.get(i));
+                    }
+                    if (nodes.size() > 1) {
+                        succ.put(nodes.get(nodes.size() - 1), nodes.get(0));
+                        succ.put(nodes.get(0), nodes.get(nodes.size() - 1));
+                    }
+
+                    var next = nodes.get(0);
                     succ.put(prev, next);
                     pred.put(next, prev);
                     Log.finest("constraint: %s precedes %s", prev, next);
@@ -436,7 +455,8 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             var rightbases = new ArrayList<Candidate>();
             for (Candidate node: nodes) {
                 if (!node.hasRightOrigin() && node.hasBaseOrigin()
-                    || node.hasRightOrigin() && !node.hasBaseOrigin()) return false;
+                    || node.hasRightOrigin() && !node.hasBaseOrigin())
+                    return false;
                 if (node.hasRightOrigin() && node.hasBaseOrigin())
                     rightbases.add(node);
             }
@@ -450,7 +470,8 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             var leftbases = new ArrayList<Candidate>();
             for (Candidate node: nodes) {
                 if (!node.hasLeftOrigin() && node.hasBaseOrigin()
-                    || node.hasLeftOrigin() && !node.hasBaseOrigin()) return false;
+                    || node.hasLeftOrigin() && !node.hasBaseOrigin())
+                    return false;
                 if (node.hasLeftOrigin() && node.hasBaseOrigin())
                     leftbases.add(node);
             }
@@ -465,7 +486,8 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             for (Candidate node: nodes)
                 if (node.hasLeftOrigin()) {
                     int i = node.getLeftOrigin().childno - left_start;
-                    while (sorted.size() <= i) sorted.add(null);
+                    while (sorted.size() <= i)
+                        sorted.add(null);
                     sorted.set(i, node);
                 }
             
@@ -482,7 +504,8 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             for (Candidate node: nodes)
                 if (node.hasRightOrigin()) {
                     int i = node.getRightOrigin().childno - right_start;
-                    while (sorted.size() <= i) sorted.add(null);
+                    while (sorted.size() <= i)
+                        sorted.add(null);
                     sorted.set(i, node);
                 }
             

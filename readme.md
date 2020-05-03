@@ -126,6 +126,9 @@ public IntEqualCollectingVisitor(CFANode pre, boolean onlyOneExp)
 ```bash
 jadx/e1f49552-jadx-core-src-test-java-jadx-tests-integration-arith-TestArith
 # We can discover a conflict that other tools can't find
+
+fastjson/b93e4ab1-src-main-java-com-alibaba-fastjson-serializer-JavaBeanSerializer
+# same as above
 ```
 
 ## Authors
