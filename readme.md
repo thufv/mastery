@@ -129,6 +129,12 @@ jadx/e1f49552-jadx-core-src-test-java-jadx-tests-integration-arith-TestArith
 
 fastjson/b93e4ab1-src-main-java-com-alibaba-fastjson-serializer-JavaBeanSerializer
 # same as above
+
+glide/a93a9410a-library-src-androidTest-java-com-bumptech-glide-resize-load-ExifTest
+# we can't solve it as we don't calculate mappings between "left" and "right"
+
+dubbo/9af1f1a97-dubbo-cluster-src-main-java-org-apache-dubbo-rpc-cluster-directory-StaticDirectory
+# "left" = "base", "expected" \not= "right"
 ```
 
 ## Authors

@@ -42,7 +42,6 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     public final Map<Tree, Tree> apply(Tree tree1, Tree tree2) {
         // Necessary initializations
         initMatch(tree1, tree2);
-        initDice(tree1.size, tree2.size);
 
         for (Tree node: tree1.preOrder()) {
             node.postLCA = null;
@@ -214,20 +213,15 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
 
         Log.finer("Sort!");
 
+        fotileTree = new FotileTree(matched1to2, matched2to1);
+
         cartesianProducts = cartesianProducts.stream().filter(p -> checkStop(p.first, p.second)).collect(Collectors.toList());
         cartesianProducts.sort(new TreePairComparator());
         for (int i = cartesianProducts.size() - 1; i >= 0; --i) {
             var p = cartesianProducts.get(i);
             if (matched1to2[p.first.dfsIndex] == 0 && matched2to1[p.second.dfsIndex] == 0) {
-                if (checkStop(p.first, p.second)) {
-                    // Log.finer("matchSubTree(%s [%d, %d], %s [%d, %d]) with Jaccard Similarity of parents %f", p.first, p.first.interval.l, p.first.interval.r, p.second, p.second.interval.l, p.second.interval.r, getMemoizedDice(p.first.getParent(), p.second.getParent()));
-
-                    matchSubTree(p.first, p.second);
-                }
+                matchSubTree(p.first, p.second);
             }
-            // else {
-            //     Log.finer("A matched mapping: (%s [%d, %d], %s [%d, %d]) with Jaccad Similarity of parents %f", p.first, p.first.interval.l, p.first.interval.r, p.second, p.second.interval.l, p.second.interval.r, getMemoizedDice(p.first.getParent(), p.second.getParent()));
-            // }
         }
     }
 
@@ -263,9 +257,6 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
 
         assertEquals(matched2to1[tree2.dfsIndex], 0);
         matched2to1[tree2.dfsIndex] = tree1.dfsIndex;
-
-        if (type == MappingType.isomorphic)
-            updateMemoizedDice(tree1, tree2);
 
         tree1.preInterval = tree2.interval;
         tree1.postLCA = tree2;
@@ -323,7 +314,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
 
             if (parent1 == null || parent2 == null) return false;
             else if (parent1.label != parent2.label) return false;
-            else if (getMemoizedDice(parent1, parent2) > 1e-8) return true;
+            else if (calcSimilarity(parent1, parent2) > 1e-8) return true;
             
             if (parent1.stop) return false;
             node1 = parent1;
@@ -357,34 +348,72 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 if (equivalence1 && !equivalence2) return 1;
                 else if (equivalence2 && !equivalence1) return -1;
 
-                double similarity1 = getMemoizedDice(first1, second1);
-                double similarity2 = getMemoizedDice(first2, second2);
+                double similarity1 = calcSimilarity(first1, second1);
+                double similarity2 = calcSimilarity(first2, second2);
                 if (similarity1 > similarity2 + 1e-8) return 1;
                 else if (similarity1 < similarity2 - 1e-8) return -1;
             }
         }
     }
     
-    // utils of dice function
-    // interMappingCount[dfsIndex of tree1][indexAtHeight of tree2]
-    // private int[][] interMappingCount;
-    private void initDice(int size1, int size2) {
-        // interMappingCount = new int[size1 + 1][size2 + 1];
+    FotileTree fotileTree;
+    public double calcSimilarity(Tree node1, Tree node2) {
+        int mappingCount = fotileTree.query(fotileTree.roots[node1.interval.l - 1], fotileTree.roots[node1.interval.r], 1, fotileTree.size2, node2.interval.l, node2.interval.r);
+        return Similarities.jaccardSimilarity(mappingCount, node1.size, node2.size);
     }
-    private void updateMemoizedDice(Tree tree1, Tree tree2) {
-        // ++interMappingCount[tree1.dfsIndex][tree2.dfsIndex];
-        // if (tree1.getParent() != null && tree2.getParent() != null) {
-        //     updateMemoizedDice(tree1.getParent(), tree2.getParent());
-        // }
-    }
-    private int interMappingCount(Tree tree1, Tree tree2) {
-        int ans = Interval.in(matched1to2[tree1.dfsIndex], tree2.interval) ? 1 : 0;
-        for (Tree child: tree1.children)
-            ans += interMappingCount(child, tree2);
-        return ans;
-    }
-    private double getMemoizedDice(Tree tree1, Tree tree2) {
-        return Similarities.jaccardSimilarity(interMappingCount(tree1, tree2), tree1.size, tree2.size);
+    private static final class FotileTree {
+        int size1, size2;
+        int[] counts, leftsons, rightsons;
+        public int[] roots;
+        int tot = 0;
+        public FotileTree(int[] matched1to2, int[] matched2to1) {
+            size1 = matched1to2.length - 1;
+            size2 = matched2to1.length - 1;
+
+            counts = new int[size1 * (int)(Math.ceil(Math.log(size2) / Math.log(2) + 1)) + 5];
+            leftsons = new int[size1 * (int)(Math.ceil(Math.log(size2) / Math.log(2) + 1)) + 5];
+            rightsons = new int[size1 * (int)(Math.ceil(Math.log(size2) / Math.log(2) + 1)) + 5];
+            roots = new int[size1 + 1];
+
+            // System.out.println("height should be " + (int)Math.ceil(Math.log(size2) / Math.log(2) + 1));
+
+            for (int i = 1; i <= size1; ++i) {
+                if (matched1to2[i] == 0) {
+                    roots[i] = roots[i - 1];
+                }
+                else {
+                    roots[i] = insert(matched1to2[i], 1, size2, roots[i - 1]);
+                }
+            }
+        }
+        public int insert(int k, int l, int r, int node) {
+            int dir = ++tot;
+            leftsons[dir] = leftsons[node];
+            rightsons[dir] = rightsons[node];
+            counts[dir] = counts[node] + 1;
+            if (l == r) return dir;
+            int mid = l + r >> 1;
+            if (k <= mid) {
+                leftsons[k] = insert(k, l, mid, leftsons[node]);
+            }
+            else {
+                rightsons[k] = insert(k, mid + 1, r, rightsons[node]);
+            }
+            return dir;
+        }
+        public int query(int u, int v, int l, int r, int L, int R) {
+            if (L <= l && r <= R) return counts[v] - counts[u];
+            if (counts[v] - counts[u] == 0) return 0;
+            int ans = 0;
+            int mid = l + r >> 1;
+            if (L <= mid) {
+                ans += query(leftsons[u], leftsons[v], l, mid, L, R);
+            }
+            if (R > mid) {
+                ans += query(rightsons[u], rightsons[v], mid + 1, r, L, R);
+            }
+            return ans;
+        }
     }
 
     // utils of homo mapping
