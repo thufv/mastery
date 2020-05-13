@@ -36,5 +36,5 @@ debug*
 
 # Experiment
 results/
-output.java
+output*
 exp*
