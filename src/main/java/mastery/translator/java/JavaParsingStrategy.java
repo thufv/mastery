@@ -35,7 +35,7 @@ public class JavaParsingStrategy implements ParsingStrategy {
             "otherQualifiedNames", "optionFormalParameterList", "otherFormalParameters",
             "optionCommaArrayFormalParameter", "otherDotIdentifiers", "optionAnnotationRest",
             "elementValuePairsOrElementValue?", "otherElementValuePairs", "otherElementValues", "optionElementValues",
-            "annotationTypeElementDeclaration*", "optionDefaultValue", "blockStatements", "optionColonExpression",
+            "annotationTypeElementDeclarations", "optionDefaultValue", "blockStatements", "optionColonExpression",
             "optionElseStatement", "optionFinallyBlock", "switchBlockStatementGroups", "switchLabels", "catchClauses",
             "optionExpression", "orQualifiedNames", "semicolonResources", "optionforInit", "optionExpressionList",
             "otherExpressions", "optionNonWildcardTypeArguments", "otherIdentifiers", "optionClassOrInterfaceTypeDot",

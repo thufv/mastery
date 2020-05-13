@@ -437,14 +437,14 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         if (homonymy1to2[node1.dfsIndex] == 0 && homonymy2to1[node2.dfsIndex] == 0) {
             homonymy1to2[node1.dfsIndex] = node2.dfsIndex;
             homonymy2to1[node2.dfsIndex] = node1.dfsIndex;
-            if (node1.isConstructor()) {
-                for (int i = 0; i < node1.children.size(); ++i)
-                    homonymyDfs(node1.children.get(i), node2.children.get(i));
-            }
-            else {
-                if (node1.children.size() == 1 && node2.children.size() == 1) {
-                    Tree child1 = node1.children.get(0);
-                    Tree child2 = node2.children.get(0);
+
+            // System.out.println("homonymy mapping " + node1 + " <-> " + node2);
+
+            if (node1.isConstructor()
+                || node1.children.size() == 1 && node2.children.size() == 1) {
+                for (int i = 0; i < node1.children.size(); ++i) {
+                    Tree child1 = node1.children.get(i);
+                    Tree child2 = node2.children.get(i);
                     if (checkMapping(child1, child2))
                         homonymyDfs(child1, child2);
                 }
