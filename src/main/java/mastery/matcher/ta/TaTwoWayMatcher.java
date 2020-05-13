@@ -19,19 +19,19 @@ import mastery.util.Pair;
 public class TaTwoWayMatcher extends TwoWayMatcher{
     // Parameters
     public final int minHeight;
-    public final double minJaccard;
+    public final double minDice;
     public final int maxSize;
 
-    public TaTwoWayMatcher(int minHeight, double minJaccard, int maxSize) {
+    public TaTwoWayMatcher(int minHeight, double minDice, int maxSize) {
         this.minHeight = minHeight;
-        this.minJaccard = minJaccard;
+        this.minDice = minDice;
         this.maxSize = maxSize;
     }
     public TaTwoWayMatcher() {
         // default parameters in the paper of GumTree
         this.minHeight = 1;
-        this.minJaccard = 0.4;
-        this.maxSize = 250;
+        this.minDice = 0.44;
+        this.maxSize = 160;
     }
 
     private Tree root1;
@@ -42,54 +42,12 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     public final Map<Tree, Tree> apply(Tree tree1, Tree tree2) {
         // Necessary initializations
         initMatch(tree1, tree2);
+        initHomonymy(tree1, tree2);
 
         for (Tree node: tree1.preOrder()) {
             node.postLCA = null;
             node.recoveryBuddy = null;
         }
-
-        Map<String, Integer> identifierCount1 = new HashMap<>();
-        Map<String, Integer> identifierCount2 = new HashMap<>();
-        for (Tree node: tree1.preOrder())
-            if (node.identifier != null)
-                identifierCount1.put(node.identifier, identifierCount1.getOrDefault(node.identifier, 0) + 1);
-        for (Tree node: tree2.preOrder())
-            if (node.identifier != null)
-                identifierCount2.put(node.identifier, identifierCount2.getOrDefault(node.identifier, 0) + 1);
-        nodeOfIdentifier1.clear();
-        nodeOfIdentifier2.clear();
-        for (Tree node: tree1.preOrder()) {
-            if (node.identifier != null
-                && identifierCount1.getOrDefault(node.identifier, 0) == 1
-                && identifierCount2.getOrDefault(node.identifier, 0) == 1) {
-                    nodeOfIdentifier1.put(node.identifier, node);
-
-                    // System.out.println("node1 of identifier " + node.identifier + " is " + node);
-                }
-            // if (node.identifier != null)
-            //     System.out.println("node1 of identifier " + node.identifier + " is " + node);
-        }
-        for (Tree node: tree2.preOrder()) {
-            if (node.identifier != null
-                && identifierCount1.getOrDefault(node.identifier, 0) == 1
-                && identifierCount2.getOrDefault(node.identifier, 0) == 1) {
-                    nodeOfIdentifier2.put(node.identifier, node);
-
-                    // System.out.println("node2 of identifier " + node.identifier + " is " + node);
-                }
-            // if (node.identifier != null)
-                // System.out.println("node2 of identifier " + node.identifier + " is " + node);
-        }
-        
-        for (Tree node: tree1.preOrder())
-            if (node.identifier != null && nodeOfIdentifier1.containsKey(node.identifier)) {
-                node.preInterval = nodeOfIdentifier2.get(node.identifier).interval;
-
-                // System.out.println("preInterval of " + node + " is [" + node.preInterval.l + ", " + node.preInterval.r + "]");
-            }
-            else if (node.getParent() == null)
-                node.preInterval = Interval.of(1, tree2.size);
-            else node.preInterval = node.getParent().preInterval;
 
         root1 = tree1;
         root2 = tree2;
@@ -261,10 +219,10 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         tree1.preInterval = tree2.interval;
         tree1.postLCA = tree2;
 
-        // if (Interval.in(tree1.dfsIndex, Interval.of(296, 515)) && !Interval.in(tree2.dfsIndex, Interval.of(536, 749))) {
-        //     Log.finer("An unexpected mapping!");
-        // }
-        // if (Interval.in(tree1.dfsIndex, Interval.of(296, 515)) && Interval.in(tree2.dfsIndex, Interval.of(536, 749))) {
+        if (Interval.in(tree1.dfsIndex, Interval.of(17885, 17914)) && !Interval.in(tree2.dfsIndex, Interval.of(777, 1706))) {
+            Log.finer("An unexpected mapping!");
+        }
+        // if (Interval.in(tree1.dfsIndex, Interval.of(677, 1328)) && Interval.in(tree2.dfsIndex, Interval.of(11474, 12682))) {
         //     Log.finer("An expected mapping!");
         // }
 
@@ -303,7 +261,10 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
         }
 
         // homonymy checking
-        if (node2.identifier != null && nodeOfIdentifier2.containsKey(node2.identifier) && nodeOfIdentifier1.get(node2.identifier) != node1) return false;
+        if (homonymy1to2[node1.dfsIndex] != 0 && homonymy1to2[node1.dfsIndex] != node2.dfsIndex)
+            return false;
+        if (homonymy2to1[node2.dfsIndex] != 0 && homonymy2to1[node2.dfsIndex] != node1.dfsIndex)
+            return false;
 
         return true;
     }
@@ -359,7 +320,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     FotileTree fotileTree;
     public double calcSimilarity(Tree node1, Tree node2) {
         int mappingCount = fotileTree.query(fotileTree.roots[node1.interval.l - 1], fotileTree.roots[node1.interval.r], 1, fotileTree.size2, node2.interval.l, node2.interval.r);
-        return Similarities.jaccardSimilarity(mappingCount, node1.size, node2.size);
+        return Similarities.diceSimilarity(mappingCount, node1.size, node2.size);
     }
     private static final class FotileTree {
         int size1, size2;
@@ -419,6 +380,77 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
     // utils of homo mapping
     Map<String, Tree> nodeOfIdentifier1 = new HashMap<String, Tree>();
     Map<String, Tree> nodeOfIdentifier2 = new HashMap<String, Tree>();
+    int[] homonymy1to2;
+    int[] homonymy2to1;
+    private void initHomonymy(Tree tree1, Tree tree2) {
+        Map<String, Integer> identifierCount1 = new HashMap<>();
+        Map<String, Integer> identifierCount2 = new HashMap<>();
+        for (Tree node: tree1.preOrder())
+            if (node.identifier != null)
+                identifierCount1.put(node.identifier, identifierCount1.getOrDefault(node.identifier, 0) + 1);
+        for (Tree node: tree2.preOrder())
+            if (node.identifier != null)
+                identifierCount2.put(node.identifier, identifierCount2.getOrDefault(node.identifier, 0) + 1);
+        nodeOfIdentifier1.clear();
+        nodeOfIdentifier2.clear();
+        for (Tree node: tree1.preOrder()) {
+            if (node.identifier != null
+                && identifierCount1.getOrDefault(node.identifier, 0) == 1
+                && identifierCount2.getOrDefault(node.identifier, 0) == 1)
+                    nodeOfIdentifier1.put(node.identifier, node);
+        }
+        for (Tree node: tree2.preOrder()) {
+            if (node.identifier != null
+                && identifierCount1.getOrDefault(node.identifier, 0) == 1
+                && identifierCount2.getOrDefault(node.identifier, 0) == 1)
+                    nodeOfIdentifier2.put(node.identifier, node);
+        }
+
+        homonymy1to2 = new int[tree1.size + 1];
+        homonymy2to1 = new int[tree2.size + 1];
+        for (String identifier: nodeOfIdentifier1.keySet()) {
+            Tree node1 = nodeOfIdentifier1.get(identifier);
+            homonymyDfs(node1, nodeOfIdentifier2.get(identifier));
+        }
+        
+        for (Tree node: tree1.preOrder())
+            if (node.getParent() == null)
+                node.preInterval = Interval.of(1, tree2.size);
+            else {
+                Interval parentInterval = node.getParent().preInterval;
+                if (homonymy1to2[node.dfsIndex] != 0) {
+                    Interval buddyInterval = nodeInDfsOrdering2[homonymy1to2[node.dfsIndex]].interval;
+                    if (Interval.isSubinterval(buddyInterval, parentInterval)) {
+                        // System.out.println("homonymy mapping " + node + " <-> " + nodeInDfsOrdering2[homonymy1to2[node.dfsIndex]]);
+                        node.preInterval = buddyInterval;
+                    }
+                    else {
+                        node.preInterval = parentInterval;
+                        homonymy2to1[homonymy1to2[node.dfsIndex]] = 0;
+                        homonymy1to2[node.dfsIndex] = 0;
+                    }
+                }
+                else node.preInterval = parentInterval;
+            }
+    }
+    private void homonymyDfs(Tree node1, Tree node2) {
+        if (homonymy1to2[node1.dfsIndex] == 0 && homonymy2to1[node2.dfsIndex] == 0) {
+            homonymy1to2[node1.dfsIndex] = node2.dfsIndex;
+            homonymy2to1[node2.dfsIndex] = node1.dfsIndex;
+            if (node1.isConstructor()) {
+                for (int i = 0; i < node1.children.size(); ++i)
+                    homonymyDfs(node1.children.get(i), node2.children.get(i));
+            }
+            else {
+                if (node1.children.size() == 1 && node2.children.size() == 1) {
+                    Tree child1 = node1.children.get(0);
+                    Tree child2 = node2.children.get(0);
+                    if (checkMapping(child1, child2))
+                        homonymyDfs(child1, child2);
+                }
+            }
+        }
+    }
 
     /**
      * @param node the node of the base tree in post-order dfs
@@ -432,7 +464,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
             mappingCount += bottomUpDfs(child);
             node.postLCA = Tree.getLCA(node.postLCA, child.postLCA);
 
-            // Log.finer("after calculate %s, postLCA of %s is %s", child, node, node.postLCA);
+            Log.finer("after calculate %s, postLCA of %s is %s", child, node, node.postLCA);
         }
 
         // container mapping
@@ -442,8 +474,8 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                 match(root1, root2, MappingType.compulsory);
                 mappingCount += containerDfs(node, root2) + 1;
             }
-            else if (node.identifier != null && nodeOfIdentifier1.containsKey(node.identifier)) {
-                Tree candidate = nodeOfIdentifier2.get(node.identifier);
+            else if (homonymy1to2[node.dfsIndex] != 0) {
+                Tree candidate = nodeInDfsOrdering2[homonymy1to2[node.dfsIndex]];
 
                 System.out.println("Candidate identifier mapping: " + node + " <-> " + candidate);
 
@@ -467,8 +499,16 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                     while (candidate != null &&
                         (matched2to1[candidate.dfsIndex] != 0
                         || node.label != candidate.label
-                        || (candidate.identifier != null && nodeOfIdentifier2.containsKey(candidate.identifier) && nodeOfIdentifier1.get(candidate.identifier) != node)))
+                        || homonymy2to1[candidate.dfsIndex] != 0 && homonymy2to1[candidate.dfsIndex] != node.dfsIndex)) {
+                        if (matched2to1[candidate.dfsIndex] != 0)
+                            Log.finer("%s is matched", candidate);
+                        else if (node.label != candidate.label)
+                            Log.finer("%s has a different label", candidate);
+                        else if (homonymy2to1[candidate.dfsIndex] != 0 && homonymy2to1[candidate.dfsIndex] != node.dfsIndex)
+                            Log.finer("%s has a homonymy buddy", candidate);
+
                         candidate = candidate.getParent();
+                    }
 
                     if (candidate != null) {
                         Log.finer("candidate of %s[%d, %d] is %s[%d, %d]", node, node.interval.l, node.interval.r, candidate, candidate.interval.l, candidate.interval.r);
@@ -481,9 +521,9 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                         // get the candidate!
                         // let's check the dice!
 
-                        Log.finer("Jaccad Similarity = %f, Dice Similarity = %f, minJaccard = %f", Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size), Similarities.diceSimilarity(mappingCount, node.size, candidate.size), minJaccard);
+                        Log.finer("Jaccad Similarity = %f, Dice Similarity = %f, mappingCount = %d, minDice = %f", Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size), Similarities.diceSimilarity(mappingCount, node.size, candidate.size), mappingCount, minDice);
 
-                        if (Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size) > minJaccard) {
+                        if (Similarities.diceSimilarity(mappingCount, node.size, candidate.size) > minDice) {
                             match(node, candidate, MappingType.container);
                             mappingCount += containerDfs(node, candidate) + 1;
                         }
@@ -509,6 +549,8 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
 
                     if (matched1to2[child1.dfsIndex] == 0)
                         child1.preInterval = node.preInterval;
+                    
+                    Log.finer("compulsory to check: %s <-> %s", child1, child2);
 
                     if (checkMapping(child1, child2)) {
                         match(child1, child2, MappingType.compulsory);
@@ -690,7 +732,7 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                         Tree tSrc = zsSrc.tree(row);
                         Tree tDst = zsDst.tree(col);
 
-                        Log.config("ZS: rename %s <-> %s", tSrc, tDst);
+                        Log.finer("ZS: rename %s <-> %s", tSrc, tDst);
 
                         if (tSrc.label == tDst.label) tSrc.recoveryBuddy = tDst;
                         else throw new RuntimeException("Should not map incompatible nodes.");

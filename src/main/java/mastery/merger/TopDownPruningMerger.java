@@ -33,19 +33,19 @@ public final class TopDownPruningMerger extends Merger {
             var right = m.getRightMatch(base);
 
             if (m.treesEqual(base, left)) {
-                Log.config("detect trivial merge scenario (base = left)");
+                Log.fine("detect trivial merge scenario (base = left)");
                 targets.put(base, right.deepCopy());
                 return;
             }
 
             if (m.treesEqual(base, right)) {
-                Log.config("detect trivial merge scenario (base = right)");
+                Log.fine("detect trivial merge scenario (base = right)");
                 targets.put(base, left.deepCopy());
                 return;
             }
 
             if (m.treesEqual(left, right)) {
-                Log.config("detect trivial merge scenario (left = right)");
+                Log.fine("detect trivial merge scenario (left = right)");
                 targets.put(base, left.deepCopy());
                 return;
             }
