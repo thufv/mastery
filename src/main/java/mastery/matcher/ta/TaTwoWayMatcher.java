@@ -11,6 +11,7 @@ import mastery.matcher.TwoWayMatcher;
 import mastery.matcher.Similarities;
 import mastery.tree.Leaf;
 import mastery.tree.Tree;
+import mastery.tree.TreePrinters;
 import mastery.util.WeightedQueue;
 import mastery.util.log.Log;
 import mastery.util.Interval;
@@ -522,8 +523,11 @@ public class TaTwoWayMatcher extends TwoWayMatcher{
                         // let's check the dice!
 
                         Log.finer("Jaccad Similarity = %f, Dice Similarity = %f, mappingCount = %d, minDice = %f", Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size), Similarities.diceSimilarity(mappingCount, node.size, candidate.size), mappingCount, minDice);
+                        Log.finer("String Distance = %f", StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(node), TreePrinters.rawCode(candidate)));
 
-                        if (Similarities.diceSimilarity(mappingCount, node.size, candidate.size) > minDice) {
+                        if (Similarities.diceSimilarity(mappingCount, node.size, candidate.size) > minDice
+                        || StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(node), TreePrinters.rawCode(candidate)) > 0.53
+                        ) {
                             match(node, candidate, MappingType.container);
                             mappingCount += containerDfs(node, candidate) + 1;
                         }

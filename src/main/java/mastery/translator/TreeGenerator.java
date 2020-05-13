@@ -146,10 +146,15 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
             ans = new Constructor(label, name, children, stopLabels.contains(name));
         if (declarationLabels.containsKey(name)) {
             Tree idNode = children.get(declarationLabels.get(name));
-            if (idNode.isLeaf())
-                ans.identifier = ans.name + ":" + ((Leaf)idNode).code;
-            else if (idNode.identifier != null)
+            if (idNode.isLeaf()) {
+                // ';' needs special checking
+                if (!((Leaf)idNode).code.equals(";")) {
+                    ans.identifier = ans.name + ":" + ((Leaf)idNode).code;
+                }
+            }
+            else if (idNode.identifier != null) {
                 ans.identifier = ans.name + ":" + idNode.identifier.substring(idNode.identifier.indexOf(":"));
+            }
         }
         return ans;
     }

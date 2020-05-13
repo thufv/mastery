@@ -3,7 +3,7 @@
 # Usage: ./run_by_base.sh <formatter> <base> [output] [option]
 
 if [ "$#" -gt 1 ]; then
-    BASE=../merge-scenarios/$2/base.java
+    BASE=$2/base.java
     LEFT=${BASE/base/left}
     RIGHT=${BASE/base/right}
 

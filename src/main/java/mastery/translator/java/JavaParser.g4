@@ -42,14 +42,15 @@ annotations: annotation*;
 importDeclaration:
 	IMPORT optionStatic qualifiedName optionDotStar ';';
 
-typeDeclaration:
+typeDeclaration: realTypeDeclaration | ';';
+
+realTypeDeclaration:
 	classOrInterfaceModifiers (
 		classDeclaration
 		| enumDeclaration
 		| interfaceDeclaration
 		| annotationTypeDeclaration
-	)
-	| ';';
+	);
 
 classOrInterfaceModifiers: classOrInterfaceModifier*;
 
@@ -141,9 +142,11 @@ classBody: '{' classBodyDeclarations '}';
 interfaceBody: '{' interfaceBodyDeclarations '}';
 
 interfaceBodyDeclarations: interfaceBodyDeclaration*;
-classBodyDeclaration:
-	';'
-	| optionStatic block
+
+classBodyDeclaration: ';' | realclassBodyDeclaration;
+
+realclassBodyDeclaration:
+	optionStatic block
 	| modifiers memberDeclaration;
 
 memberDeclaration:
@@ -182,9 +185,10 @@ constructorDeclaration:
 
 fieldDeclaration: typeType variableDeclarators ';';
 
-interfaceBodyDeclaration:
-	modifiers interfaceMemberDeclaration
-	| ';';
+interfaceBodyDeclaration: realInterfaceBodyDeclaration | ';';
+
+realInterfaceBodyDeclaration:
+	modifiers interfaceMemberDeclaration;
 
 interfaceMemberDeclaration:
 	constDeclaration
@@ -373,9 +377,13 @@ annotationTypeElementDeclarations:
 	annotationTypeElementDeclaration*;
 
 annotationTypeElementDeclaration:
-	modifiers annotationTypeElementRest
+	realAnnotationTypeElementDeclaration
 	| ';';
-// this is not allowed by the grammar, but apparently allowed by the actual compiler
+
+realAnnotationTypeElementDeclaration:
+	modifiers annotationTypeElementRest;
+// this is not allowed by the grammar, but apparently allowed by the actual compiler Xingyu Xie: is
+// really "apparently allowed" ???
 
 annotationTypeElementRest:
 	typeTypeAnnotationMethodRest ';'
