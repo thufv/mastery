@@ -162,8 +162,6 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
                 }
                 candidates.add(c);
 
-                Log.finer("candidates.size() = %d", candidates.size());
-
                 pi.put(b, c);
                 pi.put(r, c);
                 continue;
@@ -178,8 +176,6 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
                 var c = Candidate.ofLeft(l.deepCopy(), null, l);
                 candidates.add(c);
 
-                Log.finer("candidates.size() = %d", candidates.size());
-
                 pi.put(l, c);
             }
         }
@@ -189,8 +185,6 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
                 Log.finer("+ %s (right)", r.toReadableString());
                 var c = Candidate.ofRight(r.deepCopy(), null, r);
                 candidates.add(c);
-
-                Log.finer("candidates.size() = %d", candidates.size());
 
                 pi.put(r, c);
             }
@@ -237,7 +231,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
                     var next = nodes.get(0);
                     succ.put(prev, next);
                     pred.put(next, prev);
-                    Log.finest("constraint: %s precedes %s", prev, next);
+                    Log.finest("constraint: %s precedes %s", prev.target.toReadableString(), next.target.toReadableString());
                     prev = next;
                 }
             }
@@ -321,7 +315,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
                             targets.add(node.target);
                     }
                     else {
-                        Log.finer("there is no answer");
+                        Log.config("a conflict caused by cycle");
                         for (Candidate node: scc.sortedByLeft())
                             leftSuspended.add(node.getLeftOrigin());
                         for (Candidate node: scc.sortedByRight())
@@ -330,7 +324,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
                 }
             } else if (valid.size() > 1) { // conflict
                 // In fact, in this case, valid.size() == 2, a LeftOrigin and a RightOrigin
-                Log.finer("disambiguated choices: %s", valid);
+                Log.config("disambiguated choices");
                 for (var scc : valid) {
                     for (Candidate node: scc.sortedByLeft())
                         leftSuspended.add(node.getLeftOrigin());
@@ -766,6 +760,10 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
         // lift both
         Log.config("lift both: %s -> %s and %s -> %s", l.toReadableString(), left.toReadableString(),
                    r.toReadableString(), right.toReadableString());
+        if (left.equals(right)) {
+            Log.config("lift both, but left = right.");
+            return left.deepCopy();
+        }
         return Conflict.of(left, right);
     }
 
