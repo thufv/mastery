@@ -13,10 +13,9 @@ public final class CLIParser {
     static final String[] LANGS = {"JAVA", "C", "C#"};
     final Option lang = Option.builder(LANG)
             .longOpt("lang")
-            .required()
             .hasArg()
             .argName("language")
-            .desc("language of the source codes: java, c, c#")
+            .desc("language of the source codes: java (default), c, c#")
             .build();
 
     static final String OUTPUT = "o";
@@ -34,7 +33,7 @@ public final class CLIParser {
             .hasArg()
             .argName("level")
             // TODO: in production, info
-            .desc("log level: all (default), severe, warning, info, config, fine, finer, finest, off")
+            .desc("log level: all, severe, warning, info, config, fine, finer, finest, off (default)")
             .build();
 
     static final String LOG_COLORFUL = "log-color";
@@ -54,22 +53,22 @@ public final class CLIParser {
             .desc("also dump log to a file")
             .build();
     
-    static final String ALGO = "a";
-    final Option algo = Option
-            .builder(ALGO)
-            .longOpt("algorithm")
-            .hasArg()
-            .argName("algorithm")
-            .desc("algorithm of mapping (default ta)")
-            .build();
+    // static final String ALGO = "a";
+    // final Option algo = Option
+    //         .builder(ALGO)
+    //         .longOpt("algorithm")
+    //         .hasArg()
+    //         .argName("algorithm")
+    //         .desc("algorithm of mapping (default ta)")
+    //         .build();
     
-    static final String TOPDOWN = "top-down";
-    final Option topdown = Option
-            .builder(null)
-            .longOpt("top-down")
-            .argName("topdown pruning")
-            .desc("top down pruning before bottom up merge")
-            .build();
+    // static final String TOPDOWN = "top-down";
+    // final Option topdown = Option
+    //         .builder(null)
+    //         .longOpt("top-down")
+    //         .argName("topdown pruning")
+    //         .desc("top down pruning before bottom up merge")
+    //         .build();
 
     static final String FORMATTER = "formatter";
     final Option formatter = Option
@@ -97,8 +96,8 @@ public final class CLIParser {
         options.addOption(logColorful);
         options.addOption(logFile);
 
-        options.addOption(algo);
-        options.addOption(topdown);
+        // options.addOption(algo);
+        // options.addOption(topdown);
         options.addOption(formatter);
         options.addOption(help);
     }
@@ -107,7 +106,7 @@ public final class CLIParser {
         String header = "\noptions:\n";
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp(
-            "Do you want a matcher, or merger?\nmastery diff <file...> -l java|c|c#\nmastery merge <left> <base> <right> -l java|c|c# [options]\n",
+            "mastery <left> <base> <right> [options]\n",
             header, options, "");
     }
 
@@ -121,7 +120,7 @@ public final class CLIParser {
         CommandLine cli = parser.parse(options, args);
 
         String[] arguments = cli.getArgs();
-        String mode = arguments[0];
+        String mode = "merge";
 
         if (cli.hasOption(HELP)) {
             throw new HelpException();
@@ -138,28 +137,27 @@ public final class CLIParser {
                 throw new ParseException("Invalid language: " + lang.getDescription());
             }
             
-            config = new Config(files, language);
+            config = new Config(files);
         }
         else if (mode.equals("merge")) {
-            if (arguments.length < 4) {
+            if (arguments.length < 3) {
                 throw new ParseException("Please provide 3 files/directories as arguments.");
             }
 
-            String left = arguments[1];
-            String base = arguments[2];
-            String right = arguments[3];
+            String left = arguments[0];
+            String base = arguments[1];
+            String right = arguments[2];
 
-            String language = cli.getOptionValue(LANG).toUpperCase();
-            if (!Arrays.asList(LANGS).contains(language)) {
-                throw new ParseException("Invalid language: " + lang.getDescription());
+            config = new Config(left, base, right);
+
+            if (cli.hasOption(LANG)) {
+                config.language = cli.getOptionValue(LANG).toUpperCase();
+                if (!Arrays.asList(LANGS).contains(config.language)) {
+                    throw new ParseException("Invalid language: " + lang.getDescription());
+                }
             }
 
-            config = new Config(left, base, right, language);
-
             config.output = cli.getOptionValue(OUTPUT);
-            config.language = language;
-            if (cli.hasOption(ALGO)) config.algorithm = cli.getOptionValue(ALGO);
-            if (cli.hasOption(TOPDOWN)) config.topDown = true;
             if (cli.hasOption(FORMATTER)) config.formatter = cli.getOptionValue(FORMATTER);
         }
         else {

@@ -119,8 +119,6 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
                 var c = Candidate.of(t, b, l, r);
                 candidates.add(c);
 
-                Log.finer("candidates.size() = %d", candidates.size());
-
                 pi.put(b, c);
                 pi.put(l, c);
                 pi.put(r, c);
@@ -140,8 +138,6 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
                     c = Candidate.ofRightDeletion(b, l);
                 }
                 candidates.add(c);
-
-                Log.finer("candidates.size() = %d", candidates.size());
 
                 pi.put(b, c);
                 pi.put(l, c);
@@ -245,7 +241,6 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
         in_stack = new HashSet<>();
         stack = new Stack<>();
         dfncnt = 0;
-        Log.finer("candidates.size() = %d", candidates.size());
         for (Candidate candidate: candidates) {
             Log.finer("A candidate %s", candidate);
             if (!dfn.containsKey(candidate))
@@ -298,7 +293,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
                 if (scc.countValid() == 1) {
                     for (Candidate node: scc.nodes)
                         if (node.valid) {
-                            Log.finer("unique choice: %s", node.target);
+                            Log.finer("unique choice: %s", node.target.toReadableString());
                             targets.add(node.target);
                             break;
                         }
@@ -351,7 +346,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
     Stack<Candidate> stack;
 
     private final void tarjan(Candidate u) {
-        Log.finer("tarjan %s", u);
+        // Log.finer("tarjan %s", u);
 
         low.put(u, ++dfncnt);
         dfn.put(u, dfncnt);
@@ -368,20 +363,20 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
                     low.put(u, low.get(v));
             }
         
-        Log.finer("for %s, dfn = %d, low = %d", u, dfn.get(u), low.get(u));
+        // Log.finer("for %s, dfn = %d, low = %d", u, dfn.get(u), low.get(u));
 
         if (dfn.get(u) == low.get(u)) {
             StronglyConnectedComponent scc = new StronglyConnectedComponent();
             Log.finer("nodes in a scc:");
             for (Candidate top; (top = stack.pop()) != u;) {
-                Log.finer("%s", top);
+                Log.finer("%s", top.target.toReadableString());
 
                 in_stack.remove(top);
                 scc.nodes.add(top);
                 sccOf.put(top, scc);
             }
 
-            Log.finer("%s", u);
+            Log.finer("%s", u.target.toReadableString());
 
             in_stack.remove(u);
             scc.nodes.add(u);
@@ -518,7 +513,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
         @Override
         public String toString() {
             String ans = "strongly connected component (size " + nodes.size() + ")\n";
-            for (Candidate node: nodes) ans += node + "\n";
+            for (Candidate node: nodes) ans += node.target.toReadableString() + "\n";
             return ans;
         }
     }

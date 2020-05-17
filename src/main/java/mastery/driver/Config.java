@@ -10,20 +10,19 @@ public final class Config {
     public Mode mode;
 
     // common arguments
-    public String language;
+    public String language = "JAVA";
 
     // log-related
-    public Level logLevel = Level.ALL;
+    public Level logLevel = Level.OFF;
     public boolean logColorful = false;
     public String logDump;
 
     /* ------- Diff Mode -------*/
     public String[] files;
     
-    public Config(String[] files, String language) {
+    public Config(String[] files) {
         mode = Mode.DIFF;
         this.files = files;
-        this.language = language;
     }
 
     /* ------- Merge Mode -------*/
@@ -37,13 +36,12 @@ public final class Config {
 
     // algorithm
     public String algorithm = "ta";
-    public boolean topDown = false;
+    public boolean topDown = true;
 
-    public Config(String left, String base, String right, String language) {
+    public Config(String left, String base, String right) {
         mode = Mode.MERGE;
         this.left = left;
         this.base = base;
         this.right = right;
-        this.language = language;
     }
 }
