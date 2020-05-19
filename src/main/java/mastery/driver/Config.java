@@ -19,10 +19,10 @@ public final class Config {
 
     /* ------- Diff Mode -------*/
     public String[] files;
-    
-    public Config(String[] files) {
+
+    public Config(String file1, String file2) {
         mode = Mode.DIFF;
-        this.files = files;
+        this.files = new String[]{file1, file2};
     }
 
     /* ------- Merge Mode -------*/
@@ -32,7 +32,7 @@ public final class Config {
     public String output;
 
     // formatter
-    public String formatter;
+    public String formatter = "clang-format";
 
     // algorithm
     public String algorithm = "ta";

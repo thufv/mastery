@@ -10,12 +10,12 @@ import java.util.logging.Level;
 
 public final class CLIParser {
     static final String LANG = "l";
-    static final String[] LANGS = {"JAVA", "C", "C#"};
+    static final String[] LANGS = {"JAVA"/*, "C", "C#"*/};
     final Option lang = Option.builder(LANG)
             .longOpt("lang")
             .hasArg()
             .argName("language")
-            .desc("language of the source codes: java (default), c, c#")
+            .desc("language of the source codes: java (default)")
             .build();
 
     static final String OUTPUT = "o";
@@ -23,7 +23,7 @@ public final class CLIParser {
             .longOpt("output")
             .hasArg()
             .argName("file")
-            .desc("output file/directory")
+            .desc("output file (default stdout)")
             .build();
 
     static final String LOG_LEVEL = "log-level";
@@ -52,7 +52,7 @@ public final class CLIParser {
             .argName("file")
             .desc("also dump log to a file")
             .build();
-    
+
     // static final String ALGO = "a";
     // final Option algo = Option
     //         .builder(ALGO)
@@ -61,7 +61,7 @@ public final class CLIParser {
     //         .argName("algorithm")
     //         .desc("algorithm of mapping (default ta)")
     //         .build();
-    
+
     // static final String TOPDOWN = "top-down";
     // final Option topdown = Option
     //         .builder(null)
@@ -76,9 +76,9 @@ public final class CLIParser {
             .longOpt(FORMATTER)
             .hasArg()
             .argName("executable")
-            .desc("the formatter to format output code (default plain)")
+            .desc("path to clang-format (default `clang-format`)")
             .build();
-    
+
     static final String HELP = "h";
     static final String HELP_DESC = "Usage ";
     final Option help = Option.builder(HELP)
@@ -105,8 +105,8 @@ public final class CLIParser {
     public void printHelp() {
         String header = "\noptions:\n";
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp(
-            "mastery <left> <base> <right> [options]\n",
+        formatter.printHelp("\n  mastery merge <left> <base> <right> [options]\n"
+                + "  mastery check <file1> <file2>\n",
             header, options, "");
     }
 
@@ -120,33 +120,38 @@ public final class CLIParser {
         CommandLine cli = parser.parse(options, args);
 
         String[] arguments = cli.getArgs();
-        String mode = "merge";
+        String mode = arguments[0];
 
         if (cli.hasOption(HELP)) {
             throw new HelpException();
         }
-        
+
         Config config;
-        if (mode.equals("diff")) {
-            String[] files = new String[arguments.length - 1];
-            for (int i = 1; i < arguments.length; ++i)
-                files[i - 1] = arguments[i];
-            
-            String language = cli.getOptionValue(LANG).toUpperCase();
-            if (!Arrays.asList(LANGS).contains(language)) {
-                throw new ParseException("Invalid language: " + lang.getDescription());
-            }
-            
-            config = new Config(files);
-        }
-        else if (mode.equals("merge")) {
+        if (mode.equals("check")) {
             if (arguments.length < 3) {
-                throw new ParseException("Please provide 3 files/directories as arguments.");
+                throw new ParseException("Please provide 2 files as arguments.");
             }
 
-            String left = arguments[0];
-            String base = arguments[1];
-            String right = arguments[2];
+            String file1 = arguments[1];
+            String file2 = arguments[2];
+
+            config = new Config(file1, file2);
+
+            if (cli.hasOption(LANG)) {
+                config.language = cli.getOptionValue(LANG).toUpperCase();
+                if (!Arrays.asList(LANGS).contains(config.language)) {
+                    throw new ParseException("Invalid language: " + lang.getDescription());
+                }
+            }
+        }
+        else if (mode.equals("merge")) {
+            if (arguments.length < 4) {
+                throw new ParseException("Please provide 3 files as arguments.");
+            }
+
+            String left = arguments[1];
+            String base = arguments[2];
+            String right = arguments[3];
 
             config = new Config(left, base, right);
 
@@ -161,7 +166,7 @@ public final class CLIParser {
             if (cli.hasOption(FORMATTER)) config.formatter = cli.getOptionValue(FORMATTER);
         }
         else {
-            throw new ParseException("Diff or merge? Please tell me what to do first.");
+            throw new ParseException("Please specify mode: merge or check?");
         }
 
         if (cli.hasOption(LOG_LEVEL)) {
