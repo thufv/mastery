@@ -1,17 +1,11 @@
-package mastery.matcher.ta;
+package mastery.matcher;
 
-import mastery.matcher.Matcher;
-import mastery.matcher.Assigner;
-import mastery.matcher.MatchingSet;
 import mastery.tree.Tree;
-
 import mastery.util.log.Log;
 import java.util.logging.Level;
 
-public class TaMatcher extends Matcher {
-    @Override
+public class ThreeWayMatcher {
     public MatchingSet apply(Tree base, Tree left, Tree right) {
-        // Assign trees
         Assigner assigner = new Assigner();
         assigner.apply(base, left, right);
 
@@ -30,6 +24,18 @@ public class TaMatcher extends Matcher {
         });
 
         // Calculate Mapping
-        return calc(new TaTwoWayMatcher(), new TaMatchingSet(base, left, right), base, left, right);
+        TwoWayMatcher twoWayMatcher = new TwoWayMatcher();
+        MatchingSet matchingSet = new MatchingSet(base, left, right);
+
+        Log.fine("2-way matching: base <-> left");
+        var leftMapping = twoWayMatcher.apply(base, left);
+        leftMapping.forEach(matchingSet::setLeftMatch);
+
+        Log.fine("2-way matching: base <-> right");
+        var rightMapping = twoWayMatcher.apply(base, right);
+        rightMapping.forEach(matchingSet::setRightMatch);
+        
+        Log.fine("2-way matching: %d matches identified", matchingSet.size());
+        return matchingSet;
     }
 }

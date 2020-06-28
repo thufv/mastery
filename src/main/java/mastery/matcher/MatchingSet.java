@@ -5,7 +5,7 @@ import mastery.tree.Tree;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class MatchingSet {
+public class MatchingSet {
 
     public final Tree base;
     public final Tree left;
@@ -17,7 +17,11 @@ public abstract class MatchingSet {
         this.right = right;
     }
 
-    public abstract boolean treesEqual(Tree root1, Tree root2);
+    public boolean treesEqual(Tree root1, Tree root2) {
+        if (root1.assignment == -1 || root2.assignment == -1)
+            throw new IllegalStateException("Try to check the equivalence of some unassigned tree.");
+        return root1.assignment == root2.assignment;
+    }
 
     public final boolean hasLeftMatch(Tree base) {
         return leftMatches.containsKey(base);
@@ -28,10 +32,10 @@ public abstract class MatchingSet {
 
     @SuppressWarnings("unchecked")
     public final <E extends Tree> E getLeftMatch(E base) {
-      Tree leftMatch = leftMatches.get(base);
-      if (leftMatch == null) return null;
-      else if (base.getClass() == leftMatch.getClass()) return (E) leftMatch;
-      else throw new IllegalStateException("class " + base.getClass().getName() + " and class " + leftMatch.getClass().getName() + " are mapped.");
+        Tree leftMatch = leftMatches.get(base);
+        if (leftMatch == null) return null;
+        else if (base.getClass() == leftMatch.getClass()) return (E) leftMatch;
+        else throw new IllegalStateException("class " + base.getClass().getName() + " and class " + leftMatch.getClass().getName() + " are mapped.");
     }
 
     @SuppressWarnings("unchecked")

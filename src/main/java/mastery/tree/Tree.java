@@ -348,4 +348,12 @@ public abstract class Tree {
         assert node.assignment != 0;
         return assignment == node.assignment;
     }
+
+    public static Tree getFirstLeaf(Tree t) {
+        Tree current = t;
+        while (!current.children.isEmpty())
+            current = current.children.get(0);
+
+        return current;
+    }
 }

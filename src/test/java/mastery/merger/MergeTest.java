@@ -1,6 +1,6 @@
 package mastery.merger;
 
-import mastery.matcher.gum.HashMatchingSet;
+import mastery.matcher.MatchingSet;
 import mastery.tree.Tree;
 import mastery.tree.TreePrinters;
 import mastery.util.log.IndentPrinter;
@@ -17,7 +17,7 @@ public abstract class MergeTest {
 
     protected final void testOn(Tree base, Tree left, Tree right, Tree target,
                                 Map<Tree, Tree> leftMatches, Map<Tree, Tree> rightMatches) {
-        var m = new HashMatchingSet(base, left, right);
+        var m = new MatchingSet(base, left, right);
         leftMatches.forEach(m::setLeftMatch);
         m.setLeftMatch(base, left);
         rightMatches.forEach(m::setRightMatch);

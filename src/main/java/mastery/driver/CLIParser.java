@@ -53,15 +53,6 @@ public final class CLIParser {
             .desc("also dump log to a file")
             .build();
 
-    // static final String ALGO = "a";
-    // final Option algo = Option
-    //         .builder(ALGO)
-    //         .longOpt("algorithm")
-    //         .hasArg()
-    //         .argName("algorithm")
-    //         .desc("algorithm of mapping (default ta)")
-    //         .build();
-
     // static final String TOPDOWN = "top-down";
     // final Option topdown = Option
     //         .builder(null)
@@ -76,7 +67,7 @@ public final class CLIParser {
             .longOpt(FORMATTER)
             .hasArg()
             .argName("executable")
-            .desc("path to clang-format (default `clang-format`)")
+            .desc("path to code formatter (default `clang-format`)")
             .build();
 
     static final String HELP = "h";

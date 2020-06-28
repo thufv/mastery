@@ -35,7 +35,6 @@ public final class Config {
     public String formatter = "clang-format";
 
     // algorithm
-    public String algorithm = "ta";
     public boolean topDown = true;
 
     public Config(String left, String base, String right) {

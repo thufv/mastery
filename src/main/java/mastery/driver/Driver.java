@@ -6,10 +6,8 @@ import java.io.Writer;
 import java.util.logging.Level;
 
 import mastery.matcher.MatchingSet;
-import mastery.matcher.Matcher;
+import mastery.matcher.ThreeWayMatcher;
 import mastery.matcher.Assigner;
-import mastery.matcher.gum.GumMatcher;
-import mastery.matcher.ta.TaMatcher;
 import mastery.merger.Merger;
 import mastery.merger.BottomUpMerger;
 import mastery.merger.TopDownPruningMerger;
@@ -86,17 +84,8 @@ public final class Driver {
                 Tree right = TreeBuilders.fromSource(config.right, config.language);
 
                 // Phase I: Mapping
-                Matcher matcher;
-                if ("gum".equals(config.algorithm)) {
-                    matcher = new GumMatcher();
-                }
-                else if ("ta".equals(config.algorithm)) {
-                    matcher = new TaMatcher();
-                }
-                else {
-                    throw new IllegalStateException("wrong matching algorithm. The legal options are gum/ta");
-                }
-                MatchingSet mapping = matcher.apply(base, left, right);
+                ThreeWayMatcher threeWayMatcher = new ThreeWayMatcher();
+                MatchingSet mapping = threeWayMatcher.apply(base, left, right);
 
                 // Phase II: Merge
                 Merger merger = config.topDown ? new TopDownPruningMerger(): new BottomUpMerger();
