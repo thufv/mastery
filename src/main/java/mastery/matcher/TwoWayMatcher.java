@@ -260,8 +260,8 @@ public class TwoWayMatcher{
         if (node1.postLCA != null && !Interval.isSubinterval(node1.postLCA.interval, node2.interval)) return false;
         
         // compulsory checking
-        Tree parent1 = node1.getParent();
-        Tree parent2 = node2.getParent();
+        Tree parent1 = node1.parent;
+        Tree parent2 = node2.parent;
         if (parent1 == null) { if(parent2 != null) return false; }
         else {
             if (parent2 == null) return false;
@@ -278,8 +278,8 @@ public class TwoWayMatcher{
     }
     private boolean checkStop(Tree node1, Tree node2) {
         for (;;) {
-            Tree parent1 = node1.getParent();
-            Tree parent2 = node2.getParent();
+            Tree parent1 = node1.parent;
+            Tree parent2 = node2.parent;
 
             if (parent1 == null || parent2 == null) return false;
             else if (parent1.label != parent2.label) return false;
@@ -299,10 +299,10 @@ public class TwoWayMatcher{
             Tree first2 = p2.first;
             Tree second2 = p2.second;
             for (;;) {
-                first1 = first1.getParent();
-                second1 = second1.getParent();
-                first2 = first2.getParent();
-                second2 = second2.getParent();
+                first1 = first1.parent;
+                second1 = second1.parent;
+                first2 = first2.parent;
+                second2 = second2.parent;
 
                 // 1 means p1 is more similar than p2
                 if (first1 == null && second1 == null && first2 == null && second2 == null) return 0;
@@ -416,10 +416,10 @@ public class TwoWayMatcher{
         }
         
         for (Tree node: tree1.preOrder())
-            if (node.getParent() == null)
+            if (node.parent == null)
                 node.preInterval = Interval.of(1, tree2.size);
             else {
-                Interval parentInterval = node.getParent().preInterval;
+                Interval parentInterval = node.parent.preInterval;
                 if (homonymy1to2[node.dfsIndex] != 0) {
                     Interval buddyInterval = nodeInDfsOrdering2[homonymy1to2[node.dfsIndex]].interval;
                     if (Interval.isSubinterval(buddyInterval, parentInterval)) {
@@ -509,7 +509,7 @@ public class TwoWayMatcher{
                         else if (homonymy2to1[candidate.dfsIndex] != 0 && homonymy2to1[candidate.dfsIndex] != node.dfsIndex)
                             Log.finer("%s has a homonymy buddy", candidate);
 
-                        candidate = candidate.getParent();
+                        candidate = candidate.parent;
                     }
 
                     if (candidate != null) {
@@ -650,7 +650,7 @@ public class TwoWayMatcher{
                 matched = true;
             }
             if (!matched) {
-                Tree parent = node.getParent();
+                Tree parent = node.parent;
                 if (parent != null && parent.isConstructor()) {
                     int parentBuddyDfsIndex = matched1to2[parent.dfsIndex];
                     if (parentBuddyDfsIndex != 0) {

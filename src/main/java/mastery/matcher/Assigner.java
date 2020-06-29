@@ -177,7 +177,7 @@ public class Assigner {
 
                 for (var nodes: childrenOfAssignment)
                     for (Tree node: nodes)
-                        node.getParent().children.add(node);
+                        node.parent.children.add(node);
 
                 for (var nodes: childrenOfAssignment)
                     for (Tree node: nodes)

@@ -799,8 +799,8 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
 
     private Tree lift(Tree node, Tree parent) {
         Tree o = node;
-        while (o.getParent() != parent) {
-            o = o.getParent();
+        while (o.parent != parent) {
+            o = o.parent;
         }
         Objects.requireNonNull(o);
 

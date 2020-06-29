@@ -2,7 +2,6 @@ package mastery.tree;
 
 import mastery.util.Interval;
 import mastery.util.log.IndentPrinter;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -36,17 +35,22 @@ public abstract class Tree {
      * Label, i.e. grammar kind/type.
      * -1 stands for weird label.
      */
-    public final int label;
+    public int label;
 
     /**
      * Human-readable string representation of label.
      */
-    public final String name;
+    public String name;
 
     /**
      * Children.
      */
     public final List<Tree> children;
+
+    /**
+     * parent
+     */
+    public Tree parent = null;
 
     /**
      * Hash value.
@@ -85,7 +89,7 @@ public abstract class Tree {
     /**
      * The number of child that the node is
      */
-    public Integer childno;
+    public Integer childno = 0;
 
     /**
      * The buddy of recovery mapping (if the current node is one node of recovery mapping)
@@ -102,15 +106,6 @@ public abstract class Tree {
      * the identifier will not be null.
      */
     public String identifier = null;
-
-    /**
-     * Parent.
-     *
-     * @return parent if exists, or else null.
-     */
-    public final @Nullable Tree getParent() {
-        return parent;
-    }
 
     /**
      * Deep copy this node.
@@ -322,8 +317,6 @@ public abstract class Tree {
         this.treeHash = label * 2333 + code.hashCode();
     }
 
-    Tree parent;
-
     public final static Tree getLCA(Tree node1, Tree node2) {
         if (node1 == null) return node2;
         if (node2 == null) return node1;
@@ -355,5 +348,10 @@ public abstract class Tree {
             current = current.children.get(0);
 
         return current;
+    }
+
+    public void updateNumberOfChildren() {
+        for (int i = 0; i < children.size(); ++i)
+            children.get(i).childno = i;
     }
 }
