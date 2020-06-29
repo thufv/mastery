@@ -53,11 +53,6 @@ public abstract class Tree {
     public Tree parent = null;
 
     /**
-     * Hash value.
-     */
-    public final int treeHash;
-
-    /**
      * Assigned integer for equivalence checking. (1-based)
      */
     public int assignment = -1;
@@ -106,6 +101,16 @@ public abstract class Tree {
      * the identifier will not be null.
      */
     public String identifier = null;
+
+    /**
+     * The position of the first character.
+     */
+    public int startPos;
+
+    /**
+     * The position of the last character.
+     */
+    public int endPos;
 
     /**
      * Deep copy this node.
@@ -281,20 +286,6 @@ public abstract class Tree {
             child.parent = this; // set parent here
         }
         this.parent = null;
-
-        // compute tree hash
-        int hash = label;
-        if (isUnorderedList()) {
-            hash = label * 23333333;
-            for (var child : children) {
-                hash = hash + child.treeHash;
-            }
-        } else {
-            for (var child : children) {
-                hash = hash * 2333 + child.treeHash;
-            }
-        }
-        this.treeHash = hash;
     }
 
     protected Tree(int label, String name) {
@@ -304,7 +295,6 @@ public abstract class Tree {
         this.height = 0;
         this.size = 1;
         this.parent = null;
-        this.treeHash = label;
     }
 
     protected Tree(int label, String name, String code) {
@@ -314,7 +304,6 @@ public abstract class Tree {
         this.height = 0;
         this.size = 1;
         this.parent = null;
-        this.treeHash = label * 2333 + code.hashCode();
     }
 
     public final static Tree getLCA(Tree node1, Tree node2) {

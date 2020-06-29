@@ -5,12 +5,16 @@ import java.util.List;
 import java.util.Set;
 
 import mastery.actions.model.*;
-import mastery.matcher.Mapping;
+import mastery.matcher.MappingStore;
 import mastery.tree.Tree;
 public class RootAndLeavesClassifier extends TreeClassifier {
 
-    public RootAndLeavesClassifier(Tree src, Tree dst, Set<Mapping> rawMappings, List<Action> actions) {
-        super(src, dst, rawMappings, actions);
+    public RootAndLeavesClassifier(Tree src, Tree dst, MappingStore mappings, List<Action> actions) {
+        super(src, dst, mappings, actions);
+    }
+
+    public RootAndLeavesClassifier(Tree src, Tree dst, MappingStore mappings) {
+        super(src, dst, mappings);
     }
 
     @Override

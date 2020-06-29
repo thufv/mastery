@@ -6,18 +6,20 @@ import mastery.tree.Tree;
 
 public class MappingStore implements Iterable<Mapping> {
 
-    private Map<Tree, Tree> srcs;
-    private Map<Tree, Tree> dsts;
+    private Map<Tree, Tree> srcs = new HashMap<>();
+    private Map<Tree, Tree> dsts = new HashMap<>();
 
     public MappingStore(Set<Mapping> mappings) {
-        this();
         for (Mapping m: mappings)
             link(m.first, m.second);
     }
 
+    public MappingStore(Map<Tree, Tree> map) {
+        for (Map.Entry<Tree, Tree> entry : map.entrySet())
+            link(entry.getKey(), entry.getValue());
+    }
+
     public MappingStore() {
-        srcs = new  HashMap<>();
-        dsts = new HashMap<>();
     }
 
     public Set<Mapping> asSet() {

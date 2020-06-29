@@ -5,24 +5,22 @@ import java.util.List;
 import java.util.Set;
 
 import mastery.actions.model.Action;
-import mastery.matcher.Mapping;
 import mastery.matcher.MappingStore;
-import mastery.matcher.TwoWayMatcher;
 import mastery.tree.Tree;
 
 public abstract class TreeClassifier {
 
-    protected Set<Tree> srcUpdTrees;
+    protected Set<Tree> srcUpdTrees = new HashSet<>();
 
-    protected Set<Tree> dstUpdTrees;
+    protected Set<Tree> dstUpdTrees = new HashSet<>();
 
-    protected Set<Tree> srcMvTrees;
+    protected Set<Tree> srcMvTrees = new HashSet<>();
 
-    protected Set<Tree> dstMvTrees;
+    protected Set<Tree> dstMvTrees = new HashSet<>();
 
-    protected Set<Tree> srcDelTrees;
+    protected Set<Tree> srcDelTrees = new HashSet<>();
 
-    protected Set<Tree> dstAddTrees;
+    protected Set<Tree> dstAddTrees = new HashSet<>();
 
     protected Tree src;
 
@@ -32,31 +30,23 @@ public abstract class TreeClassifier {
 
     protected List<Action> actions;
 
-    public TreeClassifier(Tree src, Tree dst, Set<Mapping> rawMappings, List<Action> actions) {
-        this(src, dst, rawMappings);
+    public TreeClassifier(Tree src, Tree dst, MappingStore mappings, List<Action> actions) {
+        this.src = src;
+        this.dst = dst;
+        this.mappings = mappings;
         this.actions = actions;
         classify();
     }
 
-    // TODO: have no idea how to modify it
-    // public TreeClassifier(Tree src, Tree dst, Matcher m) {
-    //     this(src, dst, m.getMappingsAsSet());
-    //     ActionGenerator g = new ActionGenerator(src.getRoot(), dst.getRoot(), m.getMappings());
-    //     g.generate();
-    //     this.actions = g.getActions();
-    //     classify();
-    // }
-
-    private TreeClassifier(Tree src, Tree dst, Set<Mapping> rawMappings) {
+    public TreeClassifier(Tree src, Tree dst, MappingStore mappings) {
         this.src = src;
         this.dst = dst;
-        this.mappings = new MappingStore(rawMappings);
-        this.srcDelTrees = new HashSet<>();
-        this.srcMvTrees = new HashSet<>();
-        this.srcUpdTrees = new HashSet<>();
-        this.dstMvTrees = new HashSet<>();
-        this.dstAddTrees = new HashSet<>();
-        this.dstUpdTrees = new HashSet<>();
+        this.mappings = mappings;
+
+        ActionGenerator g = new ActionGenerator(src, dst, mappings);
+        g.generate();
+        this.actions = g.getActions();
+        classify();
     }
 
     public abstract void classify();

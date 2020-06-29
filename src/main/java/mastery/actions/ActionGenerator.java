@@ -31,8 +31,6 @@ public class ActionGenerator {
 
     private Set<Tree> srcInOrder;
 
-    private int lastId;
-
     private List<Action> actions;
 
     private TIntObjectMap<Tree> origSrcTrees;
@@ -71,8 +69,8 @@ public class ActionGenerator {
         dstInOrder = new HashSet<>();
         srcInOrder = new HashSet<>();
 
-        lastId = newSrc.size + 1;
         newMappings.link(srcFakeRoot, dstFakeRoot);
+        int lastId = newSrc.size + 1;
 
         // Instead of using some twisted design pattern,
         // I decided to write a breadth-first search manually here
@@ -90,6 +88,8 @@ public class ActionGenerator {
                 // Insertion case : insert new node.
                 w = new FakeTree();
                 // Here I trivially keep the id of w as 0
+                w.dfsIndex = lastId;
+                ++lastId;
 
                 // In order to use the real nodes from the second tree, we
                 // furnish x instead of w and fake that x has the newly
@@ -219,10 +219,6 @@ public class ActionGenerator {
         // for (int i = 0; i <= upos; i++)
         // if (srcInOrder.contains(siblings.get(i))) r++;
         return upos + 1;
-    }
-
-    private int newId() {
-        return ++lastId;
     }
 
     private List<Mapping> lcs(List<Tree> x, List<Tree> y) {

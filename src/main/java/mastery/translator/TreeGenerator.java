@@ -156,6 +156,11 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
                 ans.identifier = ans.name + ":" + idNode.identifier.substring(idNode.identifier.indexOf(":"));
             }
         }
+        if (!children.isEmpty()) {
+            ans.startPos = children.get(0).startPos;
+            ans.endPos = children.get(children.size() - 1).endPos;
+        }
+
         return ans;
     }
 
@@ -178,7 +183,10 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
         }
         code = new String(data);
 
-        return new Leaf(label, name, code);
+        Tree ans = new Leaf(label, name, code);
+        ans.startPos = t.getStartIndex();
+        ans.endPos = t.getStopIndex();
+        return ans;
     }
 
     @Override
