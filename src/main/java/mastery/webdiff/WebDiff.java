@@ -16,11 +16,7 @@ public class WebDiff {
     int port;
 
     public WebDiff(int port) {
-        if (port < 0) {
-            this.port = 8088;
-            System.err.printf("Invalid port number, using %d\n", this.port);
-        }
-        else this.port = port;
+        this.port = port;
     }
 
     public void apply(File fSrc, File fDst, Tree src, Tree dst, MappingStore mappings) {

@@ -12,7 +12,8 @@ import java.util.logging.Level;
 public final class CLIParser {
     static final String LANG = "l";
     static final String[] LANGS = {"JAVA"/*, "C", "C#"*/};
-    final Option lang = Option.builder(LANG)
+    final Option lang = Option
+            .builder(LANG)
             .longOpt("lang")
             .hasArg()
             .argName("language")
@@ -20,7 +21,8 @@ public final class CLIParser {
             .build();
 
     static final String OUTPUT = "o";
-    final Option output = Option.builder(OUTPUT)
+    final Option output = Option.
+            builder(OUTPUT)
             .longOpt("output")
             .hasArg()
             .argName("file")
@@ -33,7 +35,6 @@ public final class CLIParser {
             .longOpt(LOG_LEVEL)
             .hasArg()
             .argName("level")
-            // TODO: in production, info
             .desc("log level: all, severe, warning, info, config, fine, finer, finest, off (default)")
             .build();
 
@@ -70,6 +71,15 @@ public final class CLIParser {
             .argName("executable")
             .desc("path to code formatter (default `clang-format`)")
             .build();
+    
+    static final String PORT = "p";
+    final Option port = Option
+            .builder(PORT)
+            .longOpt("port")
+            .hasArg()
+            .argName("port")
+            .desc("port (default 4567), only for webdiff")
+            .build();
 
     static final String HELP = "h";
     static final String HELP_DESC = "Usage ";
@@ -88,9 +98,12 @@ public final class CLIParser {
         options.addOption(logColorful);
         options.addOption(logFile);
 
-        // options.addOption(algo);
         // options.addOption(topdown);
         options.addOption(formatter);
+
+        // for webdiff
+        options.addOption(port);
+
         options.addOption(help);
     }
 
@@ -98,7 +111,8 @@ public final class CLIParser {
         String header = "\noptions:\n";
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("\n  mastery merge <left> <base> <right> [options]\n"
-                + "  mastery check <file1> <file2>\n",
+                + "  mastery check <file1> <file2> [options]\n"
+                + "  mastery webdiff <file1> <file2> [options]",
             header, options, "");
     }
 
@@ -127,7 +141,7 @@ public final class CLIParser {
             String file1 = arguments[1];
             String file2 = arguments[2];
 
-            config = new Config(file1, file2);
+            config = new Config(file1, file2, Config.Mode.CHECK);
 
             if (cli.hasOption(LANG)) {
                 config.language = cli.getOptionValue(LANG).toUpperCase();
@@ -156,9 +170,31 @@ public final class CLIParser {
 
             config.output = cli.getOptionValue(OUTPUT);
             if (cli.hasOption(FORMATTER)) config.formatter = cli.getOptionValue(FORMATTER);
+        } else if (mode.equals("webdiff")) {
+            if (arguments.length < 3) {
+                throw new ParseException("Please provide 2 files as arguments.");
+            }
+
+            String sSrc = arguments[1];
+            String sDst = arguments[2];
+
+            config = new Config(sSrc, sDst, Config.Mode.WEBDIFF);
+
+            if (cli.hasOption(LANG)) {
+                config.language = cli.getOptionValue(LANG).toUpperCase();
+                if (!Arrays.asList(LANGS).contains(config.language)) {
+                    throw new ParseException("Invalid language: " + lang.getDescription());
+                }
+            }
+            if (cli.hasOption(PORT)) {
+                config.port = Integer.parseInt(cli.getOptionValue(PORT));
+                if (config.port < 0) {
+                    throw new ParseException("Invalid port: " + config.port);
+                }
+            }
         }
         else {
-            throw new ParseException("Please specify mode: merge or check?");
+            throw new ParseException("Please specify mode: merge, check or webdiff?");
         }
 
         if (cli.hasOption(LOG_LEVEL)) {

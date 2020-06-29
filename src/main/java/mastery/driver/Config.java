@@ -4,8 +4,9 @@ import java.util.logging.Level;
 
 public final class Config {
     enum Mode {
-        DIFF,
-        MERGE
+        CHECK,
+        MERGE,
+        WEBDIFF
     }
     public Mode mode;
 
@@ -20,8 +21,8 @@ public final class Config {
     /* ------- Diff Mode -------*/
     public String[] files;
 
-    public Config(String file1, String file2) {
-        mode = Mode.DIFF;
+    public Config(String file1, String file2, Mode mode) {
+        this.mode = mode;
         this.files = new String[]{file1, file2};
     }
 
@@ -36,6 +37,9 @@ public final class Config {
 
     // algorithm
     public boolean topDown = true;
+
+    // webdiff
+    public int port = 4567;
 
     public Config(String left, String base, String right) {
         mode = Mode.MERGE;

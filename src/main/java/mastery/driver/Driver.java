@@ -3,14 +3,20 @@ package mastery.driver;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.io.File;
+import java.nio.file.*;
 import java.util.logging.Level;
+import java.util.Map;
 
 import mastery.matcher.MatchingSet;
 import mastery.matcher.ThreeWayMatcher;
+import mastery.matcher.TwoWayMatcher;
 import mastery.matcher.Assigner;
+import mastery.matcher.MappingStore;
 import mastery.merger.Merger;
 import mastery.merger.BottomUpMerger;
 import mastery.merger.TopDownPruningMerger;
+import mastery.webdiff.WebDiff;
 import mastery.tree.Tree;
 import mastery.tree.TreeBuilders;
 import mastery.tree.TreePrinters;
@@ -44,7 +50,7 @@ public final class Driver {
             }
             Log.config("logger setup");
 
-            if (config.mode == Config.Mode.DIFF) {
+            if (config.mode == Config.Mode.CHECK) {
                 // Parse AST from source code
                 Tree trees[] = new Tree[config.files.length];
                 for (int i = 0; i < config.files.length; ++i) {
@@ -77,7 +83,7 @@ public final class Driver {
                     System.exit(1);
                 }
             }
-            else {
+            else if (config.mode == Config.Mode.MERGE) {
                 // Parse AST from source code
                 Tree left = TreeBuilders.fromSource(config.left, config.language);
                 Tree base = TreeBuilders.fromSource(config.base, config.language);
@@ -105,6 +111,21 @@ public final class Driver {
                     out.write(code);
                     out.close();
                 }
+            } else {
+                assert config.files.length == 2;
+                Tree src = TreeBuilders.fromSource(config.files[0], config.language);
+                Tree dst = TreeBuilders.fromSource(config.files[1], config.language);
+
+                TwoWayMatcher twoWayMatcher = new TwoWayMatcher();
+                Map<Tree, Tree> map = twoWayMatcher.apply(src, dst);
+                MappingStore mappings = new MappingStore(map);
+
+                Path pSrc = Paths.get(config.files[0]);
+                Path pDst = Paths.get(config.files[1]);
+                File fSrc = pSrc.toFile();
+                File fDst = pDst.toFile();
+                WebDiff webDiff = new WebDiff(config.port);
+                webDiff.apply(fSrc, fDst, src, dst, mappings);
             }
             // Everything is done.
             // Valar Morghulis
