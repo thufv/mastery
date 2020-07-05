@@ -12,4 +12,9 @@ public class Delete extends Action {
     public String getName() {
         return "DEL";
     }
+
+    @Override
+    public String toString() {
+        return getName() + " " + node;
+    }
 }

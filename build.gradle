@@ -27,10 +27,6 @@ dependencies {
 	}
 }
 
-// task showMeCache << {
-//     configurations.compile.each { println it }
-// }
-
 task runMain(type: JavaExec) {
     classpath sourceSets.main.runtimeClasspath
     main = "mastery.Main"
@@ -44,14 +40,6 @@ jar {
     from {
         configurations.compile.collect {
             it.isDirectory() ? it : zipTree(it)
-        }
-    }
-}
-
-sourceSets {
-    main {
-        resources {
-            srcDirs "src/main/resources"
         }
     }
 }

@@ -19,4 +19,9 @@ public class Update extends Action {
     public String getValue() {
         return this.value;
     }
+
+    @Override
+    public String toString() {
+        return getName() + " " + node + " from " + node.name + " to " + value;
+    }
 }

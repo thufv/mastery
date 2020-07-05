@@ -29,6 +29,7 @@ public final class OrderedList extends ListNode {
         }
         Tree copiedOrderedList = new OrderedList(label, name, copiedChildren);
         copiedOrderedList.assignment = assignment;
+        copiedOrderedList.dfsIndex = dfsIndex;
         return copiedOrderedList;
     }
 

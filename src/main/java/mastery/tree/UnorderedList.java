@@ -28,8 +28,10 @@ public final class UnorderedList extends ListNode {
         for (var child : children) {
             copiedChildren.add(child.deepCopy());
         }
-        Tree copiedConstructor = new UnorderedList(label, name, copiedChildren);
-        return copiedConstructor;
+        Tree copiedUnorderedList = new UnorderedList(label, name, copiedChildren);
+        copiedUnorderedList.assignment = assignment;
+        copiedUnorderedList.dfsIndex = dfsIndex;
+        return copiedUnorderedList;
     }
 
     @Override

@@ -23,31 +23,12 @@ public class MappingStore implements Iterable<Mapping> {
     }
 
     public Set<Mapping> asSet() {
-        return new AbstractSet<Mapping>() {
-
-            @Override
-            public Iterator<Mapping> iterator() {
-                Iterator<Tree> it = srcs.keySet().iterator();
-                return new Iterator<Mapping>() {
-                    @Override
-                    public boolean hasNext() {
-                        return it.hasNext();
-                    }
-
-                    @Override
-                    public Mapping next() {
-                        Tree src = it.next();
-                        if (src == null) return null;
-                        return new Mapping(src, srcs.get(src));
-                    }
-                };
-            }
-
-            @Override
-            public int size() {
-                return srcs.keySet().size();
-            }
-        };
+        Set<Mapping> sm = new HashSet<>();
+        for (Map.Entry<Tree, Tree> e : srcs.entrySet()) {
+            var m = new Mapping(e.getKey(), e.getValue());
+            sm.add(m);
+        }
+        return sm;
     }
 
     public MappingStore copy() {

@@ -20,4 +20,7 @@ public abstract class Action {
     }
 
     public abstract String getName();
+
+    @Override
+    public abstract String toString();
 }

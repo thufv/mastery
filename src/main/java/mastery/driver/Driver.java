@@ -116,9 +116,25 @@ public final class Driver {
                 Tree src = TreeBuilders.fromSource(config.files[0], config.language);
                 Tree dst = TreeBuilders.fromSource(config.files[1], config.language);
 
+                Assigner assigner = new Assigner();
+                assigner.apply(src, dst);
+
+                Log.ifLoggable(Level.FINEST, printer -> {
+                    printer.println(config.files[0]);
+                    src.prettyPrintTo(printer);
+                });
+                Log.ifLoggable(Level.FINEST, printer -> {
+                    printer.println(config.files[1]);
+                    dst.prettyPrintTo(printer);
+                });
+
                 TwoWayMatcher twoWayMatcher = new TwoWayMatcher();
                 Map<Tree, Tree> map = twoWayMatcher.apply(src, dst);
                 MappingStore mappings = new MappingStore(map);
+
+                // FIXME: a too hack way for rush for meeting
+                for (Tree node: dst.preOrder())
+                    node.dfsIndex += src.size;
 
                 Path pSrc = Paths.get(config.files[0]);
                 Path pDst = Paths.get(config.files[1]);

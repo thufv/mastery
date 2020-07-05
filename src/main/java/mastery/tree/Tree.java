@@ -45,7 +45,7 @@ public abstract class Tree {
     /**
      * Children.
      */
-    public final List<Tree> children;
+    public List<Tree> children;
 
     /**
      * parent

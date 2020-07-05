@@ -45,11 +45,18 @@ public final class HtmlDiffs {
     }
 
     public void produce() throws IOException {
+        System.out.println("Before RootAndLeavesClassifier");
+
         TreeClassifier c = new RootAndLeavesClassifier(src, dst, mappings);
+
+        System.out.println("After RootAndLeavesClassifier");
+
         TIntIntMap mappingIds = new TIntIntHashMap();
 
         int uId = 1;
         int mId = 1;
+
+        System.out.println("Before tag src");
 
         TagIndex ltags = new TagIndex();
         for (Tree t: src.preOrder()) {
@@ -67,7 +74,6 @@ public final class HtmlDiffs {
                 List<int[]> hunks = StringAlgorithms.hunks(t.name, mappings.getDst(t).name);
                 for (int[] hunk: hunks)
                     ltags.addTags(t.startPos + hunk[0], UPD_SPAN, t.startPos + hunk[1], END_SPAN);
-
             }
             if (c.getSrcDelTrees().contains(t)) {
                 ltags.addStartTag(t.startPos, String.format(ID_SPAN, uId++));
@@ -75,6 +81,9 @@ public final class HtmlDiffs {
                                 ADD_DEL_SPAN, "token del", tooltip(t)), t.endPos, END_SPAN);
             }
         }
+
+        System.out.println("After tag src");
+        System.out.println("Before tag dst");
 
         TagIndex rtags = new TagIndex();
         for (Tree t: dst.preOrder()) {
@@ -100,6 +109,9 @@ public final class HtmlDiffs {
             }
         }
 
+        System.out.println("After tag dst");
+        System.out.println("Before write src");
+
         StringWriter w1 = new StringWriter();
         BufferedReader r = Files.newBufferedReader(fSrc.toPath(), Charset.forName("UTF-8"));
         int cursor = 0;
@@ -114,6 +126,9 @@ public final class HtmlDiffs {
         w1.append(ltags.getEndTags(cursor));
         r.close();
         srcDiff = w1.toString();
+
+        System.out.println("After write src");
+        System.out.println("Before write dst");
 
         StringWriter w2 = new StringWriter();
         r = Files.newBufferedReader(fDst.toPath(), Charset.forName("UTF-8"));

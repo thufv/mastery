@@ -21,4 +21,9 @@ public abstract class Addition extends Action {
     public int getPosition() {
         return pos;
     }
+
+    @Override
+    public String toString() {
+        return getName() + " " + node + " to " + parent + " at " + pos;
+    }
 }

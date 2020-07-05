@@ -23,7 +23,12 @@ public class DiffView implements Renderable {
         this.fSrc = fSrc;
         this.fDst = fDst;
         diffs = new HtmlDiffs(fSrc, fDst, src, dst, mappings);
+
+        System.out.println("Before produce");
+
         diffs.produce();
+
+        System.out.println("After produce");
     }
 
     @Override

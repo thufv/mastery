@@ -33,6 +33,8 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
     private final List<String> alternativeLabels;
     private final HashSet<String> stopLabels;
     private final Map<String, Integer> declarationLabels;
+    // for the calculcation of position
+    private int curPos = 0;
 
     /**
      * Constructor.
@@ -48,7 +50,6 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
         this.alternativeLabels = alternativeLabels;
         this.stopLabels = stopLabels;
         this.declarationLabels = declarationLabels;
-
         this.rulesNum = parser.getRuleNames().length;
     }
 
@@ -160,6 +161,10 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
             ans.startPos = children.get(0).startPos;
             ans.endPos = children.get(children.size() - 1).endPos;
         }
+        else {
+            ans.startPos = curPos;
+            ans.endPos = curPos + 1;
+        }
 
         return ans;
     }
@@ -185,7 +190,8 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
 
         Tree ans = new Leaf(label, name, code);
         ans.startPos = t.getStartIndex();
-        ans.endPos = t.getStopIndex();
+        ans.endPos = t.getStopIndex() + 1;
+        curPos = ans.endPos;
         return ans;
     }
 

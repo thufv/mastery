@@ -27,10 +27,14 @@ public class WebDiff {
 
     public static void configureSpark(File fSrc, File fDst, Tree src, Tree dst, MappingStore mappings, int port) {
         port(port);
-        staticFiles.location("/webdiff/");
-
+        staticFiles.location("/web/");
         get("/", (request, response) -> {
+            System.out.println("capture a request");
+
             Renderable view = new DiffView(fSrc, fDst, src, dst, mappings);
+
+            System.out.println("Start render");
+
             return render(view);
         });
     }

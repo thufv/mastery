@@ -43,10 +43,26 @@ public abstract class TreeClassifier {
         this.dst = dst;
         this.mappings = mappings;
 
+        System.out.println("Before ActionGenerator");
+
         ActionGenerator g = new ActionGenerator(src, dst, mappings);
+
+        System.out.println("Before generate");
+
         g.generate();
+
+        System.out.println("After generate");
+        System.out.println("Before getActions");
+
         this.actions = g.getActions();
+
+        System.out.println("After getActions");
+
+        System.out.println("Before classify");
+
         classify();
+
+        System.out.println("After classify");
     }
 
     public abstract void classify();

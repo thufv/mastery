@@ -5,15 +5,11 @@ import mastery.matcher.Mapping;
 import mastery.matcher.MappingStore;
 import mastery.tree.FakeTree;
 import mastery.tree.Tree;
+import mastery.tree.Leaf;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Queue;
-import java.util.LinkedList;
+import java.util.*;
 
 public class ActionGenerator {
 
@@ -38,9 +34,16 @@ public class ActionGenerator {
     private TIntObjectMap<Tree> cpySrcTrees;
 
     public ActionGenerator(Tree src, Tree dst, MappingStore mappings) {
+        System.out.println(" < mappings");
+        for (Mapping mapping: mappings.asSet())
+            System.out.println(mapping.first + " <-> " + mapping.second);
+        System.out.println(" mappings >");
+
         this.origSrc = src;
         this.newSrc = this.origSrc.deepCopy();
         this.origDst = dst;
+
+        // System.out.println("Before put");
 
         origSrcTrees = new TIntObjectHashMap<>();
         for (Tree t: origSrc.preOrder())
@@ -48,20 +51,32 @@ public class ActionGenerator {
         cpySrcTrees = new TIntObjectHashMap<>();
         for (Tree t: newSrc.preOrder())
             cpySrcTrees.put(t.dfsIndex, t);
+        
+        // System.out.println("After put");
+        // System.out.println("Before link");
 
         origMappings = new MappingStore();
-        for (Mapping m: mappings)
+        for (Mapping m: mappings) {
+            System.out.println("link " + cpySrcTrees.get(m.first.dfsIndex) + " and " + m.second);
+
             this.origMappings.link(cpySrcTrees.get(m.first.dfsIndex), m.second);
+        }
+        // System.out.println("After link");
+        // System.out.println("Before copy");
+
         this.newMappings = origMappings.copy();
+
+        // System.out.println("After copy");
     }
 
     public List<Action> getActions() {
         return actions;
     }
 
+    // WARNING: this algorithm requires the roots of the two trees are matched
     public List<Action> generate() {
-        Tree srcFakeRoot = new FakeTree(newSrc);
-        Tree dstFakeRoot = new FakeTree(origDst);
+        Tree srcFakeRoot = new FakeTree(new ArrayList<>(Arrays.asList(newSrc)));
+        Tree dstFakeRoot = new FakeTree(new ArrayList<>(Arrays.asList(origDst)));
         newSrc.parent = srcFakeRoot;
         origDst.parent = dstFakeRoot;
 
@@ -75,18 +90,26 @@ public class ActionGenerator {
         // Instead of using some twisted design pattern,
         // I decided to write a breadth-first search manually here
         Queue<Tree> bfsDst = new LinkedList<>();
+        bfsDst.add(origDst);
         while (!bfsDst.isEmpty()) {
             Tree x = bfsDst.poll();
             bfsDst.addAll(x.children);
 
+            // System.out.println("===== " + x + " =====");
+
             Tree w = null;
             Tree y = x.parent;
+
+            // System.out.println("y = " + y);
+
             Tree z = newMappings.getSrc(y);
 
             if (!newMappings.hasDst(x)) {
-                int k = findPos(x);
+                // System.out.println("  case: doesn't have dst");
+
+                Integer k = findPos(x);
                 // Insertion case : insert new node.
-                w = new FakeTree();
+                w = new FakeTree(new ArrayList<Tree>());
                 // Here I trivially keep the id of w as 0
                 w.dfsIndex = lastId;
                 ++lastId;
@@ -96,26 +119,39 @@ public class ActionGenerator {
                 // generated ID.
                 Action ins = new Insert(x, origSrcTrees.get(z.dfsIndex), k);
                 actions.add(ins);
-                //System.out.println(ins);
+
+                // System.out.println("  " + ins);
+
                 origSrcTrees.put(w.dfsIndex, x);
                 newMappings.link(w, x);
                 z.children.add(k, w);
                 z.updateNumberOfChildren();
+                z.updateNumberOfChildren();
                 w.parent = z;
             } else {
+                // System.out.println("  case: have dst");
+
                 w = newMappings.getSrc(x);
-                if (!x.equals(origDst)) { // TODO => x != origDst // Case of the root
+                if (!x.equals(origDst)) {
                     Tree v = w.parent;
-                    if (!(w.label == x.label)) {
-                        actions.add(new Update(origSrcTrees.get(w.dfsIndex), x.name));
+                    if (!(w.label == x.label) || w.isLeaf() && x.isLeaf() && !(((Leaf)w).code.equals(((Leaf)x).code))) {
+                        // System.out.println("    case: labels are not equal");
+
+                        Action upd = new Update(origSrcTrees.get(w.dfsIndex), x.name);
+                        actions.add(upd);
+                        // System.out.println("    " + upd);
+
                         w.label = x.label;
                         w.name = x.name;
                     }
                     if (!z.equals(v)) {
+                        // System.out.println("    case: nodes are not equal");
+
                         int k = findPos(x);
                         Action mv = new Move(origSrcTrees.get(w.dfsIndex), origSrcTrees.get(z.dfsIndex), k);
                         actions.add(mv);
-                        //System.out.println(mv);
+                        // System.out.println("    " + mv);
+
                         int oldk = w.childno;
                         z.children.add(k, w);
                         z.updateNumberOfChildren();
@@ -126,20 +162,25 @@ public class ActionGenerator {
                 }
             }
 
-            //FIXME not sure why :D
+            // System.out.println("Before align children");
+
             srcInOrder.add(w);
             dstInOrder.add(x);
             alignChildren(w, x);
         }
 
+        // post-order traversal
         for (Tree w : newSrc.postOrder()) {
             if (!newMappings.hasSrc(w)) {
-                actions.add(new Delete(origSrcTrees.get(w.dfsIndex)));
-                //w.parent.getChildren().remove(w);
+                Action del = new Delete(origSrcTrees.get(w.dfsIndex));
+                actions.add(del);
+                System.out.println(del);
+
+                w.parent.children.remove(w);
+                w.parent.updateNumberOfChildren();
             }
         }
 
-        //FIXME should ensure isomorphism.
         return actions;
     }
 
@@ -169,15 +210,21 @@ public class ActionGenerator {
         for (Tree a : s1) {
             for (Tree b: s2 ) {
                 if (origMappings.has(a, b)) {
-                    if (!lcs.contains(new Mapping(a, b))) {
+                    boolean contained = false;
+                    for (Mapping m: lcs)
+                        if (m.first == a && m.second == b)
+                            contained = true;
+
+                    if (!contained) {
                         int k = findPos(b);
                         Action mv = new Move(origSrcTrees.get(a.dfsIndex), origSrcTrees.get(w.dfsIndex), k);
                         actions.add(mv);
-                        //System.out.println(mv);
+                        System.out.println(mv);
+
                         int oldk = a.childno;
                         w.children.add(k, a);
                         w.updateNumberOfChildren();
-                        if (k  < oldk ) // FIXME this is an ugly way to patch the index
+                        if (k  < oldk )
                             oldk ++;
                         a.parent.children.remove(oldk);
                         a.parent.updateNumberOfChildren();

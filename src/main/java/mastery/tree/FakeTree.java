@@ -1,10 +1,10 @@
 package mastery.tree;
 
-import java.util.Arrays;
+import java.util.*;
 
 public class FakeTree extends Tree {
-    public FakeTree(Tree... trees) {
-        super(-1, "", Arrays.asList(trees));
+    public FakeTree(List<Tree> trees) {
+        super(-1, "", trees);
     }
 
     private RuntimeException unsupportedOperation() {
@@ -13,7 +13,7 @@ public class FakeTree extends Tree {
 
     @Override
     public final Tree deepCopy() {
-        return new FakeTree(this.children.toArray(new Tree[0]));
+        return new FakeTree(this.children);
     }
 
     @Override
@@ -39,7 +39,7 @@ public class FakeTree extends Tree {
 
     @Override
     public final boolean isLeaf() {
-        return false;
+        return true;
     }
 
     @Override
