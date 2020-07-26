@@ -34,10 +34,10 @@ public class ActionGenerator {
     private TIntObjectMap<Tree> cpySrcTrees;
 
     public ActionGenerator(Tree src, Tree dst, MappingStore mappings) {
-        System.out.println(" < mappings");
-        for (Mapping mapping: mappings.asSet())
-            System.out.println(mapping.first + " <-> " + mapping.second);
-        System.out.println(" mappings >");
+        // System.out.println(" < mappings");
+        // for (Mapping mapping: mappings.asSet())
+        //     System.out.println(mapping.first + " <-> " + mapping.second);
+        // System.out.println(" mappings >");
 
         this.origSrc = src;
         this.newSrc = this.origSrc.deepCopy();
@@ -47,19 +47,19 @@ public class ActionGenerator {
 
         origSrcTrees = new TIntObjectHashMap<>();
         for (Tree t: origSrc.preOrder())
-            origSrcTrees.put(t.dfsIndex, t);
+            origSrcTrees.put(t.actionId, t);
         cpySrcTrees = new TIntObjectHashMap<>();
         for (Tree t: newSrc.preOrder())
-            cpySrcTrees.put(t.dfsIndex, t);
+            cpySrcTrees.put(t.actionId, t);
         
         // System.out.println("After put");
         // System.out.println("Before link");
 
         origMappings = new MappingStore();
         for (Mapping m: mappings) {
-            System.out.println("link " + cpySrcTrees.get(m.first.dfsIndex) + " and " + m.second);
+            // System.out.println("link " + cpySrcTrees.get(m.first.actionId) + " and " + m.second);
 
-            this.origMappings.link(cpySrcTrees.get(m.first.dfsIndex), m.second);
+            this.origMappings.link(cpySrcTrees.get(m.first.actionId), m.second);
         }
         // System.out.println("After link");
         // System.out.println("Before copy");
@@ -111,18 +111,18 @@ public class ActionGenerator {
                 // Insertion case : insert new node.
                 w = new FakeTree(new ArrayList<Tree>());
                 // Here I trivially keep the id of w as 0
-                w.dfsIndex = lastId;
+                w.actionId = lastId;
                 ++lastId;
 
                 // In order to use the real nodes from the second tree, we
                 // furnish x instead of w and fake that x has the newly
                 // generated ID.
-                Action ins = new Insert(x, origSrcTrees.get(z.dfsIndex), k);
+                Action ins = new Insert(x, origSrcTrees.get(z.actionId), k);
                 actions.add(ins);
 
                 // System.out.println("  " + ins);
 
-                origSrcTrees.put(w.dfsIndex, x);
+                origSrcTrees.put(w.actionId, x);
                 newMappings.link(w, x);
                 z.children.add(k, w);
                 z.updateNumberOfChildren();
@@ -137,7 +137,7 @@ public class ActionGenerator {
                     if (!(w.label == x.label) || w.isLeaf() && x.isLeaf() && !(((Leaf)w).code.equals(((Leaf)x).code))) {
                         // System.out.println("    case: labels are not equal");
 
-                        Action upd = new Update(origSrcTrees.get(w.dfsIndex), x.name);
+                        Action upd = new Update(origSrcTrees.get(w.actionId), x.name);
                         actions.add(upd);
                         // System.out.println("    " + upd);
 
@@ -148,7 +148,7 @@ public class ActionGenerator {
                         // System.out.println("    case: nodes are not equal");
 
                         int k = findPos(x);
-                        Action mv = new Move(origSrcTrees.get(w.dfsIndex), origSrcTrees.get(z.dfsIndex), k);
+                        Action mv = new Move(origSrcTrees.get(w.actionId), origSrcTrees.get(z.actionId), k);
                         actions.add(mv);
                         // System.out.println("    " + mv);
 
@@ -172,9 +172,9 @@ public class ActionGenerator {
         // post-order traversal
         for (Tree w : newSrc.postOrder()) {
             if (!newMappings.hasSrc(w)) {
-                Action del = new Delete(origSrcTrees.get(w.dfsIndex));
+                Action del = new Delete(origSrcTrees.get(w.actionId));
                 actions.add(del);
-                System.out.println(del);
+                // System.out.println(del);
 
                 w.parent.children.remove(w);
                 w.parent.updateNumberOfChildren();
@@ -217,9 +217,9 @@ public class ActionGenerator {
 
                     if (!contained) {
                         int k = findPos(b);
-                        Action mv = new Move(origSrcTrees.get(a.dfsIndex), origSrcTrees.get(w.dfsIndex), k);
+                        Action mv = new Move(origSrcTrees.get(a.actionId), origSrcTrees.get(w.actionId), k);
                         actions.add(mv);
-                        System.out.println(mv);
+                        // System.out.println(mv);
 
                         int oldk = a.childno;
                         w.children.add(k, a);

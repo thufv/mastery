@@ -40,7 +40,7 @@ public class Leaf extends Tree {
     public final Tree deepCopy() {
         Tree copiedLeaf = new Leaf(label, name, code);
         copiedLeaf.assignment = assignment;
-        copiedLeaf.dfsIndex = dfsIndex;
+        copiedLeaf.actionId = actionId;
         return copiedLeaf;
     }
 

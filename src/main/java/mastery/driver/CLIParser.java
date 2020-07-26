@@ -171,8 +171,8 @@ public final class CLIParser {
             config.output = cli.getOptionValue(OUTPUT);
             if (cli.hasOption(FORMATTER)) config.formatter = cli.getOptionValue(FORMATTER);
         } else if (mode.equals("webdiff")) {
-            if (arguments.length < 3) {
-                throw new ParseException("Please provide 2 files as arguments.");
+            if (arguments.length != 3) {
+                throw new ParseException("Please provide exactly 2 files as arguments.");
             }
 
             String sSrc = arguments[1];
@@ -192,9 +192,27 @@ public final class CLIParser {
                     throw new ParseException("Invalid port: " + config.port);
                 }
             }
+        } else if (mode.equals("textdiff")) {
+            if (arguments.length != 3) {
+                throw new ParseException("Please provide exactly 2 files as arguments.");
+            }
+
+            String sSrc = arguments[1];
+            String sDst = arguments[2];
+
+            config = new Config(sSrc, sDst, Config.Mode.TEXTDIFF);
+
+            if (cli.hasOption(LANG)) {
+                config.language = cli.getOptionValue(LANG).toUpperCase();
+                if (!Arrays.asList(LANGS).contains(config.language)) {
+                    throw new ParseException("Invalid language: " + lang.getDescription());
+                }
+            }
+
+            config.output = cli.getOptionValue(OUTPUT);
         }
         else {
-            throw new ParseException("Please specify mode: merge, check or webdiff?");
+            throw new ParseException("Please specify mode: merge, check, webdiff, or textdiff?");
         }
 
         if (cli.hasOption(LOG_LEVEL)) {

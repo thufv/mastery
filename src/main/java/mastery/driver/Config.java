@@ -6,7 +6,8 @@ public final class Config {
     enum Mode {
         CHECK,
         MERGE,
-        WEBDIFF
+        WEBDIFF,
+        TEXTDIFF
     }
     public Mode mode;
 

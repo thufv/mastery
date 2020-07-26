@@ -6,13 +6,14 @@ import java.io.Writer;
 import java.io.File;
 import java.nio.file.*;
 import java.util.logging.Level;
-import java.util.Map;
+import java.util.*;
 
 import mastery.matcher.MatchingSet;
 import mastery.matcher.ThreeWayMatcher;
 import mastery.matcher.TwoWayMatcher;
 import mastery.matcher.Assigner;
 import mastery.matcher.MappingStore;
+import mastery.matcher.Mapping;
 import mastery.merger.Merger;
 import mastery.merger.BottomUpMerger;
 import mastery.merger.TopDownPruningMerger;
@@ -22,6 +23,8 @@ import mastery.tree.TreeBuilders;
 import mastery.tree.TreePrinters;
 import mastery.util.HelpException;
 import mastery.util.log.Log;
+import mastery.actions.ActionGenerator;
+import mastery.actions.model.*;
 
 import org.apache.commons.cli.ParseException;
 
@@ -111,7 +114,7 @@ public final class Driver {
                     out.write(code);
                     out.close();
                 }
-            } else {
+            } else if (config.mode == Config.Mode.WEBDIFF) {
                 assert config.files.length == 2;
                 Tree src = TreeBuilders.fromSource(config.files[0], config.language);
                 Tree dst = TreeBuilders.fromSource(config.files[1], config.language);
@@ -132,9 +135,10 @@ public final class Driver {
                 Map<Tree, Tree> map = twoWayMatcher.apply(src, dst);
                 MappingStore mappings = new MappingStore(map);
 
-                // FIXME: a too hack way for rush for meeting
+                for (Tree node: src.preOrder())
+                    node.actionId = node.dfsIndex;
                 for (Tree node: dst.preOrder())
-                    node.dfsIndex += src.size;
+                    node.actionId= node.dfsIndex + src.size;
 
                 Path pSrc = Paths.get(config.files[0]);
                 Path pDst = Paths.get(config.files[1]);
@@ -142,6 +146,37 @@ public final class Driver {
                 File fDst = pDst.toFile();
                 WebDiff webDiff = new WebDiff(config.port);
                 webDiff.apply(fSrc, fDst, src, dst, mappings);
+            } else if (config.mode == Config.Mode.TEXTDIFF) {
+                assert config.files.length == 2;
+                Tree src = TreeBuilders.fromSource(config.files[0], config.language);
+                Tree dst = TreeBuilders.fromSource(config.files[1], config.language);
+
+                Assigner assigner = new Assigner();
+                assigner.apply(src, dst);
+
+                Log.ifLoggable(Level.FINEST, printer -> {
+                    printer.println(config.files[0]);
+                    src.prettyPrintTo(printer);
+                });
+                Log.ifLoggable(Level.FINEST, printer -> {
+                    printer.println(config.files[1]);
+                    dst.prettyPrintTo(printer);
+                });
+
+                TwoWayMatcher twoWayMatcher = new TwoWayMatcher();
+                Map<Tree, Tree> map = twoWayMatcher.apply(src, dst);
+                MappingStore mappings = new MappingStore(map);
+
+                for (Tree node: src.preOrder())
+                    node.actionId = node.dfsIndex;
+                for (Tree node: dst.preOrder())
+                    node.actionId= node.dfsIndex + src.size;
+
+                ActionGenerator g = new ActionGenerator(src, dst, mappings);
+                g.generate();
+                List<Action> actions = g.getActions();
+
+                dumpTextDiff(actions, mappings, config.output);
             }
             // Everything is done.
             // Valar Morghulis
@@ -152,6 +187,33 @@ public final class Driver {
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
+        }
+    }
+
+    public static void dumpTextDiff(List<Action> actions, MappingStore mappings, String output)
+        throws IOException {
+        if (output == null) {
+            // Write the matches
+            for (Mapping m: mappings) {
+                System.out.println("Match " + m.first + " to %s" + m.second);
+            }
+
+            // Write the actions
+            for (Action a : actions)
+                System.out.println(a);
+        }
+        else {
+            Writer writer = new FileWriter(output);
+
+            // Write the matches
+            for (Mapping m: mappings)
+                writer.write("Match " + m.first + " to %s" + m.second + "\n");
+
+            // Write the actions
+            for (Action a : actions)
+                writer.write(a.toString());
+            
+            writer.close();
         }
     }
 }

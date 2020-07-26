@@ -12,4 +12,10 @@ public class Insert extends Addition {
     public String getName() {
         return "INS";
     }
+
+    @Override
+    public String toString() {
+        if (node.parent == null) return getName() + " root " + node;
+        else return getName() + " " + node + " into " + parent + " at " + pos;
+    }
 }

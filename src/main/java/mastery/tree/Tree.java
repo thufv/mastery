@@ -113,6 +113,11 @@ public abstract class Tree {
     public int endPos;
 
     /**
+     * The id for generating edit scripts (actions).
+     */
+    public int actionId;
+
+    /**
      * Deep copy this node.
      *
      * @return a deep copied version
