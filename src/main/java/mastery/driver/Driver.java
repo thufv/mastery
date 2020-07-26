@@ -211,7 +211,7 @@ public final class Driver {
 
             // Write the actions
             for (Action a : actions)
-                writer.write(a.toString());
+                writer.write(a.toString() + "\n");
             
             writer.close();
         }
