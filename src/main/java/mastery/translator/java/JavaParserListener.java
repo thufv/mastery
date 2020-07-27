@@ -89,6 +89,16 @@ public interface JavaParserListener extends ParseTreeListener {
 	 */
 	void exitTypeDeclaration(JavaParser.TypeDeclarationContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link JavaParser#realTypeDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterRealTypeDeclaration(JavaParser.RealTypeDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaParser#realTypeDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitRealTypeDeclaration(JavaParser.RealTypeDeclarationContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link JavaParser#classOrInterfaceModifiers}.
 	 * @param ctx the parse tree
 	 */
@@ -479,6 +489,16 @@ public interface JavaParserListener extends ParseTreeListener {
 	 */
 	void exitClassBodyDeclaration(JavaParser.ClassBodyDeclarationContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link JavaParser#realclassBodyDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterRealclassBodyDeclaration(JavaParser.RealclassBodyDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaParser#realclassBodyDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitRealclassBodyDeclaration(JavaParser.RealclassBodyDeclarationContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link JavaParser#memberDeclaration}.
 	 * @param ctx the parse tree
 	 */
@@ -588,6 +608,16 @@ public interface JavaParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitInterfaceBodyDeclaration(JavaParser.InterfaceBodyDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link JavaParser#realInterfaceBodyDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterRealInterfaceBodyDeclaration(JavaParser.RealInterfaceBodyDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaParser#realInterfaceBodyDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitRealInterfaceBodyDeclaration(JavaParser.RealInterfaceBodyDeclarationContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link JavaParser#interfaceMemberDeclaration}.
 	 * @param ctx the parse tree
@@ -1289,6 +1319,16 @@ public interface JavaParserListener extends ParseTreeListener {
 	 */
 	void exitAnnotationTypeElementDeclaration(JavaParser.AnnotationTypeElementDeclarationContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link JavaParser#realAnnotationTypeElementDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterRealAnnotationTypeElementDeclaration(JavaParser.RealAnnotationTypeElementDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaParser#realAnnotationTypeElementDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitRealAnnotationTypeElementDeclaration(JavaParser.RealAnnotationTypeElementDeclarationContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link JavaParser#annotationTypeElementRest}.
 	 * @param ctx the parse tree
 	 */
@@ -1318,16 +1358,6 @@ public interface JavaParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitTypeTypeAnnotationConstantRest(JavaParser.TypeTypeAnnotationConstantRestContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link JavaParser#annotationConstantRest}.
-	 * @param ctx the parse tree
-	 */
-	void enterAnnotationConstantRest(JavaParser.AnnotationConstantRestContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link JavaParser#annotationConstantRest}.
-	 * @param ctx the parse tree
-	 */
-	void exitAnnotationConstantRest(JavaParser.AnnotationConstantRestContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link JavaParser#optionDefaultValue}.
 	 * @param ctx the parse tree

@@ -113,6 +113,18 @@ public class JavaParserBaseListener implements JavaParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterRealTypeDeclaration(JavaParser.RealTypeDeclarationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitRealTypeDeclaration(JavaParser.RealTypeDeclarationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterClassOrInterfaceModifiers(JavaParser.ClassOrInterfaceModifiersContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -581,6 +593,18 @@ public class JavaParserBaseListener implements JavaParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterRealclassBodyDeclaration(JavaParser.RealclassBodyDeclarationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitRealclassBodyDeclaration(JavaParser.RealclassBodyDeclarationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterMemberDeclaration(JavaParser.MemberDeclarationContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -708,6 +732,18 @@ public class JavaParserBaseListener implements JavaParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitInterfaceBodyDeclaration(JavaParser.InterfaceBodyDeclarationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterRealInterfaceBodyDeclaration(JavaParser.RealInterfaceBodyDeclarationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitRealInterfaceBodyDeclaration(JavaParser.RealInterfaceBodyDeclarationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -1553,6 +1589,18 @@ public class JavaParserBaseListener implements JavaParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterRealAnnotationTypeElementDeclaration(JavaParser.RealAnnotationTypeElementDeclarationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitRealAnnotationTypeElementDeclaration(JavaParser.RealAnnotationTypeElementDeclarationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterAnnotationTypeElementRest(JavaParser.AnnotationTypeElementRestContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1584,18 +1632,6 @@ public class JavaParserBaseListener implements JavaParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitTypeTypeAnnotationConstantRest(JavaParser.TypeTypeAnnotationConstantRestContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterAnnotationConstantRest(JavaParser.AnnotationConstantRestContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitAnnotationConstantRest(JavaParser.AnnotationConstantRestContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

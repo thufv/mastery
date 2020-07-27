@@ -382,8 +382,8 @@ annotationTypeElementDeclaration:
 
 realAnnotationTypeElementDeclaration:
 	modifiers annotationTypeElementRest;
-// this is not allowed by the grammar, but apparently allowed by the actual compiler Xingyu Xie: is
-// really "apparently allowed" ???
+// this is not allowed by the grammar, but apparently allowed by the actual compiler
+// Xingyu Xie: is really "apparently allowed" ???
 
 annotationTypeElementRest:
 	typeTypeAnnotationMethodRest ';'
@@ -397,9 +397,7 @@ typeTypeAnnotationMethodRest:
 	typeType IDENTIFIER '(' ')' optionDefaultValue;
 
 typeTypeAnnotationConstantRest:
-	typeType IDENTIFIER '(' ')' optionDefaultValue;
-
-annotationConstantRest: variableDeclarators;
+	typeType variableDeclarators;
 
 optionDefaultValue: defaultValue?;
 
