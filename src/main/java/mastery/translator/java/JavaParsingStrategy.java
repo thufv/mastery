@@ -23,25 +23,80 @@ public class JavaParsingStrategy implements ParsingStrategy {
         return new Pair<>(parser, ctx);
     }
 
-    private static final String[] listStrings = new String[] { "optionPackageDeclaration", "importDeclarations",
-            "typeDeclarations", "annotations", "classOrInterfaceModifiers", "modifiers", "variableModifiers",
-            "optionTypeParameters", "optionExtendsTypeType", "optionImplementsTypeList", "otherTypeParameters",
-            "optionExtendsTypeBound", "otherTypeTypes", "optionEnumConstants", "optionEnumBodyDeclarations",
-            "otherEnumConstants", "optionArguments", "optionClassBody", "classBodyDeclarations",
-            "optionExtendsTypeList", "interfaceBodyDeclarations", "optionThrowsQualifiedNameList",
-            "otherConstantDeclarators", "optionTypeParametersAnnotations", "interfaceMethodModifiers",
-            "otherVariableDeclarators", "optionEqualsVariableInitializer", "optionVariablesInitializer",
-            "otherVariableInitializers", "optionTypeArguments", "memberSelections", "optionExtendsOrSuperTypeType",
-            "otherQualifiedNames", "optionFormalParameterList", "otherFormalParameters",
-            "optionCommaArrayFormalParameter", "otherDotIdentifiers", "optionAnnotationRest",
-            "elementValuePairsOrElementValue?", "otherElementValuePairs", "otherElementValues", "optionElementValues",
-            "annotationTypeElementDeclarations", "optionDefaultValue", "blockStatements", "optionColonExpression",
-            "optionElseStatement", "optionFinallyBlock", "switchBlockStatementGroups", "switchLabels", "catchClauses",
-            "optionExpression", "orQualifiedNames", "semicolonResources", "optionforInit", "optionExpressionList",
-            "otherExpressions", "optionNonWildcardTypeArguments", "otherIdentifiers", "optionClassOrInterfaceTypeDot",
-            "nonWildcardTypeArgumentsOrDiamond?", "squaredExpressions", "commaTypeTypes", "optionAnnotation",
-            "optionNonEmptyTypeArguments", "otherTypeArguments", "optionStatic", "optionDotStar", "optionComma",
-            "squares", "optionSemicolon", "optionIdentifier" };
+    private static final String[] listStrings = new String[] {
+        "optionPackageDeclaration",
+        "importDeclarations",
+        "typeDeclarations",
+        "annotations",
+        "classOrInterfaceModifiers",
+        "modifiers",
+        "variableModifiers",
+        "optionTypeParameters",
+        "optionExtendsTypeType",
+        "optionImplementsTypeList",
+        "otherTypeParameters",
+        "optionExtendsTypeBound",
+        "otherTypeTypes",
+        "optionEnumConstants",
+        "optionEnumBodyDeclarations",
+        "otherEnumConstants",
+        "optionArguments",
+        "optionClassBody",
+        "classBodyDeclarations",
+        "optionExtendsTypeList",
+        "interfaceBodyDeclarations",
+        "optionThrowsQualifiedNameList",
+        "otherConstantDeclarators",
+        "optionTypeParametersAnnotations",
+        "interfaceMethodModifiers",
+        "otherVariableDeclarators",
+        "optionEqualsVariableInitializer",
+        "optionVariablesInitializer",
+        "otherVariableInitializers",
+        "optionTypeArguments",
+        "memberSelections",
+        "optionExtendsOrSuperTypeType",
+        "otherQualifiedNames",
+        "optionFormalParameterList",
+        "otherFormalParameters",
+        "optionCommaArrayFormalParameter",
+        "otherDotIdentifiers",
+        "optionAnnotationRest",
+        "elementValuePairsOrElementValue",
+        "otherElementValuePairs",
+        "otherElementValues",
+        "optionElementValues",
+        "annotationTypeElementDeclarations",
+        "optionDefaultValue",
+        "blockStatements",
+        "optionColonExpression",
+        "optionElseStatement",
+        "optionFinallyBlock",
+        "switchBlockStatementGroups",
+        "switchLabels",
+        "catchClauses",
+        "optionExpression",
+        "orQualifiedNames",
+        "semicolonResources",
+        "optionforInit",
+        "optionExpressionList",
+        "otherExpressions",
+        "optionNonWildcardTypeArguments",
+        "otherIdentifiers",
+        "optionClassOrInterfaceTypeDot",
+        "nonWildcardTypeArgumentsOrDiamond",
+        "squaredExpressions",
+        "commaTypeTypes",
+        "optionAnnotation",
+        "optionNonEmptyTypeArguments",
+        "otherTypeArguments",
+        "optionStatic",
+        "optionDotStar",
+        "optionComma",
+        "squares",
+        "optionSemicolon",
+        "optionIdentifier"
+    };
     private static final HashSet<String> listSet = new HashSet<>(Arrays.asList(listStrings));
 
     @Override
@@ -49,11 +104,27 @@ public class JavaParsingStrategy implements ParsingStrategy {
         return listSet;
     }
 
-    private static final String[] orderedlistStrings = new String[] { "otherTypeParameters", "otherTypeTypes",
-            "otherEnumConstants", "otherConstantDeclarators", "otherVariableDeclarators", "otherVariableInitializers",
-            "memberSelections", "otherFormalParameters", "otherDotIdentifiers", "otherElementValues", "blockStatements",
-            "switchBlockStatementGroups", "catchClauses", "semicolonResources", "otherExpressions", "otherIdentifiers",
-            "squaredExpressions", "commaTypeTypes", "otherTypeArguments" };
+    private static final String[] orderedlistStrings = new String[] {
+        "otherTypeParameters",
+        "otherTypeTypes",
+        "otherEnumConstants",
+        "otherConstantDeclarators",
+        "otherVariableDeclarators",
+        "otherVariableInitializers",
+        "memberSelections",
+        "otherFormalParameters",
+        "otherDotIdentifiers",
+        "otherElementValues",
+        "blockStatements",
+        "switchBlockStatementGroups",
+        "catchClauses",
+        "semicolonResources",
+        "otherExpressions",
+        "otherIdentifiers",
+        "squaredExpressions",
+        "commaTypeTypes",
+        "otherTypeArguments"
+    };
     private static final HashSet<String> orderedlistSet = new HashSet<>(Arrays.asList(orderedlistStrings));
 
     @Override
@@ -61,12 +132,40 @@ public class JavaParsingStrategy implements ParsingStrategy {
         return orderedlistSet;
     }
 
-    private static final String[] alternativeLabelStrings = { "parenthesizedExpr", "thisExpr", "superExpr",
-            "literalExpr", "idExpr", "classExpr", "callExpr", "dottedExpr", "arrayReadExpr", "methodCallExpr",
-            "newExpr", "typedExpr", "sufAddMinusExpr", "preAddMinusExpr", "negExpr", "multDivExpr", "infixAddMinusExpr",
-            "shiftExpr", "cmpExpr", "instanceOfExpr", "eqExpr", "bitAndExpr", "xorExpr", "bitOrExpr", "logicAndExpr",
-            "logicOrExpr", "condExpr", "assignExpr", "lambdaExpr", "exprMethodReference", "typeMethodReference",
-            "classTypeMethodReference" };
+    private static final String[] alternativeLabelStrings = {
+        "parenthesizedExpr",
+        "thisExpr",
+        "superExpr",
+        "literalExpr",
+        "idExpr",
+        "classExpr",
+        "callExpr",
+        "dottedExpr",
+        "arrayReadExpr",
+        "methodCallExpr",
+        "newExpr",
+        "typedExpr",
+        "sufAddMinusExpr",
+        "preAddMinusExpr",
+        "negExpr",
+        "multDivExpr",
+        "infixAddMinusExpr",
+        "shiftExpr",
+        "cmpExpr",
+        "instanceOfExpr",
+        "eqExpr",
+        "bitAndExpr",
+        "xorExpr",
+        "bitOrExpr",
+        "logicAndExpr",
+        "logicOrExpr",
+        "condExpr",
+        "assignExpr",
+        "lambdaExpr",
+        "exprMethodReference",
+        "typeMethodReference",
+        "classTypeMethodReference"
+    };
     private static final List<String> alternativeLabelList = Arrays.asList(alternativeLabelStrings);
 
     @Override
@@ -74,7 +173,7 @@ public class JavaParsingStrategy implements ParsingStrategy {
         return alternativeLabelList;
     }
 
-    private static final String[] stopStrings = { "compilationUnit", "importDeclaration", "typeDeclaration", "packageDeclaration", "classDeclaration", "enumDeclaration", "interfaceDeclaration", "classBodyDeclaration", "memberDeclaration", "methodDeclaration", "genericMethodDeclaration", "fieldDeclaration", "constructorDeclaration", "genericConstructorDeclaration", "interfaceDeclaration", "annotationTypeDeclaration", "constDeclaration", "interfaceMethodDeclaration", "annotationTypeElementDeclaration", "statement", "blockStmt", "assertStmt", "ifStmt", "forStmt", "whileStmt", "doWhileStmt", "tryStmt", "tryRscSpecStmt", "switchStmt", "synchronizedStmt", "returnStmt", "throwStmt", "breakStmt", "continueStmt", 	"semiStmt", "exprStmt", "identifierStmt", "localVariableDeclarationStatement", "statement", "localTypeDeclaration", "localVariableDeclaration"};
+    private static final String[] stopStrings = {"compilationUnit", "importDeclaration", "typeDeclaration", "packageDeclaration", "classDeclaration", "enumDeclaration", "interfaceDeclaration", "classBodyDeclaration", "memberDeclaration", "methodDeclaration", "genericMethodDeclaration", "fieldDeclaration", "constructorDeclaration", "genericConstructorDeclaration", "interfaceDeclaration", "annotationTypeDeclaration", "constDeclaration", "interfaceMethodDeclaration", "annotationTypeElementDeclaration", "statement", "blockStmt", "assertStmt", "ifStmt", "forStmt", "whileStmt", "doWhileStmt", "tryStmt", "tryRscSpecStmt", "switchStmt", "synchronizedStmt", "returnStmt", "throwStmt", "breakStmt", "continueStmt", 	"semiStmt", "exprStmt", "identifierStmt", "localVariableDeclarationStatement", "statement", "localTypeDeclaration", "localVariableDeclaration"};
     private static final HashSet<String> stopLabels = new HashSet<>(Arrays.asList(stopStrings));
 
     @Override

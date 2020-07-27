@@ -8,10 +8,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
-// TODO: port
 public final class CLIParser {
     static final String LANG = "l";
-    static final String[] LANGS = {"JAVA"/*, "C", "C#"*/};
+    static final String[] LANGS = {"JAVA", "XML"/*, "C", "C#"*/};
     final Option lang = Option
             .builder(LANG)
             .longOpt("lang")

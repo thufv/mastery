@@ -7,6 +7,7 @@ import mastery.translator.TreeGenerator;
 import mastery.translator.c.CParsingStrategy;
 import mastery.translator.cs.CSharpParsingStrategy;
 import mastery.translator.java.JavaParsingStrategy;
+import mastery.translator.xml.XMLParsingStrategy;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Pair;
@@ -143,6 +144,8 @@ public final class TreeBuilders {
             strategy = new CParsingStrategy();
         } else if (language.equals("C#")) {
             strategy = new CSharpParsingStrategy();
+        } else if (language.equals("XML")) {
+            strategy = new XMLParsingStrategy();
         } else {
             throw new IllegalStateException(language + " is not a valid language for me.");
         }
