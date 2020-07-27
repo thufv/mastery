@@ -339,9 +339,11 @@ public class TwoWayMatcher{
             size1 = matched1to2.length - 1;
             size2 = matched2to1.length - 1;
 
-            counts = new int[size1 * (int)(Math.ceil(Math.log(size2) / Math.log(2) + 1)) + 5];
-            leftsons = new int[size1 * (int)(Math.ceil(Math.log(size2) / Math.log(2) + 1)) + 5];
-            rightsons = new int[size1 * (int)(Math.ceil(Math.log(size2) / Math.log(2) + 1)) + 5];
+            int height = (int)Math.ceil(Math.log(size2) / Math.log(2)) + 1;
+
+            counts = new int[size1 * height + 5];
+            leftsons = new int[size1 * height + 5];
+            rightsons = new int[size1 * height + 5];
             roots = new int[size1 + 1];
 
             // System.out.println("height should be " + (int)Math.ceil(Math.log(size2) / Math.log(2) + 1));
@@ -361,9 +363,9 @@ public class TwoWayMatcher{
             if (l == r) return dir;
             int mid = l + r >> 1;
             if (k <= mid)
-                leftsons[k] = insert(k, l, mid, leftsons[node]);
+                leftsons[dir] = insert(k, l, mid, leftsons[node]);
             else
-                rightsons[k] = insert(k, mid + 1, r, rightsons[node]);
+                rightsons[dir] = insert(k, mid + 1, r, rightsons[node]);
             return dir;
         }
         public int query(int u, int v, int l, int r, int L, int R) {
