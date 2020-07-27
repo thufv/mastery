@@ -209,7 +209,7 @@ public class JavaParsingStrategy implements ParsingStrategy {
         entry("genericInterfaceMethodDeclaration", 1),
         entry("annotationTypeElementDeclaration", 0),
         entry("realAnnotationTypeElementDeclaration", 1),
-        entry("annotationTypeElementRest", 1),
+        entry("annotationTypeElementRest", 0),
         entry("typeTypeAnnotationMethodRest", 1),
         entry("typeTypeAnnotationConstantRest", 1)
     );
