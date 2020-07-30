@@ -37,7 +37,7 @@ public final class Config {
     public String formatter = "clang-format";
 
     // algorithm
-    public boolean topDown = true;
+    public String algorithm = "SKINCHANGER";
 
     // webdiff
     public int port = 4567;

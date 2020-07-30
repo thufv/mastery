@@ -3,6 +3,7 @@ package mastery.tree;
 import mastery.util.Interval;
 import mastery.util.log.IndentPrinter;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -24,12 +25,12 @@ public abstract class Tree {
     /**
      * Height (leaves are 0).
      */
-    public final int height;
+    public int height;
 
     /**
      * Size, i.e. total number of nodes.
      */
-    public final int size;
+    public int size;
 
     /**
      * Label, i.e. grammar kind/type.
@@ -283,11 +284,10 @@ public abstract class Tree {
         }
         this.size = size;
 
-        // set parents
         for (int i = 0; i < children.size(); ++i) {
             Tree child = children.get(i);
 
-            child.childno = i;
+            child.childno = i; // set the number as child
             child.parent = this; // set parent here
         }
         this.parent = null;
@@ -345,6 +345,33 @@ public abstract class Tree {
     }
 
     public void updateNumberOfChildren() {
+        for (int i = 0; i < children.size(); ++i)
+            children.get(i).childno = i;
+    }
+
+    // the node itself is excluded
+    public List<Tree> getDescendants() {
+        List<Tree> descendants = new ArrayList<>();
+        for (Tree node: this.preOrder())
+            if (node != this)
+                descendants.add(node);
+        return descendants;
+    }
+
+    public void refresh() {
+        for (Tree child: children)
+            child.refresh();
+
+        // compute height
+        height = children.stream().mapToInt((Tree child) -> {
+            return child.height;
+        }).max().orElse(-1) + 1;
+
+        // compute size
+        size = 1;
+        for (var child : children)
+            size += child.size;
+
         for (int i = 0; i < children.size(); ++i)
             children.get(i).childno = i;
     }

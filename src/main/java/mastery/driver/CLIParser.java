@@ -16,7 +16,7 @@ public final class CLIParser {
             .longOpt("lang")
             .hasArg()
             .argName("language")
-            .desc("language of the source codes: java (default)")
+            .desc("language of the source codes: java (default), xml")
             .build();
 
     static final String OUTPUT = "o";
@@ -26,6 +26,16 @@ public final class CLIParser {
             .hasArg()
             .argName("file")
             .desc("output file (default stdout)")
+            .build();
+    
+    static final String ALGO = "a";
+    static final String[] ALGOs = {"GUMTREE", "SKINCHANGER"};
+    final Option algorithm = Option
+            .builder(ALGO)
+            .longOpt("algorithm")
+            .hasArg()
+            .argName("algorithm")
+            .desc("matching algorithm: skinchanger (default), gumtree")
             .build();
 
     static final String LOG_LEVEL = "log-level";
@@ -53,14 +63,6 @@ public final class CLIParser {
             .argName("file")
             .desc("also dump log to a file")
             .build();
-
-    // static final String TOPDOWN = "top-down";
-    // final Option topdown = Option
-    //         .builder(null)
-    //         .longOpt("top-down")
-    //         .argName("topdown pruning")
-    //         .desc("top down pruning before bottom up merge")
-    //         .build();
 
     static final String FORMATTER = "formatter";
     final Option formatter = Option
@@ -97,7 +99,8 @@ public final class CLIParser {
         options.addOption(logColorful);
         options.addOption(logFile);
 
-        // options.addOption(topdown);
+        options.addOption(algorithm);
+
         options.addOption(formatter);
 
         // for webdiff
@@ -111,7 +114,8 @@ public final class CLIParser {
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("\n  mastery merge <left> <base> <right> [options]\n"
                 + "  mastery check <file1> <file2> [options]\n"
-                + "  mastery webdiff <file1> <file2> [options]",
+                + "  mastery webdiff <file1> <file2> [options]\n"
+                + "  mastery textdiff <file1> <file2> [options]",
             header, options, "");
     }
 
@@ -168,7 +172,14 @@ public final class CLIParser {
             }
 
             config.output = cli.getOptionValue(OUTPUT);
-            if (cli.hasOption(FORMATTER)) config.formatter = cli.getOptionValue(FORMATTER);
+            if (cli.hasOption(FORMATTER))
+                config.formatter = cli.getOptionValue(FORMATTER);
+            if (cli.hasOption(ALGO)) {
+                config.algorithm = cli.getOptionValue(ALGO).toUpperCase();
+                if (!Arrays.asList(ALGOs).contains(config.algorithm)) {
+                    throw new ParseException("Invalid algorithm: " + algorithm.getDescription());
+                }
+            }
         } else if (mode.equals("webdiff")) {
             if (arguments.length != 3) {
                 throw new ParseException("Please provide exactly 2 files as arguments.");
@@ -183,6 +194,12 @@ public final class CLIParser {
                 config.language = cli.getOptionValue(LANG).toUpperCase();
                 if (!Arrays.asList(LANGS).contains(config.language)) {
                     throw new ParseException("Invalid language: " + lang.getDescription());
+                }
+            }
+            if (cli.hasOption(ALGO)) {
+                config.algorithm = cli.getOptionValue(ALGO).toUpperCase();
+                if (!Arrays.asList(ALGOs).contains(config.algorithm)) {
+                    throw new ParseException("Invalid algorithm: " + algorithm.getDescription());
                 }
             }
             if (cli.hasOption(PORT)) {
@@ -205,6 +222,12 @@ public final class CLIParser {
                 config.language = cli.getOptionValue(LANG).toUpperCase();
                 if (!Arrays.asList(LANGS).contains(config.language)) {
                     throw new ParseException("Invalid language: " + lang.getDescription());
+                }
+            }
+            if (cli.hasOption(ALGO)) {
+                config.algorithm = cli.getOptionValue(ALGO).toUpperCase();
+                if (!Arrays.asList(ALGOs).contains(config.algorithm)) {
+                    throw new ParseException("Invalid algorithm: " + algorithm.getDescription());
                 }
             }
 

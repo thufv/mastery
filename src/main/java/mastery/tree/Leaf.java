@@ -41,6 +41,7 @@ public class Leaf extends Tree {
         Tree copiedLeaf = new Leaf(label, name, code);
         copiedLeaf.assignment = assignment;
         copiedLeaf.actionId = actionId;
+        copiedLeaf.dfsIndex = dfsIndex;
         return copiedLeaf;
     }
 

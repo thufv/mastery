@@ -11,11 +11,14 @@ import java.util.*;
 import mastery.matcher.MatchingSet;
 import mastery.matcher.ThreeWayMatcher;
 import mastery.matcher.TwoWayMatcher;
+import mastery.matcher.gum.GumThreeWayMatcher;
+import mastery.matcher.gum.GumTwoWayMatcher;
+import mastery.matcher.sc.ScThreeWayMatcher;
+import mastery.matcher.sc.ScTwoWayMatcher;
 import mastery.matcher.Assigner;
 import mastery.matcher.MappingStore;
 import mastery.matcher.Mapping;
 import mastery.merger.Merger;
-import mastery.merger.BottomUpMerger;
 import mastery.merger.TopDownPruningMerger;
 import mastery.webdiff.WebDiff;
 import mastery.tree.Tree;
@@ -93,11 +96,11 @@ public final class Driver {
                 Tree right = TreeBuilders.fromSource(config.right, config.language);
 
                 // Phase I: Mapping
-                ThreeWayMatcher threeWayMatcher = new ThreeWayMatcher();
+                ThreeWayMatcher threeWayMatcher = config.algorithm.equals("GUMTREE") ? new GumThreeWayMatcher(): new ScThreeWayMatcher();
                 MatchingSet mapping = threeWayMatcher.apply(base, left, right);
 
                 // Phase II: Merge
-                Merger merger = config.topDown ? new TopDownPruningMerger(): new BottomUpMerger();
+                Merger merger = new TopDownPruningMerger();
                 Tree target = merger.apply(mapping);
 
                 // Log.ifLoggable(Level.FINEST, printer -> {
@@ -131,9 +134,8 @@ public final class Driver {
                     dst.prettyPrintTo(printer);
                 });
 
-                TwoWayMatcher twoWayMatcher = new TwoWayMatcher();
-                Map<Tree, Tree> map = twoWayMatcher.apply(src, dst);
-                MappingStore mappings = new MappingStore(map);
+                TwoWayMatcher twoWayMatcher = config.algorithm.equals("GUMTREE") ? new GumTwoWayMatcher(): new ScTwoWayMatcher();
+                MappingStore mappings = twoWayMatcher.apply(src, dst);
 
                 for (Tree node: src.preOrder())
                     node.actionId = node.dfsIndex;
@@ -163,9 +165,8 @@ public final class Driver {
                     dst.prettyPrintTo(printer);
                 });
 
-                TwoWayMatcher twoWayMatcher = new TwoWayMatcher();
-                Map<Tree, Tree> map = twoWayMatcher.apply(src, dst);
-                MappingStore mappings = new MappingStore(map);
+                TwoWayMatcher twoWayMatcher = config.algorithm.equals("GUMTREE") ? new GumTwoWayMatcher(): new ScTwoWayMatcher();
+                MappingStore mappings = twoWayMatcher.apply(src, dst);
 
                 for (Tree node: src.preOrder())
                     node.actionId = node.dfsIndex;

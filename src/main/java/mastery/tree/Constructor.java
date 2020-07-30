@@ -53,6 +53,7 @@ public final class Constructor extends InternalNode {
         Tree copiedConstructor = new Constructor(label, name, copiedChildren);
         copiedConstructor.assignment = assignment;
         copiedConstructor.actionId = actionId;
+        copiedConstructor.dfsIndex = dfsIndex;
         return copiedConstructor;
     }
 

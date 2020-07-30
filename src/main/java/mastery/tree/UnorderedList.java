@@ -31,6 +31,7 @@ public final class UnorderedList extends ListNode {
         Tree copiedUnorderedList = new UnorderedList(label, name, copiedChildren);
         copiedUnorderedList.assignment = assignment;
         copiedUnorderedList.actionId = actionId;
+        copiedUnorderedList.dfsIndex = dfsIndex;
         return copiedUnorderedList;
     }
 
