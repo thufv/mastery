@@ -20,6 +20,10 @@ public class GumTwoWayMatcher extends TwoWayMatcher {
         return m;
     }
 
+    // In the implementations of GumTree and Mastery,
+    // height is both 0-based.
+    // But in the paper of GumTree, height is 1-based.
+    // This value is consistent with both the paper and implementation of GumTree.
     public final int MIN_HEIGHT = 1;
     void topDown(Tree tree1, Tree tree2) {
         List<Mapping> ambiguousMappings = new ArrayList<Mapping>();
@@ -46,35 +50,52 @@ public class GumTwoWayMatcher extends TwoWayMatcher {
                 continue;
             }
 
+            // System.out.println(String.format("====== %d ======\n", queue1.maxWeight()));
+
             // case 3: two queues contain Trees of the same height
             var nodes1 = queue1.removeMax();
             var nodes2 = queue2.removeMax();
 
-            for (Tree node1: nodes1) {
-                List<Tree> list1 = new ArrayList<>();
-                for (Tree u: nodes1)
-                    if (checkIsomorphism(node1, u))
-                        list1.add(u);
-                
-                List<Tree> list2 = new ArrayList<>();
-                for (Tree v: nodes2)
-                    if (checkIsomorphism(node1, v))
-                        list2.add(v);
+            // System.out.println("nodes1:");
+            // for (Tree node: nodes1)
+            //     System.out.println("\t" + node);
+            // System.out.println("nodes2:");
+            // for (Tree node: nodes2)
+            //     System.out.println("\t" + node);
 
-                if (list1.size() == 1 && list2.size() == 1)
-                    addMappingRecursively(list1.get(0), list2.get(0));
-                else if (list1.size() >= 1 && list2.size() >= 1) {
-                    for (Tree u: list1)
-                        for (Tree v: list2)
-                            ambiguousMappings.add(new Mapping(u, v));
-                } else {
-                    // push their children (if not handled) into queue
-                    for (var node : list1)
-                        queue1.addAll(node.children);
-                    for (var node : list2)
-                        queue2.addAll(node.children);
+            Set<Tree> considered = new HashSet<>();
+            for (Tree node1: nodes1)
+                if (!considered.contains(node1)) {
+                    List<Tree> list1 = new ArrayList<>();
+                    for (Tree u: nodes1)
+                        if (checkIsomorphism(node1, u))
+                            list1.add(u);
+                    considered.addAll(list1);
+                    
+                    List<Tree> list2 = new ArrayList<>();
+                    for (Tree v: nodes2)
+                        if (checkIsomorphism(node1, v))
+                            list2.add(v);
+
+                    if (list1.size() == 1 && list2.size() == 1) {
+                        addMappingRecursively(list1.get(0), list2.get(0));
+                    }
+                    else if (list1.size() >= 1 && list2.size() >= 1) {
+                        for (Tree u: list1)
+                            for (Tree v: list2)
+                                ambiguousMappings.add(new Mapping(u, v));
+                    } else {
+                        // push their children (if not handled) into queue
+                        for (var node : list1)
+                            queue1.addAll(node.children);
+                        for (var node : list2)
+                            queue2.addAll(node.children);
+                    }
+
+                    nodes2.removeAll(list2);
                 }
-            }
+            for (Tree node: nodes2)
+                queue2.addAll(node.children);
         }
 
         // Rank the mappings by score.
@@ -107,7 +128,11 @@ public class GumTwoWayMatcher extends TwoWayMatcher {
         }
     }
 
-    public final int SIZE_THRESHOLD = 1000;
+    // This doesn't equal to the implementation of GumTree,
+    // but is consistent with the paper of GumTree.
+    public final int SIZE_THRESHOLD = 100;
+    
+    // This is both consistent with the paper and the implementation of GumTree.
     public final double SIM_THRESHOLD = 0.5;
     Map<Integer, Tree> srcIds = new HashMap<>();
     Map<Integer, Tree> dstIds = new HashMap<>();
@@ -165,19 +190,36 @@ public class GumTwoWayMatcher extends TwoWayMatcher {
         return candidates;
     }
     protected void lastChanceMatch(Tree src, Tree dst) {
+        // System.out.println("lastChangeMatch " + src + " <-> " + dst);
+
         Tree cSrc = src.deepCopy();
         Tree cDst = dst.deepCopy();
-        for (Tree node: cSrc.children)
+        List<Tree> children1 = new ArrayList<>();
+        children1.addAll(cSrc.children);
+        for (Tree node: children1)
             removeMatched(cSrc, true);
         cSrc.refresh();
-        for (Tree node: cDst.children)
+
+        // System.out.println("removeMatched of " + src);/
+
+        List<Tree> children2 = new ArrayList<>();
+        children2.addAll(cDst.children);
+        for (Tree node: children2)
             removeMatched(cDst, false);
         cDst.refresh();
+
+        // System.out.println("removeMatched of " + dst);
 
         if (cSrc.size < SIZE_THRESHOLD
                 || cDst.size < SIZE_THRESHOLD) {
             TwoWayMatcher matcher = new ZsMatcher();
+
+            // System.out.println("Build mappings between two trees of size " + cSrc.size + " and size " + cDst.size);
+
             MappingStore mappings = matcher.apply(src, dst);
+
+            // System.out.println("After mapping calculation.");
+
             for (Mapping mapping: mappings.asSet()) {
                 Tree left = srcIds.get(mapping.first.dfsIndex);
                 Tree right = dstIds.get(mapping.second.dfsIndex);
@@ -192,6 +234,8 @@ public class GumTwoWayMatcher extends TwoWayMatcher {
                     m.link(left, right);
             }
         }
+
+        // System.out.println("Finish lastChanceMatch " + src + " <-> " + dst);
     }
     protected double jaccardSimilarity(Tree src, Tree dst) {
         double num = (double) numberOfCommonDescendants(src, dst);
@@ -223,7 +267,9 @@ public class GumTwoWayMatcher extends TwoWayMatcher {
             t.parent = null;
         }
         else {
-            for (Tree c: t.children)
+            List<Tree> children1 = new ArrayList<>();
+            children1.addAll(t.children);
+            for (Tree c: children1)
                 removeMatched(c, isSrc);
         }
     }
