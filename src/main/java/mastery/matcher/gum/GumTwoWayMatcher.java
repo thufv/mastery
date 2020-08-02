@@ -190,14 +190,14 @@ public class GumTwoWayMatcher extends TwoWayMatcher {
         return candidates;
     }
     protected void lastChanceMatch(Tree src, Tree dst) {
-        // System.out.println("lastChangeMatch " + src + " <-> " + dst);
+        // System.out.println("lastChangeMatch " + src + "(" + src.size + ") <-> " + dst + "(" + dst.size + ")");
 
         Tree cSrc = src.deepCopy();
         Tree cDst = dst.deepCopy();
         List<Tree> children1 = new ArrayList<>();
         children1.addAll(cSrc.children);
         for (Tree node: children1)
-            removeMatched(cSrc, true);
+            removeMatched(node, true);
         cSrc.refresh();
 
         // System.out.println("removeMatched of " + src);/
@@ -205,7 +205,7 @@ public class GumTwoWayMatcher extends TwoWayMatcher {
         List<Tree> children2 = new ArrayList<>();
         children2.addAll(cDst.children);
         for (Tree node: children2)
-            removeMatched(cDst, false);
+            removeMatched(node, false);
         cDst.refresh();
 
         // System.out.println("removeMatched of " + dst);
@@ -260,17 +260,18 @@ public class GumTwoWayMatcher extends TwoWayMatcher {
      * all the metrics of this tree and its descendants. If you need them, you need
      * to recompute them.
      */
-    public void removeMatched(Tree t, boolean isSrc) {
+    public Boolean removeMatched(Tree t, boolean isSrc) {
         if ((isSrc && m.hasSrc(srcIds.get(t.dfsIndex)))
             || ((!isSrc) && m.hasDst(srcIds.get(t.dfsIndex)))) {
-            if (t.parent != null) t.parent.children.remove(t);
-            t.parent = null;
+            return true;
         }
         else {
-            List<Tree> children1 = new ArrayList<>();
-            children1.addAll(t.children);
-            for (Tree c: children1)
-                removeMatched(c, isSrc);
+            List<Tree> new_children = new ArrayList<>();
+            for (Tree c: t.children)
+                if (!removeMatched(c, isSrc))
+                    new_children.add(c);
+            t.children = new_children;
+            return false;
         }
     }
 }
