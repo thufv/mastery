@@ -19,16 +19,19 @@ public class DiffView implements Renderable {
 
     private HtmlDiffs diffs;
 
-    public DiffView(File fSrc, File fDst, Tree src, Tree dst, MappingStore mappings) throws IOException {
+    private String algorithm;
+
+    public DiffView(File fSrc, File fDst, Tree src, Tree dst, MappingStore mappings, String algorithm) throws IOException {
         this.fSrc = fSrc;
         this.fDst = fDst;
         diffs = new HtmlDiffs(fSrc, fDst, src, dst, mappings);
+        this.algorithm = algorithm;
 
-        System.out.println("Before produce");
+        // System.out.println("Before produce");
 
         diffs.produce();
 
-        System.out.println("After produce");
+        // System.out.println("After produce");
     }
 
     @Override
@@ -36,7 +39,7 @@ public class DiffView implements Renderable {
         html
         .render(DocType.HTML5)
         .html(lang("en"))
-            .render(new BootstrapHeaderView())
+            .render(new BootstrapHeaderView(algorithm))
             .body()
                 .div(class_("container-fluid"))
                     .div(class_("row"))

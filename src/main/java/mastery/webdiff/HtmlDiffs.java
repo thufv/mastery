@@ -45,18 +45,18 @@ public final class HtmlDiffs {
     }
 
     public void produce() throws IOException {
-        System.out.println("Before RootAndLeavesClassifier");
+        // System.out.println("Before RootAndLeavesClassifier");
 
         TreeClassifier c = new RootAndLeavesClassifier(src, dst, mappings);
 
-        System.out.println("After RootAndLeavesClassifier");
+        // System.out.println("After RootAndLeavesClassifier");
 
         TIntIntMap mappingIds = new TIntIntHashMap();
 
         int uId = 1;
         int mId = 1;
 
-        System.out.println("Before tag src");
+        // System.out.println("Before tag src");
 
         TagIndex ltags = new TagIndex();
         for (Tree t: src.preOrder()) {
@@ -82,8 +82,8 @@ public final class HtmlDiffs {
             }
         }
 
-        System.out.println("After tag src");
-        System.out.println("Before tag dst");
+        // System.out.println("After tag src");
+        // System.out.println("Before tag dst");
 
         TagIndex rtags = new TagIndex();
         for (Tree t: dst.preOrder()) {
@@ -109,8 +109,8 @@ public final class HtmlDiffs {
             }
         }
 
-        System.out.println("After tag dst");
-        System.out.println("Before write src");
+        // System.out.println("After tag dst");
+        // System.out.println("Before write src");
 
         StringWriter w1 = new StringWriter();
         BufferedReader r = Files.newBufferedReader(fSrc.toPath(), Charset.forName("UTF-8"));
@@ -127,8 +127,8 @@ public final class HtmlDiffs {
         r.close();
         srcDiff = w1.toString();
 
-        System.out.println("After write src");
-        System.out.println("Before write dst");
+        // System.out.println("After write src");
+        // System.out.println("Before write dst");
 
         StringWriter w2 = new StringWriter();
         r = Files.newBufferedReader(fDst.toPath(), Charset.forName("UTF-8"));

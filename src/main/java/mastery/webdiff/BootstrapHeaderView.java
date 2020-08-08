@@ -8,6 +8,10 @@ import org.rendersnake.HtmlCanvas;
 import org.rendersnake.Renderable;
 
 public class BootstrapHeaderView implements Renderable {
+    String algorithm;
+    BootstrapHeaderView(String algorithm) {
+        this.algorithm = algorithm;
+    }
 
     @Override
     public void renderOn(HtmlCanvas html) throws IOException {
@@ -15,7 +19,7 @@ public class BootstrapHeaderView implements Renderable {
         .head()
             .meta(charset("utf8"))
             .meta(name("viewport").content("width=device-width, initial-scale=1.0"))
-            .title().content("GumTree")
+            .title().content(algorithm)
             .macros().stylesheet("/dist/bootstrap.min.css")
             .macros().stylesheet("/dist/gumtree.css")
         ._head();

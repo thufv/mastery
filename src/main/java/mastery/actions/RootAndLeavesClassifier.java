@@ -19,7 +19,7 @@ public class RootAndLeavesClassifier extends TreeClassifier {
 
     @Override
     public void classify() {
-        System.out.println("Before iterate actions");
+        // System.out.println("Before iterate actions");
 
         for (Action a: actions) {
             if (a instanceof Insert) {
@@ -35,24 +35,25 @@ public class RootAndLeavesClassifier extends TreeClassifier {
             }
         }
 
-        System.out.println("After iterate actions");
-        System.out.println("Before calculate dstAddTrees");
+        // System.out.println("After iterate actions");
+        // System.out.println("Before calculate dstAddTrees");
 
         Set<Tree> fDstAddTrees = new HashSet<>();
         for (Tree t: dstAddTrees) {
-            System.out.println("add " + t);
+            // System.out.println("add " + t);
+
             // FIXME: extreme hack, idk why it could be null
             if (t != null && !dstAddTrees.contains(t.parent))
                 fDstAddTrees.add(t);
         }
         dstAddTrees = fDstAddTrees;
 
-        System.out.println("After calculate dstAddTrees");
-        System.out.println("Before calculate srcDelTrees");
+        // System.out.println("After calculate dstAddTrees");
+        // System.out.println("Before calculate srcDelTrees");
 
         Set<Tree> fSrcDelTrees = new HashSet<>();
         for (Tree t: srcDelTrees) {
-            System.out.println("del " + t);
+            // System.out.println("del " + t);
 
             // FIXME: extreme hack, idk why it could be null
             if (t != null && !srcDelTrees.contains(t.parent))
@@ -60,7 +61,7 @@ public class RootAndLeavesClassifier extends TreeClassifier {
         }
         srcDelTrees = fSrcDelTrees;
 
-        System.out.println("After calculate srcDelTrees");
+        // System.out.println("After calculate srcDelTrees");
     }
 
 }

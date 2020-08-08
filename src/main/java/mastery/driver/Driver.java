@@ -146,7 +146,7 @@ public final class Driver {
                 Path pDst = Paths.get(config.files[1]);
                 File fSrc = pSrc.toFile();
                 File fDst = pDst.toFile();
-                WebDiff webDiff = new WebDiff(config.port);
+                WebDiff webDiff = new WebDiff(config.port, config.algorithm);
                 webDiff.apply(fSrc, fDst, src, dst, mappings);
             } else if (config.mode == Config.Mode.TEXTDIFF) {
                 assert config.files.length == 2;

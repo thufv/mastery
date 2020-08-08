@@ -14,26 +14,28 @@ import static spark.Spark.*;
 
 public class WebDiff {
     int port;
+    String algorithm;
 
-    public WebDiff(int port) {
+    public WebDiff(int port, String algorithm) {
         this.port = port;
+        this.algorithm = algorithm;
     }
 
     public void apply(File fSrc, File fDst, Tree src, Tree dst, MappingStore mappings) {
-        configureSpark(fSrc, fDst, src, dst, mappings, port);
+        configureSpark(fSrc, fDst, src, dst, mappings, port, algorithm);
         Spark.awaitInitialization();
         System.out.println(String.format("Starting server: %s:%d", "http://127.0.0.1", port));
     }
 
-    public static void configureSpark(File fSrc, File fDst, Tree src, Tree dst, MappingStore mappings, int port) {
+    public static void configureSpark(File fSrc, File fDst, Tree src, Tree dst, MappingStore mappings, int port, String algorithm) {
         port(port);
         staticFiles.location("/web/");
         get("/", (request, response) -> {
-            System.out.println("capture a request");
+            // System.out.println("capture a request");
 
-            Renderable view = new DiffView(fSrc, fDst, src, dst, mappings);
+            Renderable view = new DiffView(fSrc, fDst, src, dst, mappings, algorithm);
 
-            System.out.println("Start render");
+            // System.out.println("Start render");
 
             return render(view);
         });
