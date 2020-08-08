@@ -8,14 +8,18 @@ import mastery.matcher.Mapping;
 import mastery.matcher.MappingStore;
 import mastery.tree.Leaf;
 import mastery.tree.Tree;
+import mastery.util.log.Log;
+import mastery.util.Interval;
 import mastery.util.WeightedQueue;
 
 public class GumTwoWayMatcher extends TwoWayMatcher {
     @Override
     public final MappingStore apply(Tree tree1, Tree tree2) {
         topDown(tree1, tree2);
-
         bottomUp(tree1, tree2);
+
+        if (!checkMonotonicity(tree1, tree2))
+            Log.config("monotonicity violation!");
 
         return m;
     }
@@ -273,5 +277,40 @@ public class GumTwoWayMatcher extends TwoWayMatcher {
             t.children = new_children;
             return false;
         }
+    }
+
+    public boolean checkMonotonicity(Tree tree1, Tree tree2) {
+        Integer dfsIndex = 0;
+        for (Tree node: tree2.preOrder()) {
+            node.dfsIndex = ++dfsIndex;
+            if (node.isLeaf()) node.preInterval = Interval.of(dfsIndex, dfsIndex);
+        }
+        for (Tree node: tree2.postOrder())
+            if (node.parent != null && node.childno == node.parent.children.size() - 1)
+                node.parent.preInterval = Interval.of(node.parent.dfsIndex, node.interval.r);
+        
+        // for (Tree node: tree2.preOrder())
+            // System.out.println(String.format("interval of `%s` is [%d, %d]", node.toReadableString(), node.interval.l, node.interval.r));
+
+        for (Tree node: tree1.preOrder()) {
+            if (node.parent == null)
+                node.preInterval = m.getDst(node).interval;
+            else {
+                if (m.hasSrc(node)) {
+                    Tree dst = m.getDst(node);
+                    if (Interval.isSubinterval(dst.interval, node.parent.preInterval)) {
+                        node.preInterval = dst.interval;
+                    }
+                    else {
+                        // System.out.println(String.format("failed monotonicity check: %s [%d, %d] is the subinterval of %s [%d, %d]", dst, dst.interval.l, dst.interval.r, node.parent, node.parent.preInterval.l, node.parent.preInterval.r));
+                        return false;
+                    }
+                }
+                else node.preInterval = node.parent.preInterval;
+            }
+
+            // System.out.println(String.format("preInterval of `%s` is [%d, %d]", node.toReadableString(), node.preInterval.l, node.preInterval.r));
+        }
+        return true;
     }
 }
