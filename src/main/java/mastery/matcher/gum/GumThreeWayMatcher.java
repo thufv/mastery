@@ -3,10 +3,12 @@ package mastery.matcher.gum;
 import java.util.logging.Level;
 
 import mastery.matcher.Mapping;
+import mastery.matcher.MappingStore;
 import mastery.matcher.MatchingSet;
 import mastery.matcher.ThreeWayMatcher;
 import mastery.tree.Tree;
 import mastery.util.log.Log;
+import mastery.util.Interval;
 
 public class GumThreeWayMatcher extends ThreeWayMatcher {
     @Override
@@ -29,13 +31,13 @@ public class GumThreeWayMatcher extends ThreeWayMatcher {
         MatchingSet matchingSet = new MatchingSet(base, left, right);
 
         Log.fine("2-way matching: base <-> left");
-        var leftMapping = gumTwoWayMatcher.apply(base, left);
-        for (Mapping mapping: leftMapping.asSet())
+        var leftMappings = gumTwoWayMatcher.apply(base, left);
+        for (Mapping mapping: leftMappings.asSet())
             matchingSet.setLeftMatch(mapping.first, mapping.second);
 
         Log.fine("2-way matching: base <-> right");
-        var rightMapping = gumTwoWayMatcher.apply(base, right);
-        for (Mapping mapping: rightMapping.asSet())
+        var rightMappings = gumTwoWayMatcher.apply(base, right);
+        for (Mapping mapping: rightMappings.asSet())
             matchingSet.setRightMatch(mapping.first, mapping.second);
         
         Log.fine("2-way matching: %d matches identified", matchingSet.size());

@@ -49,7 +49,7 @@ public final class Driver {
         try {
             // set up logger
             if (config.logDump != null) {
-              Log.setup(config.logLevel, config.logDump);
+                Log.setup(config.logLevel, config.logDump);
             }
             else {
                 Log.setup(config.logLevel, config.logColorful);
@@ -196,7 +196,8 @@ public final class Driver {
         if (output == null) {
             // Write the matches
             for (Mapping m: mappings) {
-                System.out.println("Match " + m.first + " to %s" + m.second);
+                System.out.println("Match " + m.first + " to " + m.second);
+                // System.out.println("Match " + m.first.toReadableString() + " to " + m.second.toReadableString());
             }
 
             // Write the actions
@@ -207,8 +208,10 @@ public final class Driver {
             Writer writer = new FileWriter(output);
 
             // Write the matches
-            for (Mapping m: mappings)
-                writer.write("Match " + m.first + " to %s" + m.second + "\n");
+            for (Mapping m: mappings) {
+                writer.write("Match " + m.first + " to " + m.second + "\n");
+                // writer.write("Match " + m.first.toReadableString() + " to " + m.second.toReadableString() + "\n");
+            }
 
             // Write the actions
             for (Action a : actions)
