@@ -8,7 +8,7 @@ import org.rendersnake.HtmlCanvas;
 import org.rendersnake.Renderable;
 
 public class BootstrapHeaderView implements Renderable {
-    String algorithm;
+    private String algorithm;
     BootstrapHeaderView(String algorithm) {
         this.algorithm = algorithm;
     }

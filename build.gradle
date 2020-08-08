@@ -25,6 +25,7 @@ dependencies {
     compile('org.rendersnake:rendersnake:1.9.0') {
 		exclude group: 'javax.servlet', module: 'servlet-api'
 	}
+    compile 'org.slf4j:slf4j-nop:1.6.1'
 }
 
 task runMain(type: JavaExec) {
