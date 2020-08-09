@@ -1,0 +1,90 @@
+Match block `{ }` to block `{ }`
+Match blockStmt `{ }` to blockStmt `{ }`
+Match importDeclarations `` to importDeclarations ``
+Match statement `if ( spUtils1 == null ) { }` to statement `if ( spUtils1 == null ) { }`
+Match optionExtendsTypeType `` to optionExtendsTypeType ``
+Match eqExpr `spUtils1 == null` to eqExpr `spUtils1 == null`
+Match RBRACE `}` to RBRACE `}`
+Match ifStmt `if ( spUtils1 == null ) { }` to ifStmt `if ( spUtils1 == null ) { }`
+Match realclassBodyDeclaration `void getFloat ( ) { }` to realclassBodyDeclaration `void getFloat ( ) { }`
+Match compilationUnit `class SPUtilsTest { void setUp ( ) { TestUtils . i...` to compilationUnit `class SPUtilsTest { void getFloat ( ) { } void set...`
+Match methodBody `{ TestUtils . init ( ) ; if ( spUtils1 == null ) {...` to methodBody `{ if ( spUtils1 == null ) { } }`
+Match RBRACE `}` to RBRACE `}`
+Match classBodyDeclaration `void getFloat ( ) { }` to classBodyDeclaration `void getFloat ( ) { }`
+Match CLASS `class` to CLASS `class`
+Match blockStatement `if ( spUtils1 == null ) { }` to blockStatement `if ( spUtils1 == null ) { }`
+Match LBRACE `{` to LBRACE `{`
+Match RBRACE `}` to RBRACE `}`
+Match statement `{ }` to statement `{ }`
+Match blockStatements `` to blockStatements ``
+Match RPAREN `)` to RPAREN `)`
+Match optionFormalParameterList `` to optionFormalParameterList ``
+Match blockStatements `` to blockStatements ``
+Match classBody `{ void setUp ( ) { TestUtils . init ( ) ; if ( spU...` to classBody `{ void getFloat ( ) { } void setUp ( ) { if ( spUt...`
+Match realclassBodyDeclaration `void setUp ( ) { TestUtils . init ( ) ; if ( spUti...` to realclassBodyDeclaration `void setUp ( ) { if ( spUtils1 == null ) { } }`
+Match VOID `void` to VOID `void`
+Match NULL_LITERAL `null` to NULL_LITERAL `null`
+Match block `{ TestUtils . init ( ) ; if ( spUtils1 == null ) {...` to block `{ if ( spUtils1 == null ) { } }`
+Match literalExpr `null` to literalExpr `null`
+Match LPAREN `(` to LPAREN `(`
+Match LBRACE `{` to LBRACE `{`
+Match modifiers `` to modifiers ``
+Match IDENTIFIER `getFloat` to IDENTIFIER `getFloat`
+Match optionElseStatement `` to optionElseStatement ``
+Match IF `if` to IF `if`
+Match blockStatements `TestUtils . init ( ) ; if ( spUtils1 == null ) { }...` to blockStatements `if ( spUtils1 == null ) { }`
+Match LBRACE `{` to LBRACE `{`
+Match memberDeclaration `void getFloat ( ) { }` to memberDeclaration `void getFloat ( ) { }`
+Match methodDeclaration `void setUp ( ) { TestUtils . init ( ) ; if ( spUti...` to methodDeclaration `void setUp ( ) { if ( spUtils1 == null ) { } }`
+Match optionFormalParameterList `` to optionFormalParameterList ``
+Match optionPackageDeclaration `` to optionPackageDeclaration ``
+Match classOrInterfaceModifiers `` to classOrInterfaceModifiers ``
+Match squares `` to squares ``
+Match idExpr `spUtils1` to idExpr `spUtils1`
+Match modifiers `` to modifiers ``
+Match optionThrowsQualifiedNameList `` to optionThrowsQualifiedNameList ``
+Match LBRACE `{` to LBRACE `{`
+Match RBRACE `}` to RBRACE `}`
+Match typeTypeOrVoid `void` to typeTypeOrVoid `void`
+Match formalParameters `( )` to formalParameters `( )`
+Match RPAREN `)` to RPAREN `)`
+Match classBodyDeclarations `void setUp ( ) { TestUtils . init ( ) ; if ( spUti...` to classBodyDeclarations `void getFloat ( ) { } void setUp ( ) { if ( spUtil...`
+Match RPAREN `)` to RPAREN `)`
+Match IDENTIFIER `spUtils1` to IDENTIFIER `spUtils1`
+Match LPAREN `(` to LPAREN `(`
+Match formalParameters `( )` to formalParameters `( )`
+Match optionThrowsQualifiedNameList `` to optionThrowsQualifiedNameList ``
+Match memberDeclaration `void setUp ( ) { TestUtils . init ( ) ; if ( spUti...` to memberDeclaration `void setUp ( ) { if ( spUtils1 == null ) { } }`
+Match optionImplementsTypeList `` to optionImplementsTypeList ``
+Match methodDeclaration `void getFloat ( ) { }` to methodDeclaration `void getFloat ( ) { }`
+Match block `{ }` to block `{ }`
+Match IDENTIFIER `SPUtilsTest` to IDENTIFIER `SPUtilsTest`
+Match optionTypeParameters `` to optionTypeParameters ``
+Match typeDeclarations `class SPUtilsTest { void setUp ( ) { TestUtils . i...` to typeDeclarations `class SPUtilsTest { void getFloat ( ) { } void set...`
+Match methodBody `{ }` to methodBody `{ }`
+Match classBodyDeclaration `void setUp ( ) { TestUtils . init ( ) ; if ( spUti...` to classBodyDeclaration `void setUp ( ) { if ( spUtils1 == null ) { } }`
+Match squares `` to squares ``
+Match parExpression `( spUtils1 == null )` to parExpression `( spUtils1 == null )`
+Match literal `null` to literal `null`
+Match VOID `void` to VOID `void`
+Match EQUAL `==` to EQUAL `==`
+Match typeDeclaration `class SPUtilsTest { void setUp ( ) { TestUtils . i...` to typeDeclaration `class SPUtilsTest { void getFloat ( ) { } void set...`
+Match realTypeDeclaration `class SPUtilsTest { void setUp ( ) { TestUtils . i...` to realTypeDeclaration `class SPUtilsTest { void getFloat ( ) { } void set...`
+Match classDeclaration `class SPUtilsTest { void setUp ( ) { TestUtils . i...` to classDeclaration `class SPUtilsTest { void getFloat ( ) { } void set...`
+Match IDENTIFIER `setUp` to IDENTIFIER `setUp`
+Match LPAREN `(` to LPAREN `(`
+Match typeTypeOrVoid `void` to typeTypeOrVoid `void`
+MOV classBodyDeclaration (1-ary) assignment 95 into classBodyDeclarations [unordered] assignment 97 at 0
+DEL IDENTIFIER 'TestUtils' assignment 47
+DEL idExpr (1-ary) assignment 61
+DEL DOT '.' assignment 48
+DEL IDENTIFIER 'init' assignment 49
+DEL LPAREN '(' assignment 42
+DEL optionExpressionList [unordered] assignment 50
+DEL RPAREN ')' assignment 44
+DEL methodCall (4-ary) assignment 63
+DEL dottedExpr (3-ary) assignment 66
+DEL SEMI ';' assignment 51
+DEL exprStmt (2-ary) assignment 70
+DEL statement (1-ary) assignment 74
+DEL blockStatement (1-ary) assignment 77

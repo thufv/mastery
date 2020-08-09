@@ -86,7 +86,7 @@ public class Assigner {
             assignmentEnd += assignLeaf(undistinguishableNodes, charStart + 1, assignmentEnd);
         return assignmentEnd - assignmentStart;
     }
-    public void apply(Tree ... trees)
+    public void apply(Tree... trees)
     {
         // Calculate information about dfs ordering
         for (Tree tree: trees)

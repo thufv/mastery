@@ -9,6 +9,8 @@ import mastery.tree.Leaf;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 
+import mastery.util.log.*;
+
 import java.util.*;
 
 public class ActionGenerator {
@@ -95,7 +97,7 @@ public class ActionGenerator {
             Tree x = bfsDst.poll();
             bfsDst.addAll(x.children);
 
-            // System.out.println("===== " + x + " =====");
+            Log.finer("===== " + x + " =====");
 
             Tree w = null;
             Tree y = x.parent;
@@ -105,7 +107,7 @@ public class ActionGenerator {
             Tree z = newMappings.getSrc(y);
 
             if (!newMappings.hasDst(x)) {
-                // System.out.println("  case: doesn't have dst");
+                Log.finer("  case: doesn't have dst");
 
                 Integer k = findPos(x);
                 // Insertion case : insert new node.
@@ -120,7 +122,7 @@ public class ActionGenerator {
                 Action ins = new Insert(x, origSrcTrees.get(z.actionId), k);
                 actions.add(ins);
 
-                // System.out.println("  " + ins);
+                Log.finer("  " + ins);
 
                 origSrcTrees.put(w.actionId, x);
                 newMappings.link(w, x);
@@ -129,28 +131,29 @@ public class ActionGenerator {
                 z.updateNumberOfChildren();
                 w.parent = z;
             } else {
-                // System.out.println("  case: have dst");
+                Log.finer("  case: have dst");
 
                 w = newMappings.getSrc(x);
                 if (!x.equals(origDst)) {
                     Tree v = w.parent;
                     if (!(w.label == x.label) || w.isLeaf() && x.isLeaf() && !(((Leaf)w).code.equals(((Leaf)x).code))) {
-                        // System.out.println("    case: labels are not equal");
+                        Log.finer("    case: labels are not equal");
 
                         Action upd = new Update(origSrcTrees.get(w.actionId), x.name);
                         actions.add(upd);
-                        // System.out.println("    " + upd);
+
+                        Log.finer("    " + upd);
 
                         w.label = x.label;
                         w.name = x.name;
                     }
                     if (!z.equals(v)) {
-                        // System.out.println("    case: nodes are not equal");
+                        Log.finer("    case: nodes are not equal");
 
                         int k = findPos(x);
                         Action mv = new Move(origSrcTrees.get(w.actionId), origSrcTrees.get(z.actionId), k);
                         actions.add(mv);
-                        // System.out.println("    " + mv);
+                        Log.finer("    " + mv);
 
                         int oldk = w.childno;
                         z.children.add(k, w);
@@ -174,7 +177,7 @@ public class ActionGenerator {
             if (!newMappings.hasSrc(w)) {
                 Action del = new Delete(origSrcTrees.get(w.actionId));
                 actions.add(del);
-                // System.out.println(del);
+                Log.finer(del.toString());
 
                 w.parent.children.remove(w);
                 w.parent.updateNumberOfChildren();
@@ -185,6 +188,8 @@ public class ActionGenerator {
     }
 
     private void alignChildren(Tree w, Tree x) {
+        Log.finer("alignChildren(" + w + ", " + x + ")");
+
         srcInOrder.removeAll(w.children);
         dstInOrder.removeAll(x.children);
 
@@ -199,6 +204,11 @@ public class ActionGenerator {
             if (newMappings.hasDst(c))
                 if (w.children.contains(newMappings.getSrc(c)))
                     s2.add(c);
+        
+        Log.finer("s1:");
+        for (Tree node: s1) Log.finer(" " + node);
+        Log.finer("s2:");
+        for (Tree node: s2) Log.finer(" " + node);
 
         List<Mapping> lcs = lcs(s1, s2);
 
@@ -217,9 +227,12 @@ public class ActionGenerator {
 
                     if (!contained) {
                         int k = findPos(b);
-                        Action mv = new Move(origSrcTrees.get(a.actionId), origSrcTrees.get(w.actionId), k);
-                        actions.add(mv);
-                        // System.out.println(mv);
+
+                        if (!w.isUnorderedList()) {
+                            Action mv = new Move(origSrcTrees.get(a.actionId), origSrcTrees.get(w.actionId), k);
+                            actions.add(mv);
+                            Log.finer(mv.toString());
+                        }
 
                         int oldk = a.childno;
                         w.children.add(k, a);
@@ -255,16 +268,10 @@ public class ActionGenerator {
             if (dstInOrder.contains(c)) v = c;
         }
 
-        //if (v == null) throw new RuntimeException("No rightmost sibling in order");
         if (v == null) return 0;
 
         Tree u = newMappings.getSrc(v);
-        // siblings = u.parent.getChildren();
-        // int upos = siblings.indexOf(u);
         int upos = u.childno;
-        // int r = 0;
-        // for (int i = 0; i <= upos; i++)
-        // if (srcInOrder.contains(siblings.get(i))) r++;
         return upos + 1;
     }
 

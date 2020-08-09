@@ -34,6 +34,7 @@ tmp/
 # Debug
 debug*
 *.log
+*.out
 
 # Experiment
 results/
