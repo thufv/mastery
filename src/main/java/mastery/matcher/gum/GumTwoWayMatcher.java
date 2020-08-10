@@ -28,7 +28,7 @@ public class GumTwoWayMatcher extends TwoWayMatcher {
     // height is both 0-based.
     // But in the paper of GumTree, height is 1-based.
     // This value is consistent with both the paper and implementation of GumTree.
-    public final int MIN_HEIGHT = 1;
+    public final int MIN_HEIGHT = 0;
     void topDown(Tree tree1, Tree tree2) {
         List<Mapping> ambiguousMappings = new ArrayList<Mapping>();
 
@@ -132,8 +132,10 @@ public class GumTwoWayMatcher extends TwoWayMatcher {
         }
     }
 
-    // This doesn't equal to the implementation of GumTree,
+    // 100 is not equal to the implementation of GumTree,
     // but is consistent with the paper of GumTree.
+
+    // Maybe 100 is a better option, as our 
     public final int SIZE_THRESHOLD = 100;
     
     // This is both consistent with the paper and the implementation of GumTree.
@@ -289,8 +291,8 @@ public class GumTwoWayMatcher extends TwoWayMatcher {
             if (node.parent != null && node.childno == node.parent.children.size() - 1)
                 node.parent.preInterval = Interval.of(node.parent.dfsIndex, node.interval.r);
         
-        // for (Tree node: tree2.preOrder())
-            // System.out.println(String.format("interval of `%s` is [%d, %d]", node.toReadableString(), node.interval.l, node.interval.r));
+        for (Tree node: tree2.preOrder())
+            Log.fine("interval of `%s` is [%d, %d]", node.toReadableString(), node.interval.l, node.interval.r);
 
         for (Tree node: tree1.preOrder()) {
             if (node.parent == null)
@@ -302,7 +304,11 @@ public class GumTwoWayMatcher extends TwoWayMatcher {
                         node.preInterval = dst.interval;
                     }
                     else {
-                        // System.out.println(String.format("failed monotonicity check: %s [%d, %d] is the subinterval of %s [%d, %d]", dst, dst.interval.l, dst.interval.r, node.parent, node.parent.preInterval.l, node.parent.preInterval.r));
+                        // Log.fine(String.format("failed monotonicity check: %s [%d, %d] is the subinterval of %s [%d, %d]", dst, dst.interval.l, dst.interval.r, node.parent, node.parent.preInterval.l, node.parent.preInterval.r));
+                        Log.fine("failed monotonicity check:");
+                        Log.fine("  node: %s (assignment %d)", node.toReadableString(), node.assignment);
+                        Log.fine("  dst: %s [%d, %d] (assignment %d)", dst.toReadableString(), dst.interval.l, dst.interval.r, dst.assignment);
+                        Log.fine("  preInterval of %s (assignment %d) is [%d, %d]", node.parent.toReadableString(), node.parent.assignment, node.parent.preInterval.l, node.parent.preInterval.r);
                         return false;
                     }
                 }
