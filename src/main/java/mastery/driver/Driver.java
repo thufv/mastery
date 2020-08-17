@@ -95,11 +95,15 @@ public final class Driver {
                 Tree base = TreeBuilders.fromSource(config.base, config.language);
                 Tree right = TreeBuilders.fromSource(config.right, config.language);
 
-                // Phase I: Mapping
+                // Phase I: Assign
+                Assigner assigner = new Assigner();
+                assigner.apply(base, left, right);
+
+                // Phase II: Mapping
                 ThreeWayMatcher threeWayMatcher = config.algorithm.equals("GUMTREE") ? new GumThreeWayMatcher(): new ScThreeWayMatcher();
                 MatchingSet mapping = threeWayMatcher.apply(base, left, right);
 
-                // Phase II: Merge
+                // Phase III: Merge
                 Merger merger = new TopDownPruningMerger();
                 Tree target = merger.apply(mapping);
 

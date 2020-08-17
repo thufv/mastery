@@ -32,15 +32,40 @@ public class GumThreeWayMatcher extends ThreeWayMatcher {
 
         Log.fine("2-way matching: base <-> left");
         var leftMappings = gumTwoWayMatcher.apply(base, left);
+        filter(leftMappings, base);
         for (Mapping mapping: leftMappings.asSet())
             matchingSet.setLeftMatch(mapping.first, mapping.second);
 
         Log.fine("2-way matching: base <-> right");
         var rightMappings = gumTwoWayMatcher.apply(base, right);
+        filter(rightMappings, base);
         for (Mapping mapping: rightMappings.asSet())
             matchingSet.setRightMatch(mapping.first, mapping.second);
         
         Log.fine("2-way matching: %d matches identified", matchingSet.size());
         return matchingSet;
+    }
+
+    private void filter(MappingStore mappings, Tree root) {
+        // the interval of the other tree is assumed to have been calculated
+        for (Tree node: root.preOrder()) {
+            if (node.parent == null) {
+                node.preInterval = mappings.getDst(node).interval;
+            }
+            else {
+                if (mappings.hasSrc(node)) {
+                    Tree dst = mappings.getDst(node);
+                    if (Interval.isSubinterval(dst.interval, node.parent.preInterval)) {
+                        node.preInterval = dst.interval;
+                    }
+                    else {
+                        mappings.unlink(node, dst);
+                    }
+                }
+                else {
+                    node.preInterval = node.parent.preInterval;
+                }
+            }
+        }
     }
 }

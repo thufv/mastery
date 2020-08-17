@@ -43,6 +43,8 @@ public class ScTwoWayMatcher extends TwoWayMatcher{
     // The order of arguments matters!
     @Override
     public final MappingStore apply(Tree tree1, Tree tree2) {
+        m = new MappingStore();
+
         // Necessary initializations
         initMatch(tree1, tree2);
         initHomonymy(tree1, tree2);

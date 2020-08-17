@@ -15,5 +15,5 @@ public abstract class TwoWayMatcher{
         homonymy
     }
 
-    protected MappingStore m = new MappingStore();
+    protected MappingStore m;
 }

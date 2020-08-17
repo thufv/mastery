@@ -15,6 +15,8 @@ import mastery.util.WeightedQueue;
 public class GumTwoWayMatcher extends TwoWayMatcher {
     @Override
     public final MappingStore apply(Tree tree1, Tree tree2) {
+	m = new MappingStore();
+
         topDown(tree1, tree2);
         bottomUp(tree1, tree2);
 
@@ -282,15 +284,7 @@ public class GumTwoWayMatcher extends TwoWayMatcher {
     }
 
     public boolean checkMonotonicity(Tree tree1, Tree tree2) {
-        Integer dfsIndex = 0;
-        for (Tree node: tree2.preOrder()) {
-            node.dfsIndex = ++dfsIndex;
-            if (node.isLeaf()) node.preInterval = Interval.of(dfsIndex, dfsIndex);
-        }
-        for (Tree node: tree2.postOrder())
-            if (node.parent != null && node.childno == node.parent.children.size() - 1)
-                node.parent.preInterval = Interval.of(node.parent.dfsIndex, node.interval.r);
-        
+        // the dfs ordering and intervals of tree2 are assumed to have been calculated here
         for (Tree node: tree2.preOrder())
             Log.fine("interval of `%s` is [%d, %d]", node.toReadableString(), node.interval.l, node.interval.r);
 

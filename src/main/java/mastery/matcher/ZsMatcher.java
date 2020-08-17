@@ -8,9 +8,10 @@ import org.simmetrics.StringMetrics;
 import java.util.*;
 
 public class ZsMatcher extends TwoWayMatcher {
-
     private ZsTree zsSrc;
     private ZsTree zsDst;
+
+
 
     private double[][] treeDist;
     private double[][] forestDist;
@@ -55,6 +56,8 @@ public class ZsMatcher extends TwoWayMatcher {
 
     @Override
     public MappingStore apply(Tree tree1, Tree tree2) {
+        m = new MappingStore();
+
         zsSrc = new ZsTree(tree1);
         zsDst = new ZsTree(tree2);
 
