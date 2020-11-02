@@ -17,8 +17,6 @@ public class TagIndex {
     }
 
     public void addTags(int pos, String startTag, int endPos, String endTag) {
-        // System.out.println("addTags(" + pos + ", " + startTag + ", " + endPos + ", " + endTag + ")");
-
         if (pos != endPos - 1) {
             addStartTag(pos, startTag);
             addEndTag(endPos, endTag);

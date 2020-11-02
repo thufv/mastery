@@ -27,6 +27,7 @@ bin/
 # Temporary files
 exp/
 tmp/
+handy_scripts/
 
 # Antlr
 **/.antlr/
