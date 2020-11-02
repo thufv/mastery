@@ -1,6 +1,6 @@
 # Mastery
 
-Mastery is a three-way structured merge tool. Here we submit our tool, all merge scenarios in our experiment and experiment results.
+Mastery is a three-way structured merge tool.
 
 ## User Guide
 
@@ -14,10 +14,10 @@ Mastery is a three-way structured merge tool. Here we submit our tool, all merge
 The recommended usage of Mastery is:
 
 ```bash
-java -jar mastery.jar <left> <base> <right> -o <output> --formatter <formatter>
+java -jar mastery.jar <left> <base> <right> -o <output> --formatter <formatter> -l <language>
 ```
 
-where `<left>`, `<base>` and `<right>` are the paths of the three files to merge, `<output>` is the path for the result merged code, which could not exist before execution, `<formatter>` is the path for the code formatter.
+where `<left>`, `<base>` and `<right>` are the paths of the three files to merge, `<output>` is the path for the result merged code, which could not exist before execution, `<formatter>` is the path for the code formatter. `<language>` is the language of code.
 
 The simplest usage of Mastery is:
 ```bash
@@ -29,9 +29,3 @@ For more extensive usage information:
 ```bash
 java -jar mastery.jar -h
 ```
-
-## File structure
-
-- `mastery.jar`: the executable file of Mastery
-- `merge-scenarios.zip`: all merge scenarios in our experiments and their meta information
-- `stat.xls`: the statistics spreadsheet of our experiment, in the format for Microsoft Excel.
