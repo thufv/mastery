@@ -15,7 +15,7 @@ import mastery.util.WeightedQueue;
 public class GumTwoWayMatcher extends TwoWayMatcher {
     @Override
     public final MappingStore apply(Tree tree1, Tree tree2) {
-	m = new MappingStore();
+	    m = new MappingStore();
 
         topDown(tree1, tree2);
         bottomUp(tree1, tree2);

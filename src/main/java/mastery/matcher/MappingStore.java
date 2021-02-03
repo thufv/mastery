@@ -35,7 +35,19 @@ public class MappingStore implements Iterable<Mapping> {
         return new MappingStore(asSet());
     }
 
+    public void addMappings(MappingStore mappings) {
+        for (Mapping m : mappings.asSet())
+            addMapping(m);
+    }
+
+    public void addMapping(Mapping m) {
+        link(m.first, m.second);
+    }
+
     public void link(Tree src, Tree dst) {
+        // System.out.printf("link %s <-> %s\n", src, dst);
+        // System.out.printf("link %s <-> %s\n", src.toReadableString(), dst.toReadableString());
+        
         srcs.put(src, dst);
         dsts.put(dst, src);
     }
@@ -107,4 +119,7 @@ public class MappingStore implements Iterable<Mapping> {
         return asSet().toString();
     }
 
+    public int getSize() {
+        return srcs.size();
+    }
 }

@@ -11,10 +11,9 @@ import java.util.*;
 import mastery.matcher.MatchingSet;
 import mastery.matcher.ThreeWayMatcher;
 import mastery.matcher.TwoWayMatcher;
-import mastery.matcher.gum.GumThreeWayMatcher;
 import mastery.matcher.gum.GumTwoWayMatcher;
-import mastery.matcher.sc.ScThreeWayMatcher;
 import mastery.matcher.sc.ScTwoWayMatcher;
+import mastery.matcher.jdime.JDimeTwoWayMatcher;
 import mastery.matcher.Assigner;
 import mastery.matcher.MappingStore;
 import mastery.matcher.Mapping;
@@ -100,7 +99,16 @@ public final class Driver {
                 assigner.apply(base, left, right);
 
                 // Phase II: Mapping
-                ThreeWayMatcher threeWayMatcher = config.algorithm.equals("GUMTREE") ? new GumThreeWayMatcher(): new ScThreeWayMatcher();
+                TwoWayMatcher twoWayMatcher;
+                if (config.algorithm.equals("SKINCHANGER")) {
+                    twoWayMatcher = new ScTwoWayMatcher();
+                } else if (config.algorithm.equals("GUMTREE")) {
+                    twoWayMatcher = new GumTwoWayMatcher();
+                } else {
+                    assert config.algorithm.equals("JDIME");
+                    twoWayMatcher = new JDimeTwoWayMatcher();
+                }
+                ThreeWayMatcher threeWayMatcher = new ThreeWayMatcher(twoWayMatcher);
                 MatchingSet mapping = threeWayMatcher.apply(base, left, right);
 
                 // Phase III: Merge
