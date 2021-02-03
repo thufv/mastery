@@ -14,14 +14,14 @@ Mastery is a three-way structured merge tool.
 The recommended usage of Mastery is:
 
 ```bash
-java -jar mastery.jar <left> <base> <right> -o <output> --formatter <formatter> -l <language>
+java -jar mastery.jar merge <left> <base> <right> -o <output> --formatter <formatter> -l <language>
 ```
 
 where `<left>`, `<base>` and `<right>` are the paths of the three files to merge, `<output>` is the path for the result merged code, which could not exist before execution, `<formatter>` is the path for the code formatter. `<language>` is the language of code.
 
 The simplest usage of Mastery is:
 ```bash
-java -jar mastery.jar <left> <base> <right>
+java -jar mastery.jar merge <left> <base> <right>
 ```
 In this case, the result merged code will be output to standard out stream as plain text, which is a little inconvenient to read.
 
