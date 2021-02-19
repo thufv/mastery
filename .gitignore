@@ -36,6 +36,7 @@ handy_scripts/
 debug*
 *.log
 *.out
+*.output.java
 
 # Experiment
 results/
