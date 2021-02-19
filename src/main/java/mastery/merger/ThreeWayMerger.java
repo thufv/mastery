@@ -646,7 +646,10 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
         var visited = new HashSet<Tree>();
 
         for (var b : base) {
-            Log.finer("considering %s (base)", b.toReadableString());
+            Log.finer("considering %s (base) (left:%s) (right:%s)",
+                    b.toReadableString(),
+                    m.hasLeftMatch(b) ? "exist": "not-exist",
+                    m.hasRightMatch(b) ? "exist": "not-exist");
             Tree l = m.hasLeftMatch(b) ? lift(m.getLeftMatch(b), left) : null;
             Tree r = m.hasRightMatch(b) ? lift(m.getRightMatch(b), right) : null;
 
@@ -709,7 +712,8 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
         for (Integer assignment : subtreeOfAssignment.keySet()) {
             for (int count = Math.max(count1OfAssignment.getOrDefault(assignment, 0),
                                       count2OfAssignment.getOrDefault(assignment, 0)); count > 0; --count) {
-                Log.finer("+ %s", subtreeOfAssignment.get(assignment).toReadableString());
+                Log.finer("+ %s (remained" +
+                        ")", subtreeOfAssignment.get(assignment).toReadableString());
                 targets.add(subtreeOfAssignment.get(assignment).deepCopy());
             }
         }

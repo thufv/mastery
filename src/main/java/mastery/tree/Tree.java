@@ -5,6 +5,7 @@ import mastery.util.log.IndentPrinter;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -117,6 +118,11 @@ public abstract class Tree {
      * The id for generating edit scripts (actions).
      */
     public int actionId;
+
+    /**
+     * names that are allowed to look ahead
+     */
+    public static HashSet<String> lookaheadNames;
 
     /**
      * Deep copy this node.

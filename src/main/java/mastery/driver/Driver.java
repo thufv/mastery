@@ -11,8 +11,9 @@ import java.util.*;
 import mastery.matcher.MatchingSet;
 import mastery.matcher.ThreeWayMatcher;
 import mastery.matcher.TwoWayMatcher;
-import mastery.matcher.gum.GumTwoWayMatcher;
-import mastery.matcher.sc.ScTwoWayMatcher;
+import mastery.matcher.changedistiller.ChangeDistillerTwoWayMatcher;
+import mastery.matcher.gumtree.GumTreeTwoWayMatcher;
+import mastery.matcher.skinchanger.SkinChangerTwoWayMatcher;
 import mastery.matcher.jdime.JDimeTwoWayMatcher;
 import mastery.matcher.Assigner;
 import mastery.matcher.MappingStore;
@@ -99,15 +100,7 @@ public final class Driver {
                 assigner.apply(base, left, right);
 
                 // Phase II: Mapping
-                TwoWayMatcher twoWayMatcher;
-                if (config.algorithm.equals("SKINCHANGER")) {
-                    twoWayMatcher = new ScTwoWayMatcher();
-                } else if (config.algorithm.equals("GUMTREE")) {
-                    twoWayMatcher = new GumTwoWayMatcher();
-                } else {
-                    assert config.algorithm.equals("JDIME");
-                    twoWayMatcher = new JDimeTwoWayMatcher();
-                }
+                TwoWayMatcher twoWayMatcher = getTwoWayMatcherFromAlgorithm(config.algorithm);
                 ThreeWayMatcher threeWayMatcher = new ThreeWayMatcher(twoWayMatcher);
                 MatchingSet mapping = threeWayMatcher.apply(base, left, right);
 
@@ -146,7 +139,7 @@ public final class Driver {
                     dst.prettyPrintTo(printer);
                 });
 
-                TwoWayMatcher twoWayMatcher = config.algorithm.equals("GUMTREE") ? new GumTwoWayMatcher(): new ScTwoWayMatcher();
+                TwoWayMatcher twoWayMatcher = config.algorithm.equals("GUMTREE") ? new GumTreeTwoWayMatcher(): new SkinChangerTwoWayMatcher();
                 MappingStore mappings = twoWayMatcher.apply(src, dst);
 
                 for (Tree node: src.preOrder())
@@ -177,7 +170,7 @@ public final class Driver {
                     dst.prettyPrintTo(printer);
                 });
 
-                TwoWayMatcher twoWayMatcher = config.algorithm.equals("GUMTREE") ? new GumTwoWayMatcher(): new ScTwoWayMatcher();
+                TwoWayMatcher twoWayMatcher = getTwoWayMatcherFromAlgorithm(config.algorithm);
                 MappingStore mappings = twoWayMatcher.apply(src, dst);
 
                 for (Tree node: src.preOrder())
@@ -200,6 +193,17 @@ public final class Driver {
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
+        }
+    }
+
+    private static TwoWayMatcher getTwoWayMatcherFromAlgorithm(String algorithm) {
+        if (algorithm.equals("GUMTREE")) return new GumTreeTwoWayMatcher();
+        else if (algorithm.equals("SKINCHANGER")) return new SkinChangerTwoWayMatcher();
+        else if (algorithm.equals("JDIME")) return new JDimeTwoWayMatcher(false);
+        else if (algorithm.equals("JDIME-LOOKAHEAD")) return new JDimeTwoWayMatcher(true);
+        else {
+            assert(algorithm.equals("CHANGEDISTILLER"));
+            return new ChangeDistillerTwoWayMatcher();
         }
     }
 

@@ -11,8 +11,6 @@ public class ZsMatcher extends TwoWayMatcher {
     private ZsTree zsSrc;
     private ZsTree zsDst;
 
-
-
     private double[][] treeDist;
     private double[][] forestDist;
 
@@ -55,9 +53,7 @@ public class ZsMatcher extends TwoWayMatcher {
     }
 
     @Override
-    public MappingStore apply(Tree tree1, Tree tree2) {
-        m = new MappingStore();
-
+    protected final void match(Tree tree1, Tree tree2) {
         zsSrc = new ZsTree(tree1);
         zsDst = new ZsTree(tree2);
 
@@ -124,8 +120,6 @@ public class ZsMatcher extends TwoWayMatcher {
                 }
             }
         }
-
-        return m;
     }
 
     private double getDeletionCost(Tree n) {

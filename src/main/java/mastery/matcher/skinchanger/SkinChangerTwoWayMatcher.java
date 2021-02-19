@@ -1,4 +1,4 @@
-package mastery.matcher.sc;
+package mastery.matcher.skinchanger;
 
 import static org.junit.Assert.assertEquals;
 
@@ -19,18 +19,18 @@ import mastery.util.log.Log;
 import mastery.util.Interval;
 import mastery.util.Pair;
 
-public class ScTwoWayMatcher extends TwoWayMatcher{
+public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
     // Parameters
     public final int minHeight;
     public final double minDice;
     public final int maxSize;
 
-    public ScTwoWayMatcher(int minHeight, double minDice, int maxSize) {
+    public SkinChangerTwoWayMatcher(int minHeight, double minDice, int maxSize) {
         this.minHeight = minHeight;
         this.minDice = minDice;
         this.maxSize = maxSize;
     }
-    public ScTwoWayMatcher() {
+    public SkinChangerTwoWayMatcher() {
         // default parameters in the paper of GumTree
         this.minHeight = 1;
         this.minDice = 0.44;
@@ -42,9 +42,7 @@ public class ScTwoWayMatcher extends TwoWayMatcher{
 
     // The order of arguments matters!
     @Override
-    public final MappingStore apply(Tree tree1, Tree tree2) {
-        m = new MappingStore();
-
+    protected final void match(Tree tree1, Tree tree2) {
         // Necessary initializations
         initMatch(tree1, tree2);
         initHomonymy(tree1, tree2);
@@ -61,8 +59,6 @@ public class ScTwoWayMatcher extends TwoWayMatcher{
         topDown();
         // Bottom-up Phase
         bottomUpDfs(tree1);
-
-        return m;
     }
 
     void topDown() {

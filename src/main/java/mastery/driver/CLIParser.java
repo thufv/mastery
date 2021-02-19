@@ -29,13 +29,13 @@ public final class CLIParser {
             .build();
     
     static final String ALGO = "a";
-    static final String[] ALGOs = {"GUMTREE", "SKINCHANGER", "JDIME"};
+    static final String[] ALGOs = {"GUMTREE", "SKINCHANGER", "JDIME", "JDIME-LOOKAHEAD", "CHANGEDISTILLER"};
     final Option algorithm = Option
             .builder(ALGO)
             .longOpt("algorithm")
             .hasArg()
             .argName("algorithm")
-            .desc("matching algorithm: skinchanger (default), gumtree, jdime")
+            .desc("matching algorithm: skinchanger (default), gumtree, jdime, changedistiller")
             .build();
 
     static final String LOG_LEVEL = "log-level";

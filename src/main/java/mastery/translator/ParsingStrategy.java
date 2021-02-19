@@ -25,7 +25,9 @@ public interface ParsingStrategy {
      *
      * @return names in a HashSet
      */
-    HashSet<String> getListNodeNames();
+    default HashSet<String> getListNodeNames() {
+        return new HashSet<>();
+    }
 
     /**
      * Get the ordered List-Node names for a specific language, "ordered" means if
@@ -34,16 +36,26 @@ public interface ParsingStrategy {
      *
      * @return names in a HashSet
      */
-    HashSet<String> getOrderedListNodeNames();
+    default HashSet<String> getOrderedListNodeNames() {
+        return new HashSet<>();
+    }
 
     /**
      * Get alternative labels for distinguish them to arrange a unique label.
      * 
      * @return alternative labels.
      */
-    List<String> getAlternativeLabels();
+    default List<String> getAlternativeNames() {
+        return new ArrayList<>();
+    }
 
-    HashSet<String> getStopLabels();
+    default HashSet<String> getStopNames() { return new HashSet<>(); }
 
-    Map<String, Integer> getDeclarationLabels();
+    default Map<String, Integer> getDeclarationNames() {
+        return new HashMap<>();
+    }
+
+    default HashSet<String> getLookaheadLabels() {
+        return new HashSet<>();
+    }
 }

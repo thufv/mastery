@@ -1,29 +1,19 @@
-package mastery.matcher.gum;
+package mastery.matcher.gumtree;
 
 import java.util.*;
 
-import mastery.matcher.TwoWayMatcher;
-import mastery.matcher.ZsMatcher;
-import mastery.matcher.Mapping;
-import mastery.matcher.MappingStore;
+import mastery.matcher.*;
 import mastery.tree.Leaf;
 import mastery.tree.Tree;
 import mastery.util.log.Log;
 import mastery.util.Interval;
 import mastery.util.WeightedQueue;
 
-public class GumTwoWayMatcher extends TwoWayMatcher {
+public class GumTreeTwoWayMatcher extends TwoWayMatcher {
     @Override
-    public final MappingStore apply(Tree tree1, Tree tree2) {
-	    m = new MappingStore();
-
+    protected final void match(Tree tree1, Tree tree2) {
         topDown(tree1, tree2);
         bottomUp(tree1, tree2);
-
-        if (!checkMonotonicity(tree1, tree2))
-            Log.config("monotonicity violation!");
-
-        return m;
     }
 
     // In the implementations of GumTree and Mastery,
@@ -74,13 +64,13 @@ public class GumTwoWayMatcher extends TwoWayMatcher {
                 if (!considered.contains(node1)) {
                     List<Tree> list1 = new ArrayList<>();
                     for (Tree u: nodes1)
-                        if (checkIsomorphism(node1, u))
+                        if (node1.equals(u))
                             list1.add(u);
                     considered.addAll(list1);
                     
                     List<Tree> list2 = new ArrayList<>();
                     for (Tree v: nodes2)
-                        if (checkIsomorphism(node1, v))
+                        if (node1.equals(v))
                             list2.add(v);
 
                     if (list1.size() == 1 && list2.size() == 1) {
@@ -119,29 +109,12 @@ public class GumTwoWayMatcher extends TwoWayMatcher {
             addMappingRecursively(node1.children.get(i), node2.children.get(i));
     }
 
-    boolean checkIsomorphism(Tree node1, Tree node2) {
-        if (node1.label != node2.label) return false;
-        if (node1.children.size() != node2.children.size()) return false;
-        if (node1.isLeaf()){
-            if (!node2.isLeaf()) return false;
-            return ((Leaf)node1).code.equals(((Leaf)node2).code);
-        } else {
-            if (node1.children.size() != node2.children.size()) return false;
-            for (int i = 0; i < node1.children.size(); ++i)
-                if (!checkIsomorphism(node1.children.get(i), node2.children.get(i)))
-                    return false;
-            return true;
-        }
-    }
-
     // 100 is not equal to the implementation of GumTree,
     // but is consistent with the paper of GumTree.
-
-    // Maybe 100 is a better option, as our 
     public final int SIZE_THRESHOLD = 100;
-    
     // This is both consistent with the paper and the implementation of GumTree.
     public final double SIM_THRESHOLD = 0.5;
+
     Map<Integer, Tree> srcIds = new HashMap<>();
     Map<Integer, Tree> dstIds = new HashMap<>();
     void bottomUp(Tree tree1, Tree tree2) {
@@ -224,7 +197,7 @@ public class GumTwoWayMatcher extends TwoWayMatcher {
 
             // System.out.println("Build mappings between two trees of size " + cSrc.size + " and size " + cDst.size);
 
-            MappingStore mappings = matcher.apply(src, dst);
+            MappingStore mappings = matcher.raw_apply(src, dst);
 
             // System.out.println("After mapping calculation.");
 
@@ -246,9 +219,7 @@ public class GumTwoWayMatcher extends TwoWayMatcher {
         // System.out.println("Finish lastChanceMatch " + src + " <-> " + dst);
     }
     protected double jaccardSimilarity(Tree src, Tree dst) {
-        double num = (double) numberOfCommonDescendants(src, dst);
-        double den = (double) src.getDescendants().size() + (double) dst.getDescendants().size() - num;
-        return num / den;
+        return Similarities.jaccardSimilarity(numberOfCommonDescendants(src, dst), src.size, dst.size);
     }
 
     protected int numberOfCommonDescendants(Tree src, Tree dst) {
@@ -281,36 +252,5 @@ public class GumTwoWayMatcher extends TwoWayMatcher {
             t.children = new_children;
             return false;
         }
-    }
-
-    public boolean checkMonotonicity(Tree tree1, Tree tree2) {
-        // the dfs ordering and intervals of tree2 are assumed to have been calculated here
-        for (Tree node: tree2.preOrder())
-            Log.fine("interval of `%s` is [%d, %d]", node.toReadableString(), node.interval.l, node.interval.r);
-
-        for (Tree node: tree1.preOrder()) {
-            if (node.parent == null)
-                node.preInterval = m.getDst(node).interval;
-            else {
-                if (m.hasSrc(node)) {
-                    Tree dst = m.getDst(node);
-                    if (Interval.isSubinterval(dst.interval, node.parent.preInterval)) {
-                        node.preInterval = dst.interval;
-                    }
-                    else {
-                        // Log.fine(String.format("failed monotonicity check: %s [%d, %d] is the subinterval of %s [%d, %d]", dst, dst.interval.l, dst.interval.r, node.parent, node.parent.preInterval.l, node.parent.preInterval.r));
-                        Log.fine("failed monotonicity check:");
-                        Log.fine("  node: %s (assignment %d)", node.toReadableString(), node.assignment);
-                        Log.fine("  dst: %s [%d, %d] (assignment %d)", dst.toReadableString(), dst.interval.l, dst.interval.r, dst.assignment);
-                        Log.fine("  preInterval of %s (assignment %d) is [%d, %d]", node.parent.toReadableString(), node.parent.assignment, node.parent.preInterval.l, node.parent.preInterval.r);
-                        return false;
-                    }
-                }
-                else node.preInterval = node.parent.preInterval;
-            }
-
-            // System.out.println(String.format("preInterval of `%s` is [%d, %d]", node.toReadableString(), node.preInterval.l, node.preInterval.r));
-        }
-        return true;
     }
 }

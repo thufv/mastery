@@ -49,15 +49,15 @@ public class XMLParsingStrategy implements ParsingStrategy {
     private static final List<String> alternativeLabelList = Arrays.asList(alternativeLabelStrings);
 
     @Override
-    public List<String> getAlternativeLabels() {
+    public List<String> getAlternativeNames() {
         return alternativeLabelList;
     }
 
     private static final String[] stopStrings = {"someContent"};
-    private static final HashSet<String> stopLabels = new HashSet<>(Arrays.asList(stopStrings));
+    private final HashSet<String> stopLabels = new HashSet<>(Arrays.asList(stopStrings));
 
     @Override
-    public HashSet<String> getStopLabels() {
+    public HashSet<String> getStopNames() {
         return stopLabels;
     }
 
@@ -69,7 +69,7 @@ public class XMLParsingStrategy implements ParsingStrategy {
     private static final Map<String, Integer> declarationLabels = new HashMap<>();
 
     @Override
-    public Map<String, Integer> getDeclarationLabels() {
+    public Map<String, Integer> getDeclarationNames() {
         return declarationLabels;
     }
 }

@@ -3,6 +3,7 @@ package mastery.matcher;
 import java.util.*;
 
 import mastery.tree.Tree;
+import mastery.util.log.Log;
 
 public class MappingStore implements Iterable<Mapping> {
 
@@ -45,14 +46,17 @@ public class MappingStore implements Iterable<Mapping> {
     }
 
     public void link(Tree src, Tree dst) {
-        // System.out.printf("link %s <-> %s\n", src, dst);
-        // System.out.printf("link %s <-> %s\n", src.toReadableString(), dst.toReadableString());
+        Log.finer("link %s <-> %s", src, dst);
+        Log.finer("link %s <-> %s", src.toReadableString(), dst.toReadableString());
         
         srcs.put(src, dst);
         dsts.put(dst, src);
     }
 
     public void unlink(Tree src, Tree dst) {
+        Log.finer("unlink %s <-> %s", src, dst);
+        Log.finer("unlink %s <-> %s", src.toReadableString(), dst.toReadableString());
+
         srcs.remove(src);
         dsts.remove(dst);
     }
