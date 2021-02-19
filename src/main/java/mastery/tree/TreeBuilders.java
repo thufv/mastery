@@ -155,9 +155,10 @@ public final class TreeBuilders {
                 p.a, p.b,
                 strategy.getListNodeNames(),
                 strategy.getOrderedListNodeNames(),
-                strategy.getAlternativeLabels(),
-                strategy.getStopLabels(),
-                strategy.getDeclarationLabels());
+                strategy.getAlternativeNames(),
+                strategy.getStopNames(),
+                strategy.getDeclarationNames());
+        Tree.lookaheadNames = strategy.getLookaheadLabels();
 
         Tree tree = generator.generate();
         return tree;

@@ -30,9 +30,9 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
     // number of grammar rules and size of vocabulary of grammar
     private final int rulesNum;
     // all alternative labels
-    private final List<String> alternativeLabels;
-    private final HashSet<String> stopLabels;
-    private final Map<String, Integer> declarationLabels;
+    private final List<String> alternativeNames;
+    private final HashSet<String> stopNames;
+    private final Map<String, Integer> declarationNames;
     // for the calculcation of position
     private int curPos = 0;
 
@@ -42,14 +42,14 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
      * @param ctx context
      */
     public TreeGenerator(Parser parser, ParserRuleContext ctx, HashSet<String> ListNodeNames,
-            HashSet<String> OrderedListNodeNames, List<String> alternativeLabels, HashSet<String> stopLabels, Map<String, Integer> declarationLabels) {
+            HashSet<String> OrderedListNodeNames, List<String> alternativeNames, HashSet<String> stopNames, Map<String, Integer> declarationNames) {
         this.parser = parser;
         this.context = ctx;
         this.ListNodeNames = ListNodeNames;
         this.OrderedListNodeNames = OrderedListNodeNames;
-        this.alternativeLabels = alternativeLabels;
-        this.stopLabels = stopLabels;
-        this.declarationLabels = declarationLabels;
+        this.alternativeNames = alternativeNames;
+        this.stopNames = stopNames;
+        this.declarationNames = declarationNames;
         this.rulesNum = parser.getRuleNames().length;
     }
 
@@ -71,8 +71,8 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
     public int getNonTerminalLabelId(int ruleIndex, String name) {
         int LabelId = ruleIndex + 1;
 
-        if (alternativeLabels.indexOf(name) != -1)
-            LabelId = 1 + rulesNum + alternativeLabels.indexOf(name);
+        if (alternativeNames.indexOf(name) != -1)
+            LabelId = 1 + rulesNum + alternativeNames.indexOf(name);
 
         return LabelId;
     }
@@ -83,7 +83,7 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
      * @return int ID
      */
     public int getTerminalLabelId(int TerminalIndex) {
-        int LabelId = 1 + rulesNum + alternativeLabels.size() + TerminalIndex;
+        int LabelId = 1 + rulesNum + alternativeNames.size() + TerminalIndex;
         return LabelId;
     }
 
@@ -144,9 +144,9 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
             else ans = new UnorderedList(label, name, children);
         }
         else // means it is a node
-            ans = new Constructor(label, name, children, stopLabels.contains(name));
-        if (declarationLabels.containsKey(name)) {
-            Tree idNode = children.get(declarationLabels.get(name));
+            ans = new Constructor(label, name, children, stopNames.contains(name));
+        if (declarationNames.containsKey(name)) {
+            Tree idNode = children.get(declarationNames.get(name));
             if (idNode.isLeaf()) {
                 // ';' needs special checking
                 if (!((Leaf)idNode).code.equals(";")) {

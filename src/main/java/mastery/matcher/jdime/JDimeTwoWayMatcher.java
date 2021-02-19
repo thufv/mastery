@@ -1,25 +1,28 @@
 package mastery.matcher.jdime;
 
+import mastery.matcher.Mapping;
 import mastery.matcher.TwoWayMatcher;
 import mastery.matcher.MappingStore;
 
 import mastery.tree.Tree;
 import mastery.tree.TreeTraverse;
 import mastery.tree.Leaf;
+import mastery.util.Pair;
 import mastery.util.log.Log;
 
 import java.lang.reflect.Array;
 import java.util.*;
 
 public class JDimeTwoWayMatcher extends TwoWayMatcher {
-    @Override
-    public final MappingStore apply(Tree tree1, Tree tree2) {
-        m = new MappingStore();
-        match(tree1, tree2);
-        return m;
+    // the flag that indicates that if lookahead technique enabled
+    private boolean lookaheadEnabled;
+
+    public JDimeTwoWayMatcher(boolean lookaheadEnabled) {
+        this.lookaheadEnabled = lookaheadEnabled;
     }
 
-    private void match(Tree tree1, Tree tree2) {
+    @Override
+    protected final void match(Tree tree1, Tree tree2) {
         /*
          * Before firing up potentially expensive matching algorithms, we check whether the trees are identical.
          */
@@ -33,29 +36,37 @@ public class JDimeTwoWayMatcher extends TwoWayMatcher {
             return;
         }
 
-        assert tree1.isLeaf() == tree2.isLeaf();
-        if (tree1.label != tree2.label
-            || tree1.isLeaf() && !((Leaf)tree1).code.equals(((Leaf)tree2).code)) {
-            /*
-            * The roots do not match and we cannot use the look-ahead feature.  We therefore ignore the rest of the
-            * subtrees and return early to save time.
-            */
-            Log.finest("early return while matching %s and %s", tree1.toReadableString(), tree2.toReadableString());
+        if (tree1.label != tree2.label) {
+            if (lookaheadEnabled) {
+                Optional<Mapping> resume = lookAhead(tree1, tree2);
+
+                if (resume.isPresent()) {
+                    Pair<Tree, Tree> toMatch = resume.get();
+                    Log.finest("lookahead to match %s and %s while matching %s and %s", toMatch.first.toReadableString(), toMatch.second.toReadableString(), tree1.toReadableString(), tree2.toReadableString());
+                    match(toMatch.first, toMatch.second);
+                } else {
+                    /*
+                     * The roots do not match and we cannot lookahead anything. We therefore ignore the rest of the
+                     * subtrees and return early to save time.
+                     */
+                    Log.finest("early return as lookahead technique finds nothing while matching %s and %s", tree1.toReadableString(), tree2.toReadableString());
+                }
+            } else {
+                /*
+                 * The roots do not match and we cannot use the look-ahead feature.  We therefore ignore the rest of the
+                 * subtrees and return early to save time.
+                 */
+                Log.finest("early return as different labels while matching %s and %s", tree1.toReadableString(), tree2.toReadableString());
+            }
             return;
         }
 
-        assert tree1.isUnorderedList() == tree2.isUnorderedList();
         if (tree1.isConstructor()) {
             assert tree2.isConstructor();
+            assert tree1.children.size() == tree2.children.size();
 
-            boolean equal = true;
-            equal = equal && tree1.children.size() == tree2.children.size();
             for (int i = 0; i < tree1.children.size(); ++i)
-                equal = equal && tree1.children.get(i).label == tree2.children.get(i).label;
-            if (equal) {
-                for (int i = 0; i < tree1.children.size(); ++i)
-                    match(tree1.children.get(i), tree2.children.get(i));
-            }
+                match(tree1.children.get(i), tree2.children.get(i));
 
             m.link(tree1, tree2);
         } else if (tree1.isOrderedList()) {
@@ -92,13 +103,13 @@ public class JDimeTwoWayMatcher extends TwoWayMatcher {
             matrixM[0][j] = 0;
         }
 
-        JDimeTwoWayMatcher matcher = new JDimeTwoWayMatcher();
+        JDimeTwoWayMatcher matcher = new JDimeTwoWayMatcher(lookaheadEnabled);
         for (int i = 1; i <= n1; i++) {
             for (int j = 1; j <= n2; j++) {
                 Tree child1 = tree1.children.get(i - 1);
                 Tree child2 = tree2.children.get(j - 1);
 
-                MappingStore mappings = matcher.apply(child1, child2);
+                MappingStore mappings = matcher.raw_apply(child1, child2);
 
                 if (matrixM[i][j - 1] > matrixM[i - 1][j]) {
                     if (matrixM[i][j - 1] > matrixM[i - 1][j - 1] + mappings.getSize()) {
@@ -166,12 +177,12 @@ public class JDimeTwoWayMatcher extends TwoWayMatcher {
         Tree child1;
         Tree child2;
 
-        JDimeTwoWayMatcher matcher = new JDimeTwoWayMatcher();
+        JDimeTwoWayMatcher matcher = new JDimeTwoWayMatcher(lookaheadEnabled);
         for (int i = 0; i < n1; i++) {
             child1 = tree1.children.get(i);
             for (int j = 0; j < n2; j++) {
                 child2 = tree2.children.get(j);
-                stores[i][j] = matcher.apply(child1, child2);
+                stores[i][j] = matcher.raw_apply(child1, child2);
             }
         }
 
@@ -212,5 +223,44 @@ public class JDimeTwoWayMatcher extends TwoWayMatcher {
             }
         }
         m.link(tree1, tree2);
+    }
+
+    /* the following two methods are for lookahead technique */
+    private Optional<Mapping> lookAhead(Tree node1, Tree node2) {
+        if (Tree.lookaheadNames.contains(node1.name)) {
+            Optional<Tree> resume = findMatchingNode(node1, node2);
+
+            if (resume.isPresent()) {
+                return Optional.of(new Mapping(resume.get(), node2));
+            } else {
+                return Optional.empty();
+            }
+        } else if (Tree.lookaheadNames.contains(node2.name)) {
+            Optional<Tree> resume = findMatchingNode(node2, node1);
+
+            if (resume.isPresent()) {
+                return Optional.of(new Mapping(node1, resume.get()));
+            } else {
+                return Optional.empty();
+            }
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private Optional<Tree> findMatchingNode(Tree node, Tree nodeToFind) {
+        if (node.label == nodeToFind.label) {
+            return Optional.of(node);
+        }
+
+        for (Tree child : node.children) {
+            Optional<Tree> matchingNode = findMatchingNode(child, nodeToFind);
+
+            if (matchingNode.isPresent()) {
+                return matchingNode;
+            }
+        }
+
+        return Optional.empty();
     }
 }

@@ -1,4 +1,4 @@
-package mastery.matcher.gum;
+package mastery.matcher.gumtree;
 
 import mastery.matcher.Mapping;
 import mastery.matcher.MappingStore;

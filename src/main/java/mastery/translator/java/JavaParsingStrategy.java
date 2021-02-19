@@ -132,7 +132,7 @@ public class JavaParsingStrategy implements ParsingStrategy {
         return orderedlistSet;
     }
 
-    private static final String[] alternativeLabelStrings = {
+    private static final String[] alternativeNameStrings = {
         "parenthesizedExpr",
         "thisExpr",
         "superExpr",
@@ -166,19 +166,61 @@ public class JavaParsingStrategy implements ParsingStrategy {
         "typeMethodReference",
         "classTypeMethodReference"
     };
-    private static final List<String> alternativeLabelList = Arrays.asList(alternativeLabelStrings);
+    private static final List<String> alternativeNameList = Arrays.asList(alternativeNameStrings);
 
     @Override
-    public List<String> getAlternativeLabels() {
-        return alternativeLabelList;
+    public List<String> getAlternativeNames() {
+        return alternativeNameList;
     }
 
-    private static final String[] stopStrings = {"compilationUnit", "importDeclaration", "typeDeclaration", "packageDeclaration", "classDeclaration", "enumDeclaration", "interfaceDeclaration", "classBodyDeclaration", "memberDeclaration", "methodDeclaration", "genericMethodDeclaration", "fieldDeclaration", "constructorDeclaration", "genericConstructorDeclaration", "interfaceDeclaration", "annotationTypeDeclaration", "constDeclaration", "interfaceMethodDeclaration", "annotationTypeElementDeclaration", "statement", "blockStmt", "assertStmt", "ifStmt", "forStmt", "whileStmt", "doWhileStmt", "tryStmt", "tryRscSpecStmt", "switchStmt", "synchronizedStmt", "returnStmt", "throwStmt", "breakStmt", "continueStmt", 	"semiStmt", "exprStmt", "identifierStmt", "localVariableDeclarationStatement", "statement", "localTypeDeclaration", "localVariableDeclaration"};
-    private static final HashSet<String> stopLabels = new HashSet<>(Arrays.asList(stopStrings));
+    private static final String[] stopStrings = {
+            "compilationUnit",
+            "importDeclaration",
+            "typeDeclaration",
+            "packageDeclaration",
+            "classDeclaration",
+            "enumDeclaration",
+            "interfaceDeclaration",
+            "classBodyDeclaration",
+            "memberDeclaration",
+            "methodDeclaration",
+            "genericMethodDeclaration",
+            "fieldDeclaration",
+            "constructorDeclaration",
+            "genericConstructorDeclaration",
+            "interfaceDeclaration",
+            "annotationTypeDeclaration",
+            "constDeclaration",
+            "interfaceMethodDeclaration",
+            "annotationTypeElementDeclaration",
+            "statement",
+            "blockStmt",
+            "assertStmt",
+            "ifStmt",
+            "forStmt",
+            "whileStmt",
+            "doWhileStmt",
+            "tryStmt",
+            "tryRscSpecStmt",
+            "switchStmt",
+            "synchronizedStmt",
+            "returnStmt",
+            "throwStmt",
+            "breakStmt",
+            "continueStmt",
+            "semiStmt",
+            "exprStmt",
+            "identifierStmt",
+            "localVariableDeclarationStatement",
+            "statement",
+            "localTypeDeclaration",
+            "localVariableDeclaration"
+    };
+    private static final HashSet<String> stopNames = new HashSet<>(Arrays.asList(stopStrings));
 
     @Override
-    public HashSet<String> getStopLabels() {
-        return stopLabels;
+    public HashSet<String> getStopNames() {
+        return stopNames;
     }
 
     // delcarations that probable unique
@@ -186,7 +228,7 @@ public class JavaParsingStrategy implements ParsingStrategy {
     // or (have both identifier and body as its child)
     // the list is the child number path to the identifier or a node that's supposed to have identifier
     // the identifier does possibly not exist
-    private static final Map<String, Integer> declarationLabels = Map.ofEntries(
+    private static final Map<String, Integer> declarationNames = Map.ofEntries(
         entry("classDeclaration", 1),
         entry("enumDeclaration", 1),
         entry("enumConstant", 1),
@@ -215,7 +257,16 @@ public class JavaParsingStrategy implements ParsingStrategy {
     );
 
     @Override
-    public Map<String, Integer> getDeclarationLabels() {
-        return declarationLabels;
+    public Map<String, Integer> getDeclarationNames() {
+        return declarationNames;
     }
+
+    public static final String[] lookaheadStrings = new String[] {
+            "ifStmt",
+            "tryStmt",
+            "tryRscSpecStmt"
+    };
+
+    @Override
+    public HashSet<String> getLookaheadLabels() { return new HashSet<String>(Arrays.asList(lookaheadStrings)); }
 }
