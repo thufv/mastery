@@ -2213,6 +2213,18 @@ public class JavaParserBaseListener implements JavaParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterCaseExprOrIdent(JavaParser.CaseExprOrIdentContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCaseExprOrIdent(JavaParser.CaseExprOrIdentContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterForControl(JavaParser.ForControlContext ctx) { }
 	/**
 	 * {@inheritDoc}

@@ -1839,6 +1839,16 @@ public interface JavaParserListener extends ParseTreeListener {
 	 */
 	void exitSwitchLabel(JavaParser.SwitchLabelContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link JavaParser#caseExprOrIdent}.
+	 * @param ctx the parse tree
+	 */
+	void enterCaseExprOrIdent(JavaParser.CaseExprOrIdentContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaParser#caseExprOrIdent}.
+	 * @param ctx the parse tree
+	 */
+	void exitCaseExprOrIdent(JavaParser.CaseExprOrIdentContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link JavaParser#forControl}.
 	 * @param ctx the parse tree
 	 */

@@ -528,11 +528,12 @@ resource:
 switchBlockStatementGroup: switchLabels blockStatements;
 
 switchLabel:
-	CASE (
-		constantExpression = expression
-		| enumConstantName = IDENTIFIER
-	) ':'
+	caseExprOrIdent ':'
 	| DEFAULT ':';
+
+caseExprOrIdent:
+	CASE expression
+	| CASE IDENTIFIER;
 
 forControl:
 	variableModifiers typeType variableDeclaratorId ':' expression
