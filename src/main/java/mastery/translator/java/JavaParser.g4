@@ -420,11 +420,14 @@ localVariableDeclaration:
 	variableModifiers typeType variableDeclarators;
 
 localTypeDeclaration:
+	realLocalTypeDeclaration
+	| ';';
+
+realLocalTypeDeclaration:
 	classOrInterfaceModifiers (
 		classDeclaration
 		| interfaceDeclaration
-	)
-	| ';';
+	);
 
 statement:
 	blockStmt
@@ -673,8 +676,13 @@ optionClassOrInterfaceTypeDot: classOrInterfaceTypeDot?;
 classOrInterfaceTypeDot: classOrInterfaceType '.';
 
 creator:
-	nonWildcardTypeArguments classOrInterfaceOrPrimitiveType classCreatorRest
-	| classOrInterfaceOrPrimitiveType (
+	creator1
+	| creator2;
+
+creator1: nonWildcardTypeArguments classOrInterfaceOrPrimitiveType classCreatorRest;
+
+creator2:
+	classOrInterfaceOrPrimitiveType (
 		arrayCreatorRest
 		| classCreatorRest
 	);

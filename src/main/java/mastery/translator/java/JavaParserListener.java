@@ -1439,6 +1439,16 @@ public interface JavaParserListener extends ParseTreeListener {
 	 */
 	void exitLocalTypeDeclaration(JavaParser.LocalTypeDeclarationContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link JavaParser#realLocalTypeDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterRealLocalTypeDeclaration(JavaParser.RealLocalTypeDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaParser#realLocalTypeDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitRealLocalTypeDeclaration(JavaParser.RealLocalTypeDeclarationContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link JavaParser#statement}.
 	 * @param ctx the parse tree
 	 */
@@ -2532,6 +2542,26 @@ public interface JavaParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitCreator(JavaParser.CreatorContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link JavaParser#creator1}.
+	 * @param ctx the parse tree
+	 */
+	void enterCreator1(JavaParser.Creator1Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaParser#creator1}.
+	 * @param ctx the parse tree
+	 */
+	void exitCreator1(JavaParser.Creator1Context ctx);
+	/**
+	 * Enter a parse tree produced by {@link JavaParser#creator2}.
+	 * @param ctx the parse tree
+	 */
+	void enterCreator2(JavaParser.Creator2Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaParser#creator2}.
+	 * @param ctx the parse tree
+	 */
+	void exitCreator2(JavaParser.Creator2Context ctx);
 	/**
 	 * Enter a parse tree produced by {@link JavaParser#classOrInterfaceOrPrimitiveType}.
 	 * @param ctx the parse tree
