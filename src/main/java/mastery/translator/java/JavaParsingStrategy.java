@@ -95,7 +95,8 @@ public class JavaParsingStrategy implements ParsingStrategy {
         "optionComma",
         "squares",
         "optionSemicolon",
-        "optionIdentifier"
+        "optionIdentifier",
+        "optionElementValuePairsOrElementValue"
     };
     private static final HashSet<String> listSet = new HashSet<>(Arrays.asList(listStrings));
 
