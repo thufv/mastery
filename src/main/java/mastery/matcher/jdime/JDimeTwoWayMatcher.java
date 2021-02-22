@@ -36,7 +36,8 @@ public class JDimeTwoWayMatcher extends TwoWayMatcher {
             return;
         }
 
-        if (tree1.label != tree2.label) {
+        if (tree1.label != tree2.label
+            || tree1.isLeaf() && !((Leaf)tree1).code.equals(((Leaf)tree2).code)) {
             if (lookaheadEnabled) {
                 Optional<Mapping> resume = lookAhead(tree1, tree2);
 

@@ -207,7 +207,7 @@ public class GumTreeTwoWayMatcher extends TwoWayMatcher {
 
                 if (left.dfsIndex == src.dfsIndex || right.dfsIndex == dst.dfsIndex) {
                     continue;
-                } else if (left.label != right.label || m.hasSrc(left) || m.hasDst(right)) {
+                } else if (left.label != right.label || left.isLeaf() && !((Leaf)left).code.equals(((Leaf)right).code) || m.hasSrc(left) || m.hasDst(right)) {
                     continue;
                 } else if (left.parent.label != right.parent.label) {
                     continue;
