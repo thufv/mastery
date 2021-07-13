@@ -26,11 +26,16 @@ dependencies {
 		exclude group: 'javax.servlet', module: 'servlet-api'
 	}
     compile 'org.slf4j:slf4j-nop:1.6.1'
+    compile 'org.eclipse.jdt:org.eclipse.jdt.core:3.26.0'
 }
 
 task runMain(type: JavaExec) {
     classpath sourceSets.main.runtimeClasspath
     main = "mastery.Main"
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
 }
 
 jar {
@@ -42,6 +47,8 @@ jar {
         configurations.compile.collect {
             it.isDirectory() ? it : zipTree(it)
         }
+    } {
+        exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
     }
 }
 
