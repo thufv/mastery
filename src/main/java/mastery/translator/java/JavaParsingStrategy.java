@@ -224,7 +224,7 @@ public class JavaParsingStrategy implements ParsingStrategy {
         return stopNames;
     }
 
-    // delcarations that probable unique
+    // declarations that probable unique
     // that is, declarations that (have both identifier and body as its child)
     // or (have both identifier and body as its child)
     // the list is the child number path to the identifier or a node that's supposed to have identifier

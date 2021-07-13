@@ -200,10 +200,10 @@ public final class Driver {
             Log.fine("done");
         } catch (IOException e) {
             e.printStackTrace();
-            System.exit(1);
+//            System.exit(1);
         } catch (Exception e) {
             e.printStackTrace();
-            System.exit(1);
+//            System.exit(1);
         }
     }
 

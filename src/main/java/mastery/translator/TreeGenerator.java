@@ -33,7 +33,7 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
     private final List<String> alternativeNames;
     private final HashSet<String> stopNames;
     private final Map<String, Integer> declarationNames;
-    // for the calculcation of position
+    // for the calculation of position
     private int curPos = 0;
 
     /**

@@ -7,7 +7,6 @@ import org.simmetrics.StringMetrics;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import mastery.matcher.MappingStore;
 import mastery.matcher.Similarities;
 import mastery.matcher.TwoWayMatcher;
 import mastery.matcher.ZsTree;
@@ -256,7 +255,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
         if (parent1 == null) { if(parent2 != null) return false; }
         else {
             if (parent2 == null) return false;
-            else if (parent1.isConstructor() && parent2.isConstructor() && parent1.label == parent2.label && node1.childno != node2.childno) return false;
+            else if (parent1.isConstructor() && parent2.isConstructor() && parent1.label == parent2.label && node1.childNo != node2.childNo) return false;
         }
 
         // homonymy checking
@@ -648,7 +647,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
                         assert nodeInDfsOrdering2[parentBuddyDfsIndex].isConstructor();
                         assert nodeInDfsOrdering2[parentBuddyDfsIndex].children.size() == parent.children.size();
 
-                        buddy = nodeInDfsOrdering2[parentBuddyDfsIndex].children.get(node.childno);
+                        buddy = nodeInDfsOrdering2[parentBuddyDfsIndex].children.get(node.childNo);
                         
                         if (checkMapping(node, buddy)) {
                             match(node, buddy, MappingType.recovery);

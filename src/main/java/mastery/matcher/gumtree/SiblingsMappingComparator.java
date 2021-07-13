@@ -66,8 +66,8 @@ public final class SiblingsMappingComparator implements Comparator<Mapping> {
     }
 
     protected double posInParentSimilarity(Tree src, Tree dst) {
-        int posSrc = src.parent == null ? 0 : src.childno;
-        int posDst = dst.parent == null ? 0 : dst.childno;
+        int posSrc = src.parent == null ? 0 : src.childNo;
+        int posDst = dst.parent == null ? 0 : dst.childNo;
         int maxSrcPos = src.parent == null ? 1 : src.parent.children.size();
         int maxDstPos = dst.parent == null ? 1 : dst.parent.children.size();
         int maxPosDiff = Math.max(maxSrcPos, maxDstPos);

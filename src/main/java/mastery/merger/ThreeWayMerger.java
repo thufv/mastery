@@ -397,17 +397,17 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
         public void calStart() {
             left_start = nodes.stream()
                 .filter(node -> node.hasLeftOrigin())
-                .mapToInt(node -> Integer.valueOf(node.getLeftOrigin().childno))
+                .mapToInt(node -> Integer.valueOf(node.getLeftOrigin().childNo))
                 .min()
                 .orElse(-1);
             base_start = nodes.stream()
                 .filter(node -> node.hasBaseOrigin())
-                .mapToInt(node -> Integer.valueOf(node.getBaseOrigin().childno))
+                .mapToInt(node -> Integer.valueOf(node.getBaseOrigin().childNo))
                 .min()
                 .orElse(-1);
             right_start = nodes.stream()
                 .filter(node -> node.hasRightOrigin())
-                .mapToInt(node -> Integer.valueOf(node.getRightOrigin().childno))
+                .mapToInt(node -> Integer.valueOf(node.getRightOrigin().childNo))
                 .min()
                 .orElse(-1);
         }
@@ -450,7 +450,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
                     rightbases.add(node);
             }
             for (Candidate rightbase: rightbases)
-                if (rightbase.getRightOrigin().childno - right_start != rightbase.getBaseOrigin().childno - base_start)
+                if (rightbase.getRightOrigin().childNo - right_start != rightbase.getBaseOrigin().childNo - base_start)
                     return false;
             return true;
         }
@@ -465,7 +465,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
                     leftbases.add(node);
             }
             for (Candidate leftbase: leftbases)
-                if (leftbase.getLeftOrigin().childno - left_start != leftbase.getBaseOrigin().childno - base_start)
+                if (leftbase.getLeftOrigin().childNo - left_start != leftbase.getBaseOrigin().childNo - base_start)
                     return false;
             return true;
         }
@@ -474,7 +474,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             List<Candidate> sorted = new ArrayList<Candidate>();
             for (Candidate node: nodes)
                 if (node.hasLeftOrigin()) {
-                    int i = node.getLeftOrigin().childno - left_start;
+                    int i = node.getLeftOrigin().childNo - left_start;
                     while (sorted.size() <= i)
                         sorted.add(null);
                     sorted.set(i, node);
@@ -492,7 +492,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             List<Candidate> sorted = new ArrayList<Candidate>();
             for (Candidate node: nodes)
                 if (node.hasRightOrigin()) {
-                    int i = node.getRightOrigin().childno - right_start;
+                    int i = node.getRightOrigin().childNo - right_start;
                     while (sorted.size() <= i)
                         sorted.add(null);
                     sorted.set(i, node);

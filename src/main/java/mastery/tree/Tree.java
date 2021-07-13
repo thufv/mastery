@@ -20,7 +20,7 @@ import static org.junit.Assert.assertNotNull;
  * @see OrderedList
  * @see UnorderedList
  * @see Leaf
- * @see Constructor (target tree only)
+ * @see Conflict (target tree only)
  */
 public abstract class Tree {
     /**
@@ -86,7 +86,7 @@ public abstract class Tree {
     /**
      * The number of child that the node is
      */
-    public Integer childno = 0;
+    public Integer childNo = 0;
 
     /**
      * The buddy of recovery mapping (if the current node is one node of recovery mapping)
@@ -293,7 +293,7 @@ public abstract class Tree {
         for (int i = 0; i < children.size(); ++i) {
             Tree child = children.get(i);
 
-            child.childno = i; // set the number as child
+            child.childNo = i; // set the number as child
             child.parent = this; // set parent here
         }
         this.parent = null;
@@ -352,7 +352,7 @@ public abstract class Tree {
 
     public void updateNumberOfChildren() {
         for (int i = 0; i < children.size(); ++i)
-            children.get(i).childno = i;
+            children.get(i).childNo = i;
     }
 
     // the node itself is excluded
@@ -379,6 +379,6 @@ public abstract class Tree {
             size += child.size;
 
         for (int i = 0; i < children.size(); ++i)
-            children.get(i).childno = i;
+            children.get(i).childNo = i;
     }
 }

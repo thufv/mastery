@@ -155,7 +155,7 @@ public class ActionGenerator {
                         actions.add(mv);
                         Log.finer("    " + mv);
 
-                        int oldk = w.childno;
+                        int oldk = w.childNo;
                         z.children.add(k, w);
                         z.updateNumberOfChildren();
                         w.parent.children.remove(oldk);
@@ -234,7 +234,7 @@ public class ActionGenerator {
                             Log.finer(mv.toString());
                         }
 
-                        int oldk = a.childno;
+                        int oldk = a.childNo;
                         w.children.add(k, a);
                         w.updateNumberOfChildren();
                         if (k  < oldk )
@@ -261,7 +261,7 @@ public class ActionGenerator {
             }
         }
 
-        int xpos = x.childno;
+        int xpos = x.childNo;
         Tree v = null;
         for (int i = 0; i < xpos; i++) {
             Tree c = siblings.get(i);
@@ -271,7 +271,7 @@ public class ActionGenerator {
         if (v == null) return 0;
 
         Tree u = newMappings.getSrc(v);
-        int upos = u.childno;
+        int upos = u.childNo;
         return upos + 1;
     }
 
