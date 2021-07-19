@@ -240,7 +240,7 @@ public class TreePrinters {
             }
         };
         tree.accept(tokenWalker);
-        String rawCode = sb.toString();
+        String rawCode = new TreeTransformer(null).restore((Constructor) tree).toString();
         String formattedCode = "";
 
         if (formatter == null) {

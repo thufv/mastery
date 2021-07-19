@@ -1,12 +1,9 @@
 package mastery.tree;
 
+import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.CompilationUnit;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTParser;
-import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -14,7 +11,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Map;
 
 public final class TreeBuilders {
     /**
@@ -88,7 +84,7 @@ public final class TreeBuilders {
                     for (var child : constructor.children) {
                         updated.add(child.accept(this));
                     }
-                    return new Constructor(constructor.label, constructor.name, updated);
+                    return new Constructor(constructor, updated);
                 }
             }
 
@@ -129,34 +125,33 @@ public final class TreeBuilders {
 
     /**
      * Build a tree from source file.
-     *
-     * @param srcFile
-     * @param language
-     * @return the tree
      */
     public static Tree fromSource(String srcFile, String language) throws IOException {
         if (!language.equals("JAVA")) {
             throw new UnsupportedOperationException("Language other than Java is not supported.");
         }
 
-        ASTParser parser = ASTParser.newParser(AST.JLS_Latest);
-        parser.setKind(ASTParser.K_COMPILATION_UNIT);
+        String code = Files.readString(Paths.get(srcFile));
 
-        Map<String, String> pOptions = JavaCore.getOptions();
-        pOptions.put(JavaCore.COMPILER_COMPLIANCE, JavaCore.VERSION_1_8);
-        pOptions.put(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, JavaCore.VERSION_1_8);
-        pOptions.put(JavaCore.COMPILER_SOURCE, JavaCore.VERSION_1_8);
-        pOptions.put(JavaCore.COMPILER_DOC_COMMENT_SUPPORT, JavaCore.ENABLED);
-        parser.setCompilerOptions(pOptions);
+//        ASTParser parser = ASTParser.newParser(AST.JLS8);
+//        parser.setKind(ASTParser.K_COMPILATION_UNIT);
+//
+//        Map<String, String> pOptions = JavaCore.getOptions();
+//        pOptions.put(JavaCore.COMPILER_COMPLIANCE, JavaCore.VERSION_1_8);
+//        pOptions.put(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, JavaCore.VERSION_1_8);
+//        pOptions.put(JavaCore.COMPILER_SOURCE, JavaCore.VERSION_1_8);
+//        pOptions.put(JavaCore.COMPILER_DOC_COMMENT_SUPPORT, JavaCore.ENABLED);
+//        parser.setCompilerOptions(pOptions);
+//
+//        parser.setSource(code.toCharArray());
+//        CompilationUnit root = (CompilationUnit) parser.createAST(null);
+//        if ((root.getFlags() & ASTNode.MALFORMED) != 0) {
+//            throw new IllegalStateException("Syntax Error");
+//        }
 
-        String sourceCode = Files.readString(Paths.get(srcFile));
-        parser.setSource(sourceCode.toCharArray());
-        CompilationUnit root = (CompilationUnit) parser.createAST(null);
-        if ((root.getFlags() & ASTNode.MALFORMED) != 0) {
-            throw new IllegalStateException("Syntax Error");
-        }
-
-        TreeTransformer transformer = new TreeTransformer(sourceCode);
-        return transformer.generate(root);
+        CompilationUnit cu = StaticJavaParser.parse(code);
+        TreeTransformer transformer = new TreeTransformer(code);
+        Tree tree = transformer.generate(cu);
+        return tree;
     }
 }

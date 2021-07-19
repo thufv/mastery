@@ -80,7 +80,7 @@ public final class ThreeWayMerger implements MergeScenario.Visitor<Tree> {
             }
         }
 
-        return new Constructor(base.label, base.name, targets);
+        return new Constructor(base, targets);
     }
 
     @Override

@@ -26,7 +26,8 @@ dependencies {
 		exclude group: 'javax.servlet', module: 'servlet-api'
 	}
     compile 'org.slf4j:slf4j-nop:1.6.1'
-    compile 'org.eclipse.jdt:org.eclipse.jdt.core:3.26.0'
+//    compile 'org.eclipse.jdt:org.eclipse.jdt.core:3.12.3'
+    compile 'com.github.javaparser:javaparser-core:3.22.1'
 }
 
 task runMain(type: JavaExec) {

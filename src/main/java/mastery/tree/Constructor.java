@@ -1,7 +1,10 @@
 package mastery.tree;
 
+import com.github.javaparser.metamodel.BaseNodeMetaModel;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A constructor, i.e. an internal node that has a fixed number of children.
@@ -9,6 +12,10 @@ import java.util.List;
  * namasikanam: I don't like this ambiguous name.
  */
 public final class Constructor extends InternalNode {
+    public BaseNodeMetaModel nodeMetaModel = null;
+
+    public Map<String, Object> attributes;
+
     public final int arity;
 
     public Constructor(int label, String name, List<Tree> children) {
@@ -16,9 +23,14 @@ public final class Constructor extends InternalNode {
         this.arity = children.size();
     }
 
+    public Constructor(Constructor constructor, List<Tree> children) {
+        this(constructor.label, constructor.name, children);
+        nodeMetaModel = constructor.nodeMetaModel;
+        attributes = constructor.attributes;
+    }
+
     public Constructor(int label, String name, List<Tree> children, boolean stop) {
-        super(label, name, children);
-        this.arity = children.size();
+        this(label, name, children);
         this.stop = stop;
     }
 
@@ -50,7 +62,7 @@ public final class Constructor extends InternalNode {
         for (var child : children) {
             copiedChildren.add(child.deepCopy());
         }
-        Tree copiedConstructor = new Constructor(label, name, copiedChildren);
+        Constructor copiedConstructor = new Constructor(this, copiedChildren);
         copiedConstructor.assignment = assignment;
         copiedConstructor.actionId = actionId;
         copiedConstructor.dfsIndex = dfsIndex;
