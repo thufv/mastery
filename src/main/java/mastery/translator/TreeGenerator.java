@@ -16,6 +16,7 @@ import mastery.tree.OrderedList;
 
 import org.antlr.v4.runtime.tree.ErrorNode;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -178,15 +179,16 @@ public class TreeGenerator implements ParseTreeVisitor<Tree> {
         
         Integer label = getTerminalLabelId(t.getType());
         String name = parser.getVocabulary().getSymbolicName(t.getType());
-        String code = t.getText();
-        byte[] data = new byte[0];
-        try {
-            data = code.getBytes("ASCII");
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-        code = new String(data);
+//        String code = t.getText();
+//        byte[] data = new byte[0];
+//        try {
+//            data = code.getBytes("ASCII");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            System.exit(1);
+//        }
+//        code = new String(data);
+        String code = new String(t.getText().getBytes(StandardCharsets.US_ASCII));
 
         Tree ans = new Leaf(label, name, code);
         ans.startPos = t.getStartIndex();

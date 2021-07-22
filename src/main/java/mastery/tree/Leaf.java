@@ -4,11 +4,17 @@ package mastery.tree;
  * A leaf node, i.e. a token.
  */
 public class Leaf extends Tree {
-    public final String code;
+    public String code;
 
     public Leaf(int label, String name, String code) {
-        super(label, name, code);
+        super(label, name);
         this.code = code;
+    }
+
+    public Leaf(int label, String name, int startPos, int endPos, String fullCode) {
+        this(label, name, fullCode.substring(startPos, endPos));
+        this.startPos = startPos;
+        this.endPos = endPos;
     }
 
     @Override
@@ -64,6 +70,11 @@ public class Leaf extends Tree {
     @Override
     public final <T> T accept(RichVisitor<T> visitor) {
         return visitor.visitLeaf(this);
+    }
+
+    @Override
+    public <R, A> R accept(GenericVisitor<R, A> v, A arg) {
+        return v.visit(this, arg);
     }
 
     @Override

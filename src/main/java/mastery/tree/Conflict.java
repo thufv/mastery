@@ -118,6 +118,11 @@ public class Conflict extends Tree {
     }
 
     @Override
+    public <R, A> R accept(GenericVisitor<R, A> v, A arg) {
+        return v.visit(this, arg);
+    }
+
+    @Override
     public String toString() {
         return "<CONFLICT>";
     }

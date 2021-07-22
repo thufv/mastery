@@ -1,11 +1,15 @@
 package mastery.tree;
 
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.printer.DefaultPrettyPrinter;
+import com.github.javaparser.printer.configuration.DefaultPrinterConfiguration;
+import mastery.tree.extensions.ConflictPrinterVisitor;
+import mastery.util.Pair;
 import mastery.util.log.IndentPrinter;
 
-
-
-import java.util.*;
 import java.io.*;
+import java.util.Arrays;
+import java.util.Map;
 
 public class TreePrinters {
     public static void textTree(Tree tree, IndentPrinter printer) {
@@ -205,46 +209,19 @@ public class TreePrinters {
     /**
      * Pretty code formatted according to syntax.
      *
-     * @param tree
-     * @param formatter
-     * @param language
      * @return The output as a string
      */
-    public static String prettyCode(Tree tree, String formatter, String language, String leftfile, String rightfile) {
-        var sb = new StringBuilder();
-        var tokenWalker = new Tree.Visitor<Object>() {
-            @Override
-            public void visitLeaf(Leaf leaf, Object... ctx) {
-                sb.append(leaf.code);
-                sb.append(' ');
-            }
-
-            @Override
-            public void visitInternal(InternalNode internal, Object... ctx) {
-                for (Tree child : internal.children) {
-                    child.accept(this);
-                }
-            }
-
-            @Override
-            public void visitConflict(Conflict conflict, Object... ctx) {
-                sb.append("\n<<<<<<< " + leftfile + "\n");
-                for (Tree node : conflict.left) {
-                    node.accept(this);
-                }
-                sb.append("\n=======\n");
-                for (Tree node : conflict.right) {
-                    node.accept(this);
-                }
-                sb.append("\n>>>>>>> " + rightfile + "\n");
-            }
-        };
-        tree.accept(tokenWalker);
-        String rawCode = new TreeTransformer(null).restore((Constructor) tree).toString();
-        String formattedCode = "";
+    public static String prettyCode(Tree tree, String formatter, String language, String leftFile, String rightFile) {
+        CompilationUnit cu = (CompilationUnit) TreeTransformer.restore(tree);
+        cu.printer(new DefaultPrettyPrinter(
+            config -> new ConflictPrinterVisitor(config, Pair.of(leftFile, rightFile)),
+            new DefaultPrinterConfiguration()
+        ));
+        String rawCode = cu.toString();
+        StringBuilder formattedCode = new StringBuilder();
 
         if (formatter == null) {
-            formattedCode = rawCode;
+            formattedCode = new StringBuilder(rawCode);
         } else {
             try {
                 // Use clang-format
@@ -259,9 +236,9 @@ public class TreePrinters {
 
                 InputStream is = p.getInputStream();
                 BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                String line = null;
+                String line;
                 while ((line = br.readLine()) != null)
-                    formattedCode += line + "\n";
+                    formattedCode.append(line).append("\n");
                 br.close();
                 int r = p.waitFor(); // Let the process finish.
                 assert (r == 0);
@@ -271,7 +248,7 @@ public class TreePrinters {
             }
         }
 
-        return formattedCode;
+        return formattedCode.toString();
     }
     public static Map<String, String> fileExtension = Map.of(
         "JAVA", "java",

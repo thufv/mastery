@@ -68,7 +68,7 @@ public final class TreeBuilders {
      * @return updated tree
      */
     public static Tree fromUpdate(Tree tree, Tree origin, Tree update) {
-        return tree.accept(new Tree.RichVisitor<Tree>() {
+        return tree.accept(new Tree.RichVisitor<>() {
             @Override
             public Tree visitLeaf(Leaf leaf) {
                 return leaf == origin ? update : leaf.deepCopy();
@@ -78,8 +78,7 @@ public final class TreeBuilders {
             public Tree visitConstructor(Constructor constructor) {
                 if (constructor == origin) {
                     return update;
-                }
-                else {
+                } else {
                     var updated = new ArrayList<Tree>();
                     for (var child : constructor.children) {
                         updated.add(child.accept(this));
@@ -92,8 +91,7 @@ public final class TreeBuilders {
             public Tree visitOrderedList(OrderedList ordered) {
                 if (ordered == origin) {
                     return update;
-                }
-                else {
+                } else {
                     var updated = new ArrayList<Tree>();
                     for (var child : ordered.children) {
                         updated.add(child.accept(this));
@@ -106,8 +104,7 @@ public final class TreeBuilders {
             public Tree visitUnorderedList(UnorderedList unordered) {
                 if (unordered == origin) {
                     return update;
-                }
-                else {
+                } else {
                     var updated = new ArrayList<Tree>();
                     for (var child : unordered.children) {
                         updated.add(child.accept(this));
@@ -132,26 +129,7 @@ public final class TreeBuilders {
         }
 
         String code = Files.readString(Paths.get(srcFile));
-
-//        ASTParser parser = ASTParser.newParser(AST.JLS8);
-//        parser.setKind(ASTParser.K_COMPILATION_UNIT);
-//
-//        Map<String, String> pOptions = JavaCore.getOptions();
-//        pOptions.put(JavaCore.COMPILER_COMPLIANCE, JavaCore.VERSION_1_8);
-//        pOptions.put(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, JavaCore.VERSION_1_8);
-//        pOptions.put(JavaCore.COMPILER_SOURCE, JavaCore.VERSION_1_8);
-//        pOptions.put(JavaCore.COMPILER_DOC_COMMENT_SUPPORT, JavaCore.ENABLED);
-//        parser.setCompilerOptions(pOptions);
-//
-//        parser.setSource(code.toCharArray());
-//        CompilationUnit root = (CompilationUnit) parser.createAST(null);
-//        if ((root.getFlags() & ASTNode.MALFORMED) != 0) {
-//            throw new IllegalStateException("Syntax Error");
-//        }
-
         CompilationUnit cu = StaticJavaParser.parse(code);
-        TreeTransformer transformer = new TreeTransformer(code);
-        Tree tree = transformer.generate(cu);
-        return tree;
+        return TreeTransformer.generate(cu);
     }
 }

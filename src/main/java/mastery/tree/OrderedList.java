@@ -46,6 +46,11 @@ public final class OrderedList extends ListNode {
     }
 
     @Override
+    public <R, A> R accept(GenericVisitor<R, A> v, A arg) {
+        return v.visit(this, arg);
+    }
+
+    @Override
     public String toString() {
         return name + " [ordered] assignment " + assignment;
     }

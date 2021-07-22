@@ -1,6 +1,6 @@
 package mastery.tree;
 
-import java.util.*;
+import java.util.List;
 
 public class FakeTree extends Tree {
     public FakeTree(List<Tree> trees) {
@@ -29,6 +29,11 @@ public class FakeTree extends Tree {
 
     @Override
     public final <T> T accept(RichVisitor<T> visitor) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public <R, A> R accept(GenericVisitor<R, A> v, A arg) {
         throw unsupportedOperation();
     }
 
