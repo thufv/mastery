@@ -11,6 +11,7 @@ import mastery.tree.extensions.ConflictWrapper;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
+import static mastery.tree.MetaModel.ORDERED_LIST_PROPERTIES;
 import static mastery.tree.extensions.ConflictWrapper.CONFLICT_KEY;
 
 public final class TreeTransformer {
@@ -50,24 +51,6 @@ public final class TreeTransformer {
             }
         }
     }
-
-    static final Set<String> ORDERED_LIST_PROPERTIES = Set.of(
-        "arguments",
-        "catchClauses",
-        "entries",
-        "initialization",
-        "labels",
-        "levels",
-        "parameters",
-        "resources",
-        "statements",
-        "thrownExceptions",
-        "typeArguments",
-        "typeParameters",
-        "update",
-        "values",
-        "variables"
-    );
 
     static ListNode generateListNode(Node node, PropertyMetaModel property) {
         List<Tree> children = new ArrayList<>();
