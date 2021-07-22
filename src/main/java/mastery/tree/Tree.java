@@ -410,4 +410,8 @@ public abstract class Tree {
         for (int i = 0; i < children.size(); ++i)
             children.get(i).childNo = i;
     }
+
+    public boolean isEmpty() {
+        return children.isEmpty();
+    }
 }

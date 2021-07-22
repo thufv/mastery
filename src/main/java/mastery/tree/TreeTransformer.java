@@ -9,10 +9,7 @@ import com.github.javaparser.metamodel.PropertyMetaModel;
 import mastery.tree.extensions.ConflictWrapper;
 
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static mastery.tree.extensions.ConflictWrapper.CONFLICT_KEY;
 
@@ -24,74 +21,55 @@ public final class TreeTransformer {
         return nodeMetaModel.getTypeName();
     }
 
-    static String getTransformedName(Node node) {
-        return getTransformedName(node.getMetaModel());
-    }
-
     static String getTransformedName(PropertyMetaModel propertyMetaModel) {
         return propertyMetaModel.getContainingNodeMetaModel().getTypeName() + "#" + propertyMetaModel.getName();
     }
 
-    static void createLabelFor(String name) {
+    static void createLabel(String name) {
         LABELS.put(name, LABELS.size());
     }
 
-    static int getLabel(BaseNodeMetaModel baseNodeMetaModel) {
-        return LABELS.get(getTransformedName(baseNodeMetaModel));
-    }
-
-    static int getLabel(Node node) {
-        return getLabel(node.getMetaModel());
-    }
-
-    static int getLabel(PropertyMetaModel propertyMetaModel) {
-        return LABELS.get(getTransformedName(propertyMetaModel));
+    static int getLabel(String name) {
+        return LABELS.get(name);
     }
 
     static {
         for (BaseNodeMetaModel nodeMetaModel : JavaParserMetaModel.getNodeMetaModels()) {
-            createLabelFor(getTransformedName(nodeMetaModel));
+            assert !nodeMetaModel.getAllPropertyMetaModels().isEmpty();
+            createLabel(getTransformedName(nodeMetaModel));
             for (PropertyMetaModel propertyMetaModel : nodeMetaModel.getDeclaredPropertyMetaModels()) {
-                createLabelFor(getTransformedName(propertyMetaModel));
+                createLabel(getTransformedName(propertyMetaModel));
             }
             Class<?> c = nodeMetaModel.getType();
             if (!Modifier.isAbstract(c.getModifiers())) {
-                while (true) {
-                    Class<?> p = c.getSuperclass();
-                    if (p == null || CONCRETE_CLASSES.containsKey(p)) {
-                        break;
-                    }
+                Class<?> p = c;
+                while (p != null && !CONCRETE_CLASSES.containsKey(p)) {
                     CONCRETE_CLASSES.put(p, c);
+                    p = p.getSuperclass();
                 }
             }
         }
     }
 
-    static boolean isOrderedListProperty(PropertyMetaModel property) {
-        if (property.isNodeList()) {
-            return true; // TODO
-        }
-        return false;
-    }
+    static final Set<String> ORDERED_LIST_PROPERTIES = Set.of(
+        "arguments",
+        "catchClauses",
+        "entries",
+        "initialization",
+        "labels",
+        "levels",
+        "parameters",
+        "resources",
+        "statements",
+        "thrownExceptions",
+        "typeArguments",
+        "typeParameters",
+        "update",
+        "values",
+        "variables"
+    );
 
-    static boolean isUnorderedListProperty(PropertyMetaModel property) {
-        if (property.isNodeList()) {
-            return false; // TODO
-        }
-        if (property.isNode()) {
-            return property.isOptional();
-        }
-        return false;
-    }
-
-    static boolean isChildProperty(PropertyMetaModel property) {
-        if (property.isAttribute()) {
-            return property.getType() != boolean.class || property.is("value");
-        }
-        return true;
-    }
-
-    static OrderedList generateOrderedList(Node node, PropertyMetaModel property) {
+    static ListNode generateListNode(Node node, PropertyMetaModel property) {
         List<Tree> children = new ArrayList<>();
         Object value = property.getValue(node);
         if (value != null) {
@@ -99,119 +77,132 @@ public final class TreeTransformer {
                 children.add(generate(child));
             }
         }
-        return new OrderedList(
-            getLabel(property),
-            getTransformedName(property),
-            children
-        );
+        String name = getTransformedName(property);
+        if (ORDERED_LIST_PROPERTIES.contains(property.getName())) {
+            return new OrderedList(getLabel(name), name, children);
+        } else {
+            return new UnorderedList(getLabel(name), name, children);
+        }
     }
 
-    static UnorderedList generateUnorderedList(Node node, PropertyMetaModel property) {
+    static UnorderedList generateOptionalNode(Node node, PropertyMetaModel property) {
         List<Tree> children = new ArrayList<>();
         Object value = property.getValue(node);
         if (value != null) {
-            if (property.isNodeList()) {
-                for (Node child : (NodeList<?>) value) {
-                    children.add(generate(child));
-                }
-            } else {
-                children.add(generate((Node) value));
-            }
+            children.add(generate((Node) value));
         }
-        return new UnorderedList(
-            getLabel(property),
-            getTransformedName(property),
-            children
-        );
-    }
-
-    static Tree generateChild(Node node, PropertyMetaModel property) {
-        if (property.isAttribute()) {
-            return generateLeaf(node, property);
-        }
-        Object child = property.getValue(node);
-        return generate((Node) child);
-    }
-
-    static Leaf generateLeaf(Node node) {
-        return new Leaf(
-            getLabel(node),
-            getTransformedName(node),
-            node.toString()
-        );
+        String name = getTransformedName(property);
+        return new UnorderedList(getLabel(name), name, children);
     }
 
     static Leaf generateLeaf(Node node, PropertyMetaModel property) {
-        return new Leaf(
-            getLabel(property),
-            getTransformedName(property),
-            property.getValue(node).toString() // this may not be appropriate
-        );
+        String name = getTransformedName(property);
+        return new Leaf(getLabel(name), name, property.getValue(node).toString());
     }
 
-    // TODO: handle simple property
     // TODO: compute identifier
     // TODO: record code position
     public static Tree generate(Node node) {
         List<Tree> children = new ArrayList<>();
-        Map<String, Object> attributes = new HashMap<>();
 
         for (PropertyMetaModel property : node.getMetaModel().getAllPropertyMetaModels()) {
-            if (isChildProperty(property)) {
-                Tree child;
-                if (isOrderedListProperty(property)) {
-                    child = generateOrderedList(node, property);
-                } else if (isUnorderedListProperty(property)) {
-                    child = generateUnorderedList(node, property);
-                } else {
-                    child = generateChild(node, property);
-                }
-                children.add(child);
+            Tree child;
+            if (property.isNodeList()) {
+                child = generateListNode(node, property);
+            } else if (property.isOptional()) {
+                child = generateOptionalNode(node, property);
+            } else if (property.isAttribute()) {
+                child = generateLeaf(node, property);
+            } else {
+                child = generate((Node) property.getValue(node));
             }
-            if (property.isAttribute()) {
-                attributes.put(property.getName(), property.getValue(node));
-            }
+            children.add(child);
         }
 
-        if (children.isEmpty()) {
-            return generateLeaf(node);
-        }
+        String name = getTransformedName(node.getMetaModel());
+        return new Constructor(getLabel(name), name, children, node.getMetaModel());
+    }
 
-        Constructor constructor = new Constructor(
-            getLabel(node),
-            getTransformedName(node),
-            children
-        );
-        constructor.nodeMetaModel = node.getMetaModel();
-        constructor.attributes = attributes;
-        return constructor;
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static Object parseAttribute(String value, Class<?> type) {
+        if (type == String.class) {
+            return value;
+        }
+        if (type == boolean.class) {
+            return Boolean.parseBoolean(value);
+        }
+        if (type.isEnum()) {
+            return Enum.valueOf((Class<Enum>) type, value);
+        }
+        throw new IllegalStateException();
+    }
+
+    static Object parseAttribute(Tree tree, PropertyMetaModel property) {
+        return parseAttribute(((Leaf) tree).code, property.getType());
+    }
+
+    static Node constructConflictNode(List<Visitable> left, List<Visitable> right, Class<?> type) {
+        Node node;
+        try {
+            Class<?> nodeClass = CONCRETE_CLASSES.get(type);
+            node = (Node) nodeClass.getConstructor().newInstance();
+        } catch (Exception e) {
+            throw new IllegalStateException();
+        }
+        node.setData(CONFLICT_KEY, new ConflictWrapper(left, right));
+        return node;
+    }
+
+    static Node constructConflictNode(Visitable left, Visitable right, Class<?> type) {
+        return constructConflictNode(List.of(left), List.of(right), type);
     }
 
     public static class RestorationVisitor implements Tree.GenericVisitor<Visitable, Object> {
         @Override
         public Node visit(Constructor tree, Object arg) {
-            int i = 0;
-            Map<String, Object> parameters = tree.attributes;
-            for (PropertyMetaModel property : tree.nodeMetaModel.getAllPropertyMetaModels()) {
-                if (isChildProperty(property)) {
-                    Tree child = tree.childAt(i++);
-                    if (property.isNodeList()) {
-                        parameters.put(property.getName(), child.accept(this, property));
-                    } else if (isUnorderedListProperty(property)) {
-                        if (!child.children.isEmpty()) {
-                            assert child.children.size() == 1;
-                            parameters.put(property.getName(), child.children.get(0).accept(this, property));
-                        }
-                    } else {
-                        //noinspection StatementWithEmptyBody
-                        if (property.isAttribute()) {
-                        } else {
-                            parameters.put(property.getName(), child.accept(this, property));
-                        }
+            Map<String, Object> leftParams = new HashMap<>();
+            Map<String, Object> rightParams = new HashMap<>();
+            List<PropertyMetaModel> properties = tree.meta.getAllPropertyMetaModels();
+            assert properties.size() == tree.children.size();
+
+            for (int i = 0; i < properties.size(); ++i) {
+                PropertyMetaModel property = properties.get(i);
+                Tree child = tree.childAt(i);
+
+                Object value = null;
+                if (property.isNodeList()) {
+                    value = child.accept(this, property);
+                } else if (property.isOptional()) {
+                    if (!child.isEmpty()) {
+                        assert child.children.size() == 1;
+                        value = child.children.get(0).accept(this, property);
                     }
+                } else if (property.isAttribute()) {
+                    if (child.isConflict()) {
+                        Conflict conflict = (Conflict) child;
+                        assert conflict.left.size() == 1;
+                        assert conflict.right.size() == 1;
+                        leftParams.put(property.getName(), parseAttribute(conflict.left.get(0), property));
+                        rightParams.put(property.getName(), parseAttribute(conflict.right.get(0), property));
+                    } else {
+                        value = parseAttribute(child, property);
+                    }
+                } else {
+                    value = child.accept(this, property);
+                }
+
+                if (value != null) {
+                    leftParams.put(property.getName(), value);
+                    rightParams.put(property.getName(), value);
                 }
             }
-            return tree.nodeMetaModel.construct(parameters);
+
+            Node left = tree.meta.construct(leftParams);
+            if (leftParams.equals(rightParams)) {
+                return left;
+            }
+            Node right = tree.meta.construct(rightParams);
+            return constructConflictNode(left, right, tree.meta.getType());
         }
 
         @Override
@@ -234,14 +225,7 @@ public final class TreeTransformer {
             for (Tree subtree : tree.right) {
                 right.add(subtree.accept(this, null));
             }
-            try {
-                Class<?> nodeClass = CONCRETE_CLASSES.get(((PropertyMetaModel) arg).getType());
-                Node node = (Node) nodeClass.getConstructor().newInstance();
-                node.setData(CONFLICT_KEY, new ConflictWrapper(left, right));
-                return node;
-            } catch (Exception e) {
-                throw new IllegalStateException();
-            }
+            return constructConflictNode(left, right, ((PropertyMetaModel) arg).getType());
         }
     }
 

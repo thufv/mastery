@@ -4,7 +4,6 @@ import com.github.javaparser.metamodel.BaseNodeMetaModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * A constructor, i.e. an internal node that has a fixed number of children.
@@ -12,9 +11,7 @@ import java.util.Map;
  * namasikanam: I don't like this ambiguous name.
  */
 public final class Constructor extends InternalNode {
-    public BaseNodeMetaModel nodeMetaModel = null;
-
-    public Map<String, Object> attributes;
+    public BaseNodeMetaModel meta = null;
 
     public final int arity;
 
@@ -23,10 +20,13 @@ public final class Constructor extends InternalNode {
         this.arity = children.size();
     }
 
+    public Constructor(int label, String name, List<Tree> children, BaseNodeMetaModel meta) {
+        this(label, name, children);
+        this.meta = meta;
+    }
+
     public Constructor(Constructor constructor, List<Tree> children) {
-        this(constructor.label, constructor.name, children);
-        nodeMetaModel = constructor.nodeMetaModel;
-        attributes = constructor.attributes;
+        this(constructor.label, constructor.name, children, constructor.meta);
     }
 
     public Constructor(int label, String name, List<Tree> children, boolean stop) {
