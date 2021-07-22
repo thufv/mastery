@@ -8,6 +8,14 @@ import java.util.List;
 public abstract class InternalNode extends Tree {
     protected InternalNode(int label, String name, List<Tree> children) {
         super(label, name, children);
+
+        if (name.matches(".*(Declaration|Name)")) {
+            for (Tree child : children) {
+                if (child.identifier != null) {
+                    this.identifier = name + ":" + child.getIdentifierName();
+                }
+            }
+        }
     }
 
     @Override

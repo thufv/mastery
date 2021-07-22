@@ -97,10 +97,11 @@ public final class TreeTransformer {
 
     static Leaf generateLeaf(Node node, PropertyMetaModel property) {
         String name = getTransformedName(property);
-        return new Leaf(getLabel(name), name, property.getValue(node).toString());
+        String value = property.getValue(node).toString();
+        String identifier = property.is("identifier") ? value : null;
+        return new Leaf(getLabel(name), name, value, identifier);
     }
 
-    // TODO: compute identifier
     // TODO: record code position
     public static Tree generate(Node node) {
         List<Tree> children = new ArrayList<>();

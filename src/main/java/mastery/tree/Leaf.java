@@ -11,6 +11,13 @@ public class Leaf extends Tree {
         this.code = code;
     }
 
+    public Leaf(int label, String name, String code, String identifier) {
+        this(label, name, code);
+        if (identifier != null) {
+            this.identifier = name + ":" + identifier;
+        }
+    }
+
     public Leaf(int label, String name, int startPos, int endPos, String fullCode) {
         this(label, name, fullCode.substring(startPos, endPos));
         this.startPos = startPos;

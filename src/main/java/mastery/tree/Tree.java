@@ -414,4 +414,8 @@ public abstract class Tree {
     public boolean isEmpty() {
         return children.isEmpty();
     }
+
+    public String getIdentifierName() {
+        return identifier.substring(identifier.indexOf(':') + 1);
+    }
 }
