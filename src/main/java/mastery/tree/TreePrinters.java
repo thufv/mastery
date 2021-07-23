@@ -1,15 +1,22 @@
 package mastery.tree;
 
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.visitor.Visitable;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.printer.DefaultPrettyPrinter;
 import com.github.javaparser.printer.configuration.DefaultPrinterConfiguration;
+
 import mastery.tree.extensions.ConflictPrinterVisitor;
 import mastery.util.Pair;
 import mastery.util.log.IndentPrinter;
+import mastery.tree.TreeTransformer.RestorationVisitor;
 
 import java.io.*;
 import java.util.Arrays;
 import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class TreePrinters {
     public static void textTree(Tree tree, IndentPrinter printer) {
@@ -192,22 +199,26 @@ public class TreePrinters {
         printer.println(textTreePrinter.get());
     }
 
+    @SuppressWarnings("unchecked")
     public static String rawCode(Tree tree) {
-        var sb = new StringBuilder();
-        var tokenWalker = new Tree.PreOrderWalker() {
-            @Override
-            public void visitLeaf(Leaf leaf, Object... ctx) {
-                sb.append(leaf.code);
-                sb.append(' ');
+        String s;
+        if (tree instanceof Leaf) {
+            s = ((Leaf)tree).code;
+        } else {
+            Visitable result = tree.accept(new RestorationVisitor(), false);
+            assert result instanceof Node || result instanceof NodeList;
+            if (result instanceof Node) s = ((Node) result).toString();
+            else {
+                assert result instanceof NodeList;
+                s = ((NodeList<Node>) result).toString();
             }
-        };
-
-        tokenWalker.accept(tree);
-        return sb.toString();
+        }
+        return StringUtils.normalizeSpace(s);
     }
 
     /**
      * Pretty code formatted according to syntax.
+     * Require the argument tree is the entire source code.
      *
      * @return The output as a string
      */
