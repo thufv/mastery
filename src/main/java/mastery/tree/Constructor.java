@@ -29,11 +29,6 @@ public final class Constructor extends InternalNode {
         this(constructor.label, constructor.name, children, constructor.meta);
     }
 
-    public Constructor(int label, String name, List<Tree> children, boolean stop) {
-        this(label, name, children);
-        this.stop = stop;
-    }
-
     public Tree childAt(int index) {
         if (index < 0 || index >= arity) {
             throw new IndexOutOfBoundsException(arity + "-ary constructor does not have a child at index " + index);
