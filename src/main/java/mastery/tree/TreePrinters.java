@@ -2,8 +2,9 @@ package mastery.tree;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
-import com.github.javaparser.ast.visitor.Visitable;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.visitor.Visitable;
+import com.github.javaparser.ast.type.WildcardType;
 import com.github.javaparser.printer.DefaultPrettyPrinter;
 import com.github.javaparser.printer.configuration.DefaultPrinterConfiguration;
 
@@ -205,7 +206,9 @@ public class TreePrinters {
         if (tree instanceof Leaf) {
             s = ((Leaf)tree).code;
         } else {
-            Visitable result = tree.accept(new RestorationVisitor(), false);
+            // For child, the "type" passed could actually be anyone.
+            // Here we choose WildcardType, a rare one, as placeholder.
+            Visitable result = tree.accept(new RestorationVisitor(), WildcardType.class);
             assert result instanceof Node || result instanceof NodeList;
             if (result instanceof Node) s = ((Node) result).toString();
             else {
