@@ -1,10 +1,10 @@
 public class A {
-  public String foo(int i) {
+  public String<> foo(int i) {
     int x = 
 <<<<<<< sample/change_value/left.java
-        2 
+        2
 =======
-        3 
+        3
 >>>>>>> sample/change_value/right.java
         ;
   }

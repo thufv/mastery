@@ -20,6 +20,10 @@ for d in sample/* ; do
             java -ea -jar build/libs/mastery-1.0-SNAPSHOT.jar merge $d/left.java $d/base.java $d/right.java --output output.java --log-level off --formatter clang-format
         fi
         
-        diff output.java $d/result.java
+        if [[ $(cat $d/result.java) == *"<<<<<<<"* ]] || [[ $(cat output.java) == *"<<<<<<<"* ]]; then
+            diff output.java $d/result.java
+        else
+            java -jar build/libs/mastery-1.0-SNAPSHOT.jar check $d/result.java output.java
+        fi
     fi
 done

@@ -5,6 +5,10 @@ public class Calc {
     else
       return fib(n - 1) + fib(n - 2);
   }
-  public int doMath(int a, int b) { return a + b; }
-  public int doMath(int a, int b) { return a * b; }
+  public int doMath(int a, int b) {
+    return a + b;
+  }
+  public int doMath(int a, int b) {
+    return a * b;
+  }
 }

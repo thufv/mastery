@@ -1,5 +1,4 @@
 public class A {
-
   public void fun() {
     double 
 <<<<<<< sample/same_method/left.java
@@ -10,7 +9,11 @@ public class A {
         ;
   }
 
-  public void fun1() { int x = 1; }
+  public void fun1() {
+    int x = 1;
+  }
 
-  public void fun2() { int x = 1; }
+  public void fun2() {
+    int x = 1;
+  }
 }

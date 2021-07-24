@@ -239,7 +239,7 @@ public class TreePrinters {
         } else {
             try {
                 // Use clang-format
-                ProcessBuilder pb = new ProcessBuilder(Arrays.asList(formatter, "-assume-filename=" + "output." + fileExtension.get(language)));
+                ProcessBuilder pb = new ProcessBuilder(Arrays.asList(formatter, "-assume-filename=" + "output." + fileExtension.get(language), "-style=Google"));
                 Process p = pb.start();
 
                 OutputStream os = p.getOutputStream();

@@ -1,6 +1,8 @@
 class Bag {
   int[] values;
-  Bag(int[] v) { values = v; }
+  Bag(int[] v) {
+    values = v;
+  }
   String getString() {
     String res = "";
     String sep = ",";
