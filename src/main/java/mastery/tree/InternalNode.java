@@ -16,6 +16,10 @@ public abstract class InternalNode extends Tree {
                 }
             }
         }
+
+        if (name.matches(".*(Declaration|Stmt)|CompilationUnit")) {
+            this.stop = true;
+        }
     }
 
     @Override

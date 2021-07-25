@@ -9,7 +9,6 @@ import com.github.javaparser.metamodel.JavaParserMetaModel;
 import com.github.javaparser.metamodel.PropertyMetaModel;
 import mastery.tree.extensions.ConflictWrapper;
 
-import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -137,6 +136,7 @@ public final class TreeTransformer {
         return constructConflictNode(List.of(left), List.of(right));
     }
 
+    // restore just for printing
     public static class RestorationVisitor implements Tree.GenericVisitor<Visitable, Void> {
         @Override
         public Node visit(Constructor tree, Void arg) {

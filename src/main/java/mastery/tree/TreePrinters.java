@@ -1,22 +1,19 @@
 package mastery.tree;
 
+import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.visitor.Visitable;
-import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.printer.DefaultPrettyPrinter;
 import com.github.javaparser.printer.configuration.DefaultPrinterConfiguration;
-
 import mastery.tree.extensions.ConflictPrinterVisitor;
 import mastery.util.Pair;
 import mastery.util.log.IndentPrinter;
-import mastery.tree.TreeTransformer.RestorationVisitor;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.util.Arrays;
 import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class TreePrinters {
     public static void textTree(Tree tree, IndentPrinter printer) {
@@ -234,7 +231,7 @@ public class TreePrinters {
         } else {
             try {
                 // Use clang-format
-                ProcessBuilder pb = new ProcessBuilder(Arrays.asList(formatter, "-assume-filename=" + "output." + fileExtension.get(language)));
+                ProcessBuilder pb = new ProcessBuilder(Arrays.asList(formatter, "-assume-filename=" + "output." + fileExtension.get(language), "-style=Google"));
                 Process p = pb.start();
 
                 OutputStream os = p.getOutputStream();
