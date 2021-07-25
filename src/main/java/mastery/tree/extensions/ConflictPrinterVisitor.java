@@ -45,6 +45,10 @@ public class ConflictPrinterVisitor extends DefaultPrettyPrinterVisitor {
         return false;
     }
 
+    public void visitRaw(RawNode n) {
+        printer.print(n.getValue());
+    }
+
     @Override
     public void visit(NodeList n, Void arg) {
         if (!visitAsConflict(n)) {

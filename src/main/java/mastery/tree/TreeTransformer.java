@@ -2,12 +2,12 @@ package mastery.tree;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
-import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.visitor.Visitable;
 import com.github.javaparser.metamodel.BaseNodeMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
 import com.github.javaparser.metamodel.PropertyMetaModel;
 import mastery.tree.extensions.ConflictWrapper;
+import mastery.tree.extensions.RawNode;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -196,11 +196,11 @@ public final class TreeTransformer {
             return nodeList;
         }
 
-        /*
-         A conflict must be either a member of a node list or a property that is not a node list.
-         Children of a Conflict must be either all Constructor or all Leaf.
-         Leaf children are handled above, so children here are all Constructor.
-        */
+        /**
+         * A conflict must be either a member of a node list or a property that is not a node list.
+         * Children of a Conflict must be either all Constructor or all Leaf.
+         * Leaf children are handled above, so children here are all Constructor.
+         */
         @Override
         public Visitable visit(Conflict tree, Void arg) {
             List<Node> left = new ArrayList<>();
@@ -214,12 +214,12 @@ public final class TreeTransformer {
             return constructConflictNode(left, right);
         }
 
-        /*
-         Only called when restoring a single leaf or a conflict of two leaves.
+        /**
+         * Only called when restoring a single leaf or a conflict of two leaves.
          */
         @Override
         public Visitable visit(Leaf tree, Void arg) {
-            return new SimpleName(tree.code);
+            return new RawNode(tree.code);
         }
     }
 
