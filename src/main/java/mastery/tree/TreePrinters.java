@@ -199,36 +199,34 @@ public class TreePrinters {
         printer.println(textTreePrinter.get());
     }
 
-    @SuppressWarnings("unchecked")
     public static String rawCode(Tree tree) {
-        String s;
-        if (tree instanceof Leaf) {
-            s = ((Leaf)tree).code;
-        } else {
-            Visitable result = tree.accept(new RestorationVisitor(), false);
-            assert result instanceof Node || result instanceof NodeList;
-            if (result instanceof Node) s = ((Node) result).toString();
-            else {
-                assert result instanceof NodeList;
-                s = ((NodeList<Node>) result).toString();
-            }
-        }
-        return StringUtils.normalizeSpace(s);
+        return StringUtils.normalizeSpace(prettyCode(tree, "", ""));
     }
 
-    /**
-     * Pretty code formatted according to syntax.
-     * Require the argument tree is the entire source code.
-     *
-     * @return The output as a string
-     */
-    public static String prettyCode(Tree tree, String formatter, String language, String leftFile, String rightFile) {
-        CompilationUnit cu = (CompilationUnit) TreeTransformer.restore(tree);
+    public static String prettyCode(Tree tree, String leftFile, String rightFile) {
+        Visitable node = TreeTransformer.restore(tree);
+        CompilationUnit cu;
+        if (node instanceof CompilationUnit) {
+            cu = (CompilationUnit) node;
+        } else {
+            cu = new CompilationUnit();
+            if (node instanceof Node) {
+                ((Node) node).setParentNode(cu);
+            } else if (node instanceof NodeList) {
+                ((NodeList<?>) node).setParentNode(cu);
+            } else {
+                throw new IllegalStateException();
+            }
+        }
         cu.printer(new DefaultPrettyPrinter(
             config -> new ConflictPrinterVisitor(config, Pair.of(leftFile, rightFile)),
             new DefaultPrinterConfiguration()
         ));
-        String rawCode = cu.toString();
+        return node.toString();
+    }
+
+    public static String prettyCode(Tree tree, String formatter, String language, String leftFile, String rightFile) {
+        String rawCode = prettyCode(tree, leftFile, rightFile);
         StringBuilder formattedCode = new StringBuilder();
 
         if (formatter == null) {

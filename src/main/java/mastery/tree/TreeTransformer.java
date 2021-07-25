@@ -2,6 +2,7 @@ package mastery.tree;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.visitor.Visitable;
 import com.github.javaparser.metamodel.BaseNodeMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
@@ -10,13 +11,13 @@ import mastery.tree.extensions.ConflictWrapper;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static mastery.tree.MetaModel.ORDERED_LIST_PROPERTIES;
 import static mastery.tree.extensions.ConflictWrapper.CONFLICT_KEY;
 
 public final class TreeTransformer {
     private static final Map<String, Integer> LABELS = new HashMap<>();
-    private static final Map<Class<?>, Class<?>> CONCRETE_CLASSES = new HashMap<>();
 
     static String getTransformedName(BaseNodeMetaModel nodeMetaModel) {
         return nodeMetaModel.getTypeName();
@@ -40,14 +41,6 @@ public final class TreeTransformer {
             createLabel(getTransformedName(nodeMetaModel));
             for (PropertyMetaModel propertyMetaModel : nodeMetaModel.getDeclaredPropertyMetaModels()) {
                 createLabel(getTransformedName(propertyMetaModel));
-            }
-            Class<?> c = nodeMetaModel.getType();
-            if (!Modifier.isAbstract(c.getModifiers())) {
-                Class<?> p = c;
-                while (p != null && !CONCRETE_CLASSES.containsKey(p)) {
-                    CONCRETE_CLASSES.put(p, c);
-                    p = p.getSuperclass();
-                }
             }
         }
     }
@@ -125,25 +118,28 @@ public final class TreeTransformer {
         return parseAttribute(((Leaf) tree).code, property.getType());
     }
 
-    static Node constructConflictNode(List<Visitable> left, List<Visitable> right, Class<?> type) {
-        Node node;
+    static Node constructEmptyNode(Class<? extends Node> nodeClass) {
         try {
-            Class<?> nodeClass = CONCRETE_CLASSES.get(type);
-            node = (Node) nodeClass.getConstructor().newInstance();
+            return nodeClass.getConstructor().newInstance();
         } catch (Exception e) {
             throw new IllegalStateException();
         }
+    }
+
+    static Node constructConflictNode(List<Node> left, List<Node> right) {
+        Node child = Stream.concat(left.stream(), right.stream()).filter(Objects::nonNull).findAny().orElseThrow();
+        Node node = constructEmptyNode(child.getMetaModel().getType());
         node.setData(CONFLICT_KEY, new ConflictWrapper(left, right));
         return node;
     }
 
-    static Node constructConflictNode(Visitable left, Visitable right, Class<?> type) {
-        return constructConflictNode(List.of(left), List.of(right), type);
+    static Node constructConflictNode(Node left, Node right) {
+        return constructConflictNode(List.of(left), List.of(right));
     }
 
-    public static class RestorationVisitor implements Tree.GenericVisitor<Visitable, Object> {
+    public static class RestorationVisitor implements Tree.GenericVisitor<Visitable, Void> {
         @Override
-        public Node visit(Constructor tree, Object arg) {
+        public Node visit(Constructor tree, Void arg) {
             Map<String, Object> leftParams = new HashMap<>();
             Map<String, Object> rightParams = new HashMap<>();
             List<PropertyMetaModel> properties = tree.meta.getAllPropertyMetaModels();
@@ -155,11 +151,13 @@ public final class TreeTransformer {
 
                 Object value = null;
                 if (property.isNodeList()) {
-                    value = child.accept(this, property);
+                    if (!child.isEmpty() || !property.isOptional()) {
+                        value = child.accept(this, arg);
+                    }
                 } else if (property.isOptional()) {
                     if (!child.isEmpty()) {
                         assert child.children.size() == 1;
-                        value = child.children.get(0).accept(this, property);
+                        value = child.children.get(0).accept(this, arg);
                     }
                 } else if (property.isAttribute()) {
                     if (child.isConflict()) {
@@ -172,7 +170,7 @@ public final class TreeTransformer {
                         value = parseAttribute(child, property);
                     }
                 } else {
-                    value = child.accept(this, property);
+                    value = child.accept(this, arg);
                 }
 
                 if (value != null) {
@@ -186,11 +184,11 @@ public final class TreeTransformer {
                 return left;
             }
             Node right = tree.meta.construct(rightParams);
-            return constructConflictNode(left, right, tree.meta.getType());
+            return constructConflictNode(left, right);
         }
 
         @Override
-        public NodeList<Node> visit(ListNode tree, Object arg) {
+        public NodeList<Node> visit(ListNode tree, Void arg) {
             NodeList<Node> nodeList = new NodeList<>();
             for (Tree child : tree.children) {
                 nodeList.add((Node) child.accept(this, arg));
@@ -198,22 +196,34 @@ public final class TreeTransformer {
             return nodeList;
         }
 
+        /*
+         A conflict must be either a member of a node list or a property that is not a node list.
+         Children of a Conflict must be either all Constructor or all Leaf.
+         Leaf children are handled above, so children here are all Constructor.
+        */
         @Override
-        public Visitable visit(Conflict tree, Object arg) {
-            // Currently assume a conflict is not a list
-            List<Visitable> left = new ArrayList<>();
-            List<Visitable> right = new ArrayList<>();
+        public Visitable visit(Conflict tree, Void arg) {
+            List<Node> left = new ArrayList<>();
+            List<Node> right = new ArrayList<>();
             for (Tree subtree : tree.left) {
-                left.add(subtree.accept(this, null));
+                left.add((Node) subtree.accept(this, arg));
             }
             for (Tree subtree : tree.right) {
-                right.add(subtree.accept(this, null));
+                right.add((Node) subtree.accept(this, arg));
             }
-            return constructConflictNode(left, right, ((PropertyMetaModel) arg).getType());
+            return constructConflictNode(left, right);
+        }
+
+        /*
+         Only called when restoring a single leaf or a conflict of two leaves.
+         */
+        @Override
+        public Visitable visit(Leaf tree, Void arg) {
+            return new SimpleName(tree.code);
         }
     }
 
-    public static Node restore(Tree tree) {
-        return (Node) tree.accept(new RestorationVisitor(), false);
+    public static Visitable restore(Tree tree) {
+        return tree.accept(new RestorationVisitor(), null);
     }
 }
