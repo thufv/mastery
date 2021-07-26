@@ -3,10 +3,13 @@ package mastery.tree.extensions;
 import com.github.javaparser.ast.DataKey;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.type.ArrayType;
+import com.github.javaparser.ast.type.IntersectionType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.VoidType;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public class ConflictWrapper {
@@ -22,12 +25,8 @@ public class ConflictWrapper {
     }
 
     static Node constructEmpty(Class<? extends Node> nodeClass) {
-        // There are few types have no public empty constructor:
-        // - ArrayType
-        // - IntersectionType
-        // - ImportDeclaration
-        if (Type.class.isAssignableFrom(nodeClass) || nodeClass == ImportDeclaration.class) {
-            // VoidType is compatible with other subclasses of Type.
+        // There are few types have no public empty constructor.
+        if (Set.of(ArrayType.class, IntersectionType.class, ImportDeclaration.class).contains(nodeClass)) {
             // For ImportDeclaration, the actual class is unimportant.
             nodeClass = VoidType.class;
         }
