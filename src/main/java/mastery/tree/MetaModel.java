@@ -1,5 +1,7 @@
 package mastery.tree;
 
+import com.github.javaparser.metamodel.PropertyMetaModel;
+
 import java.util.Set;
 
 /**
@@ -94,4 +96,8 @@ public class MetaModel {
         "values",
         "variables"
     );
+
+    public static boolean isOrderedList(PropertyMetaModel property) {
+        return ORDERED_LIST_PROPERTIES.contains(property.getName());
+    }
 }
