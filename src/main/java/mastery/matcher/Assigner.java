@@ -56,19 +56,14 @@ public class Assigner {
     private int assignLeaf(List<Leaf> nodes, int charStart, int assignmentStart) {
         boolean noCharExists = false;
         List<List<Leaf>> nodesOfAssignment = new ArrayList<>();
-        Integer assignmentCount = 0;
+        int assignmentCount = 0;
         for (Leaf node: nodes) {
-            if (node.code.length() == charStart) {
+            if (node.codeBytes.length == charStart) {
                 noCharExists = true;
                 node.assignment = assignmentStart;
             }
             else {
-                int childAssignment = node.code.charAt(charStart);
-
-                if (childAssignment > compressedAssignment.length) {
-                    System.out.println("char: " + node.code.charAt(charStart));
-                    System.out.println("int: " + node.code.charAt(charStart));
-                }
+                int childAssignment = node.codeBytes[charStart] & 0xff;
 
                 if (compressedAssignment[childAssignment] == 0) {
                     compressedAssignment[childAssignment] = ++assignmentCount;
@@ -78,8 +73,8 @@ public class Assigner {
             }
         }
         for (Leaf node: nodes)
-            if (node.code.length() > charStart)
-                compressedAssignment[node.code.charAt(charStart)] = 0;
+            if (node.codeBytes.length > charStart)
+                compressedAssignment[node.codeBytes[charStart] & 0xff] = 0;
         // [assignmentStart, assignmentEnd) is the assigned interval
         int assignmentEnd = assignmentStart + (noCharExists ? 1: 0);
         for (var undistinguishableNodes: nodesOfAssignment)

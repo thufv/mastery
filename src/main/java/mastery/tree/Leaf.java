@@ -1,14 +1,18 @@
 package mastery.tree;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * A leaf node, i.e. a token.
  */
 public class Leaf extends Tree {
     public String code;
+    public byte[] codeBytes;
 
     public Leaf(int label, String name, String code) {
         super(label, name);
         this.code = code;
+        this.codeBytes = code.getBytes(StandardCharsets.UTF_8);
     }
 
     public Leaf(int label, String name, String code, String identifier) {

@@ -176,11 +176,9 @@ public final class TreeTransformer {
         }
 
         /**
-         * A conflict must be either a member of a node list or a property that is not a node list.
-         * Children of a Conflict must be either all Constructor or all Leaf.
-         * Leaf children are handled above, so children here are all Constructor.
-         *
-         * Update: It seems the above does not always hold. A workaround is now used.
+         * A conflict can be a member of a node list containing a sublist.
+         * If a conflict is a node list property, it will be converted to this case.
+         * After the conversion, children of a conflict must be either all Constructor or all Leaf.
          */
         @Override
         public Visitable visit(Conflict tree, Void arg) {
