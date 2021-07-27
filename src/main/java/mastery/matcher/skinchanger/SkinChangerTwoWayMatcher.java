@@ -12,6 +12,7 @@ import mastery.matcher.TwoWayMatcher;
 import mastery.matcher.ZsTree;
 import mastery.tree.Leaf;
 import mastery.tree.Tree;
+import mastery.tree.TreePrinters;
 import mastery.util.WeightedQueue;
 import mastery.util.log.Log;
 import mastery.util.Interval;
@@ -225,9 +226,6 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
         tree1.preInterval = tree2.interval;
         tree1.postLCA = tree2;
 
-        if (Interval.in(tree1.dfsIndex, Interval.of(17885, 17914)) && !Interval.in(tree2.dfsIndex, Interval.of(777, 1706))) {
-            Log.finer("An unexpected mapping!");
-        }
         // if (Interval.in(tree1.dfsIndex, Interval.of(677, 1328)) && Interval.in(tree2.dfsIndex, Interval.of(11474, 12682))) {
         //     Log.finer("An expected mapping!");
         // }
@@ -329,6 +327,15 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
                 double similarity2 = calcSimilarity(first2, second2);
                 if (similarity1 > similarity2 + 1e-8) return 1;
                 else if (similarity1 < similarity2 - 1e-8) return -1;
+
+                if (first1.size < maxSize && second1.size < maxSize
+                    && first2.size < maxSize && second2.size < maxSize) {
+                    similarity1 = StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(first1), TreePrinters.rawCode(second1));
+                    similarity2 = StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(first2), TreePrinters.rawCode(second2));
+
+                    if (similarity1 > similarity2 + 1e-6) return 1;
+                    else if (similarity1 < similarity2 - 1e-6) return -1;
+                }
             }
         }
     }

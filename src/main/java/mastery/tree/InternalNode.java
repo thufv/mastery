@@ -41,7 +41,6 @@ public abstract class InternalNode extends Tree {
             return false;
         }
 
-        // zip(this.children, that.children).forall(_ isomorphicTo _)
         var it = children.iterator();
         var jt = that.children.iterator();
         while (it.hasNext()) {
