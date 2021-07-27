@@ -12,7 +12,6 @@ import mastery.matcher.TwoWayMatcher;
 import mastery.matcher.ZsTree;
 import mastery.tree.Leaf;
 import mastery.tree.Tree;
-import mastery.tree.TreePrinters;
 import mastery.util.WeightedQueue;
 import mastery.util.log.Log;
 import mastery.util.Interval;
@@ -224,8 +223,6 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
         //     Log.finer("An expected mapping!");
         // }
 
-        // System.out.println("For " + tree1 + ", preInterval = " + nodeInDfsOrdering1[tree1.preInterval.l] + ", postLCA = " + tree1.postLCA);
-
         Log.finer("%s mapping: %s interval [%d, %d] <-> %s interval [%d, %d]", type, tree1, tree1.interval.l, tree1.interval.r, tree2, tree2.interval.l, tree2.interval.r);
     }
     private void matchSubTree(Tree tree1, Tree tree2) {
@@ -334,8 +331,6 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
             rightsons = new int[size1 * (int)(Math.ceil(Math.log(size2) / Math.log(2) + 1)) + 5];
             roots = new int[size1 + 1];
 
-            // System.out.println("height should be " + (int)Math.ceil(Math.log(size2) / Math.log(2) + 1));
-
             for (int i = 1; i <= size1; ++i) {
                 if (matched1to2[i] == 0)
                     roots[i] = roots[i - 1];
@@ -413,7 +408,6 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
                 if (homonymy1to2[node.dfsIndex] != 0) {
                     Interval buddyInterval = nodeInDfsOrdering2[homonymy1to2[node.dfsIndex]].interval;
                     if (Interval.isSubinterval(buddyInterval, parentInterval)) {
-                        // System.out.println("homonymy mapping " + node + " <-> " + nodeInDfsOrdering2[homonymy1to2[node.dfsIndex]]);
                         node.preInterval = buddyInterval;
                     }
                     else {
@@ -425,12 +419,19 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
                 else node.preInterval = parentInterval;
             }
     }
+    
+    /**
+     * We propagate virtual homonymy mapping down by knowing that
+     *   "if our parents are matched, we're matched",
+     * which is indicated by they are children of constructor or the only child of their parents.
+     * 
+     * @param node1
+     * @param node2
+     */
     private void homonymyDfs(Tree node1, Tree node2) {
         if (homonymy1to2[node1.dfsIndex] == 0 && homonymy2to1[node2.dfsIndex] == 0) {
             homonymy1to2[node1.dfsIndex] = node2.dfsIndex;
             homonymy2to1[node2.dfsIndex] = node1.dfsIndex;
-
-            // System.out.println("homonymy mapping " + node1 + " <-> " + node2);
 
             if (node1.isConstructor()
                 || node1.children.size() == 1 && node2.children.size() == 1) {
@@ -469,8 +470,6 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
             else if (homonymy1to2[node.dfsIndex] != 0) {
                 Tree candidate = nodeInDfsOrdering2[homonymy1to2[node.dfsIndex]];
 
-                // System.out.println("Candidate identifier mapping: " + node + " <-> " + candidate);
-
                 assert checkMapping(node, candidate);
 
                 match(node, candidate, MappingType.homonymy);
@@ -493,11 +492,11 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
                         || node.label != candidate.label
                         || homonymy2to1[candidate.dfsIndex] != 0 && homonymy2to1[candidate.dfsIndex] != node.dfsIndex)) {
                         if (matched2to1[candidate.dfsIndex] != 0)
-                            Log.finer("%s is matched", candidate);
+                            Log.finer("possible candidate %s is matched", candidate);
                         else if (node.label != candidate.label)
-                            Log.finer("%s has a different label", candidate);
+                            Log.finer("possible candidate %s has a different label", candidate);
                         else if (homonymy2to1[candidate.dfsIndex] != 0 && homonymy2to1[candidate.dfsIndex] != node.dfsIndex)
-                            Log.finer("%s has a homonymy buddy", candidate);
+                            Log.finer("possible candidate %s has a homonymy buddy", candidate);
 
                         candidate = candidate.parent;
                     }
@@ -517,7 +516,8 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
                         // Log.finer("String Distance = %f", StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(node), TreePrinters.rawCode(candidate)));
 
                         if (Similarities.diceSimilarity(mappingCount, node.size, candidate.size) > minDice
-                        || node.size < maxSize && candidate.size < maxSize && StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(node), TreePrinters.rawCode(candidate)) > 0.53
+                        // I don't remember why I write the following line...Maybe it's not suitable for AST...I just comment it and remains it to the future.
+                        // || node.size < maxSize && candidate.size < maxSize && StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(node), TreePrinters.rawCode(candidate)) > 0.53
                         ) {
                             match(node, candidate, MappingType.container);
                             mappingCount += containerDfs(node, candidate) + 1;
@@ -529,6 +529,15 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
         return mappingCount;
     }
 
+    /**
+     * We propagate container mapping down by knowing that
+     *   "if our parents are matched, we're matched",
+     * which is indicated by they are children of constructor or the only child of their parents.
+     * 
+     * @param node
+     * @param candidate
+     * @return
+     */
     int containerDfs(Tree node, Tree candidate) {
         // Log.finer("containerDfs(%s, %s)", node, candidate);
 
@@ -618,14 +627,6 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
     }
 
     private int recoverydfs(Tree node) {
-        // if (Interval.isSubinterval(node.interval, Interval.of(909, 1589))) {
-        //     System.out.print("recoverydfs " + node + "[" + node.interval.l + ", " + node.interval.r + "]" + ", postLCA = " + node.postLCA + ", preNode = " + nodeInDfsOrdering2[node.preInterval.l]);
-        //     if (matched1to2[node.dfsIndex] != 0)
-        //         System.out.println(", buddy = " + nodeInDfsOrdering2[matched1to2[node.dfsIndex]]);
-        //     else
-        //         System.out.println("");
-        // }
-
         assert node.postLCA == null || Interval.isSubinterval(node.postLCA.interval, node.preInterval);
 
         int mappingCount = 0;

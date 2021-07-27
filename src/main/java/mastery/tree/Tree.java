@@ -71,9 +71,10 @@ public abstract class Tree {
     public Interval preInterval = null;
 
     /**
-     * LCA stands for the lowest common ancestor
-     * The current node is considered.
-     * (for base tree)
+     * LCA stands for the lowest common ancestor of the buddies of all descendants of the current node.
+     * (the current node itself is also considered)
+     * This field is only for base tree.
+     * This field is used to calculate the candidate, which is used in the bottom-up phase.
      */
     public Tree postLCA = null;
 
