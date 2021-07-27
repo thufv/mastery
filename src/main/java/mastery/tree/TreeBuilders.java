@@ -123,13 +123,14 @@ public final class TreeBuilders {
     /**
      * Build a tree from source file.
      */
-    public static Tree fromSource(String srcFile, String language) throws IOException {
-        if (!language.equals("JAVA")) {
-            throw new UnsupportedOperationException("Language other than Java is not supported.");
-        }
-
+    public static Tree fromSource(String srcFile) throws IOException {
         String code = Files.readString(Paths.get(srcFile));
         CompilationUnit cu = StaticJavaParser.parse(code);
         return TreeTransformer.generate(cu);
+    }
+
+    public static Tree fromSource(String srcFile, String language) throws IOException {
+        assert language.equals("JAVA");
+        return fromSource(srcFile);
     }
 }

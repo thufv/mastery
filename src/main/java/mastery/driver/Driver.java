@@ -35,6 +35,8 @@ import org.apache.commons.cli.ParseException;
 // import java.lang.management.ThreadMXBean;
 
 public final class Driver {
+    // public static ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+
     public static void fromCLI(String[] args) {
         CLIParser parser = new CLIParser();
         try {
@@ -61,7 +63,7 @@ public final class Driver {
 
             if (config.mode == Config.Mode.CHECK) {
                 // Parse AST from source code
-                Tree trees[] = new Tree[config.files.length];
+                Tree[] trees = new Tree[config.files.length];
                 for (int i = 0; i < config.files.length; ++i) {
                     // Abnormal signal will be exited when parsing fails
                     trees[i] = TreeBuilders.fromSource(config.files[i], config.language);
@@ -104,19 +106,15 @@ public final class Driver {
 
                 // Phase II: Mapping
                 // long CPUTimeStamp = bean.getCurrentThreadCpuTime();
-
                 TwoWayMatcher twoWayMatcher = getTwoWayMatcherFromAlgorithm(config.algorithm);
                 ThreeWayMatcher threeWayMatcher = new ThreeWayMatcher(twoWayMatcher);
                 MatchingSet mapping = threeWayMatcher.apply(base, left, right);
-
                 // Log.config("[CPU time of matcher] %.4f", (double)(bean.getCurrentThreadCpuTime() - CPUTimeStamp) / 1e9);
 
                 // Phase III: Merge
                 // CPUTimeStamp = bean.getCurrentThreadCpuTime();
-
                 Merger merger = new TopDownPruningMerger();
                 Tree target = merger.apply(mapping);
-
                 // Log.config("[CPU time of merger] %.4f", (double)(bean.getCurrentThreadCpuTime() - CPUTimeStamp) / 1e9);
 
                 // Log.ifLoggable(Level.FINEST, printer -> {
@@ -125,7 +123,7 @@ public final class Driver {
                 // })
 
                 // Show our output
-                String code = TreePrinters.prettyCode(target, config.formatter, config.language, config.left, config.right);
+                String code = TreePrinters.prettyCode(target, config.left, config.right, config.formatter, config.language);
                 if (config.output == null) {
                     System.out.println(code);
                 } else {
@@ -198,9 +196,6 @@ public final class Driver {
             // Everything is done.
             // Valar Morghulis
             Log.fine("done");
-        } catch (IOException e) {
-            e.printStackTrace();
-//            System.exit(1);
         } catch (Exception e) {
             e.printStackTrace();
 //            System.exit(1);
@@ -208,13 +203,18 @@ public final class Driver {
     }
 
     private static TwoWayMatcher getTwoWayMatcherFromAlgorithm(String algorithm) {
-        if (algorithm.equals("GUMTREE")) return new GumTreeTwoWayMatcher();
-        else if (algorithm.equals("SKINCHANGER")) return new SkinChangerTwoWayMatcher();
-        else if (algorithm.equals("JDIME")) return new JDimeTwoWayMatcher(false);
-        else if (algorithm.equals("JDIME-LOOKAHEAD")) return new JDimeTwoWayMatcher(true);
-        else {
-            assert(algorithm.equals("CHANGEDISTILLER"));
-            return new ChangeDistillerTwoWayMatcher();
+        switch (algorithm) {
+            case "GUMTREE":
+                return new GumTreeTwoWayMatcher();
+            case "SKINCHANGER":
+                return new SkinChangerTwoWayMatcher();
+            case "JDIME":
+                return new JDimeTwoWayMatcher(false);
+            case "JDIME-LOOKAHEAD":
+                return new JDimeTwoWayMatcher(true);
+            default:
+                assert (algorithm.equals("CHANGEDISTILLER"));
+                return new ChangeDistillerTwoWayMatcher();
         }
     }
 
@@ -247,6 +247,4 @@ public final class Driver {
             writer.close();
         }
     }
-
-    // public static ThreadMXBean bean = ManagementFactory.getThreadMXBean();
 }

@@ -90,23 +90,23 @@ public final class CLIParser {
                             .desc("Show usage help.")
                             .build();
 
+    private final Options options;
+
     public CLIParser() {
         options = new Options();
         options.addOption(lang);
         options.addOption(output);
+        options.addOption(algorithm);
+        options.addOption(formatter);
+        options.addOption(help);
+
         // log related
         options.addOption(logLevel);
         options.addOption(logColorful);
         options.addOption(logFile);
 
-        options.addOption(algorithm);
-
-        options.addOption(formatter);
-
         // for webdiff
         options.addOption(port);
-
-        options.addOption(help);
     }
 
     public void printHelp() {
@@ -238,8 +238,7 @@ public final class CLIParser {
         }
 
         if (cli.hasOption(LOG_LEVEL)) {
-            Level level = Level.parse(cli.getOptionValue(LOG_LEVEL).toUpperCase());
-            config.logLevel = level;
+            config.logLevel = Level.parse(cli.getOptionValue(LOG_LEVEL).toUpperCase());
         }
         if (cli.hasOption(LOG_COLORFUL)) {
             config.logColorful = true;
@@ -250,6 +249,4 @@ public final class CLIParser {
 
         return config;
     }
-
-    private Options options;
 }
