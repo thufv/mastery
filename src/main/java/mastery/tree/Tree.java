@@ -416,7 +416,15 @@ public abstract class Tree {
         return children.isEmpty();
     }
 
+    public boolean isProperty(String fieldName) {
+        return name.endsWith("#" + fieldName);
+    }
+
     public String getIdentifierName() {
         return identifier.substring(identifier.indexOf(':') + 1);
+    }
+
+    public void setIdentifierName(String identifierName) {
+        this.identifier = this.name + ":" + identifierName;
     }
 }

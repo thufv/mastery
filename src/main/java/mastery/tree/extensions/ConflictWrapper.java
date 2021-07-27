@@ -5,7 +5,6 @@ import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.IntersectionType;
-import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.VoidType;
 
 import java.util.List;
@@ -25,8 +24,9 @@ public class ConflictWrapper {
     }
 
     static Node constructEmpty(Class<? extends Node> nodeClass) {
-        // There are few types have no public empty constructor.
+        // There are few classes have no public empty constructor.
         if (Set.of(ArrayType.class, IntersectionType.class, ImportDeclaration.class).contains(nodeClass)) {
+            // For ArrayType and IntersectionType, VoidType is a compatible class.
             // For ImportDeclaration, the actual class is unimportant.
             nodeClass = VoidType.class;
         }

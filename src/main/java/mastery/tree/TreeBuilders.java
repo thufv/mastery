@@ -4,6 +4,7 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import mastery.driver.Config.ParserConfig;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -123,13 +124,9 @@ public final class TreeBuilders {
     /**
      * Build a tree from source file.
      */
-    public static Tree fromSource(String srcFile, String language) throws IOException {
-        if (!language.equals("JAVA")) {
-            throw new UnsupportedOperationException("Language other than Java is not supported.");
-        }
-
+    public static Tree fromSource(String srcFile, ParserConfig config) throws IOException {
         String code = Files.readString(Paths.get(srcFile));
         CompilationUnit cu = StaticJavaParser.parse(code);
-        return TreeTransformer.generate(cu);
+        return new TreeTransformer(config).generate(cu);
     }
 }

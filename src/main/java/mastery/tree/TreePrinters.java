@@ -13,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.util.Arrays;
-import java.util.Map;
 
 public class TreePrinters {
     public static void textTree(Tree tree, IndentPrinter printer) {
@@ -222,43 +221,42 @@ public class TreePrinters {
         return node.toString();
     }
 
-    public static String prettyCode(Tree tree, String formatter, String language, String leftFile, String rightFile) {
-        String rawCode = prettyCode(tree, leftFile, rightFile);
-        StringBuilder formattedCode = new StringBuilder();
-
+    public static String prettyCode(Tree tree, String leftFile, String rightFile, String formatter) {
+        String code = prettyCode(tree, leftFile, rightFile);
         if (formatter == null) {
-            formattedCode = new StringBuilder(rawCode);
-        } else {
-            try {
-                // Use clang-format
-                ProcessBuilder pb = new ProcessBuilder(Arrays.asList(formatter, "-assume-filename=" + "output." + fileExtension.get(language), "-style=Google"));
-                Process p = pb.start();
-
-                OutputStream os = p.getOutputStream();
-                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
-                bw.append(rawCode);
-                bw.flush();
-                bw.close();
-
-                InputStream is = p.getInputStream();
-                BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                String line;
-                while ((line = br.readLine()) != null)
-                    formattedCode.append(line).append("\n");
-                br.close();
-                int r = p.waitFor(); // Let the process finish.
-                assert (r == 0);
-            } catch (Exception e) {
-                System.out.println("An error occurs when formatting.");
-                e.printStackTrace();
-            }
+            return code;
         }
 
+        StringBuilder formattedCode = new StringBuilder();
+        try {
+            // Use clang-format
+            ProcessBuilder pb = new ProcessBuilder(Arrays.asList("clang-format", "-assume-filename=output.java", "-style=Google"));
+            Process p = pb.start();
+
+            OutputStream os = p.getOutputStream();
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
+            bw.append(code);
+            bw.flush();
+            bw.close();
+
+            InputStream is = p.getInputStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            String line;
+            while ((line = br.readLine()) != null)
+                formattedCode.append(line).append("\n");
+            br.close();
+
+            int r = p.waitFor(); // Let the process finish.
+            assert (r == 0);
+        } catch (Exception e) {
+            System.out.println("An error occurs when formatting.");
+            e.printStackTrace();
+        }
         return formattedCode.toString();
     }
-    public static Map<String, String> fileExtension = Map.of(
-        "JAVA", "java",
-        "C#", "cs",
-        "C", "c"
-    );
+
+    public static String prettyCode(Tree tree, String leftFile, String rightFile, String formatter, String language) {
+        assert language.equals("JAVA");
+        return prettyCode(tree, leftFile, rightFile, formatter);
+    }
 }

@@ -11,18 +11,18 @@ import java.util.List;
  * namasikanam: I don't like this ambiguous name.
  */
 public final class Constructor extends InternalNode {
-    public BaseNodeMetaModel meta = null;
-
     public final int arity;
 
-    public Constructor(int label, String name, List<Tree> children) {
-        super(label, name, children);
-        this.arity = children.size();
-    }
+    public final BaseNodeMetaModel meta;
 
     public Constructor(int label, String name, List<Tree> children, BaseNodeMetaModel meta) {
-        this(label, name, children);
+        super(label, name, children);
+        this.arity = children.size();
         this.meta = meta;
+    }
+
+    public Constructor(int label, String name, List<Tree> children) {
+        this(label, name, children, null);
     }
 
     public Constructor(Constructor constructor, List<Tree> children) {
@@ -34,6 +34,10 @@ public final class Constructor extends InternalNode {
             throw new IndexOutOfBoundsException(arity + "-ary constructor does not have a child at index " + index);
         }
         return children.get(index);
+    }
+
+    public boolean hasComment() {
+        return children.stream().anyMatch(c -> c.isProperty("comment"));
     }
 
     @Override

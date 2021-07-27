@@ -12,12 +12,11 @@ public abstract class InternalNode extends Tree {
         super(label, name, children);
 
         if (name.matches(".*(Declaration|Name)")) {
-            for (Tree child : children)
-                if (child.identifier != null)
-                    this.identifier = name + ":" + child.getIdentifierName();
-            
-            if (name.matches(".*Declaration"))
-                Log.finer("identifier of %s is %s", name, this.identifier);
+            for (Tree child : children) {
+                if (child.identifier != null) {
+                    setIdentifierName(child.getIdentifierName());
+                }
+            }
         }
 
         if (name.matches(".*(Declaration|Stmt)|CompilationUnit")) {

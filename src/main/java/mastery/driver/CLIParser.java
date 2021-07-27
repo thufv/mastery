@@ -11,102 +11,101 @@ import java.util.logging.Level;
 public final class CLIParser {
     static final String LANG = "l";
     static final String[] LANGS = {"JAVA", "XML"/*, "C", "C#"*/};
-    final Option lang = Option
-            .builder(LANG)
-            .longOpt("lang")
-            .hasArg()
-            .argName("language")
-            .desc("language of the source codes: java (default), xml")
-            .build();
+    final Option lang = Option.builder(LANG)
+        .longOpt("lang")
+        .hasArg()
+        .argName("language")
+        .desc("language of the source codes: java (default), xml")
+        .build();
 
     static final String OUTPUT = "o";
-    final Option output = Option.
-            builder(OUTPUT)
-            .longOpt("output")
-            .hasArg()
-            .argName("file")
-            .desc("output file (default stdout)")
-            .build();
-    
+    final Option output = Option.builder(OUTPUT)
+        .longOpt("output")
+        .hasArg()
+        .argName("file")
+        .desc("output file (default stdout)")
+        .build();
+
     static final String ALGO = "a";
     static final String[] ALGOs = {"GUMTREE", "SKINCHANGER", "JDIME", "JDIME-LOOKAHEAD", "CHANGEDISTILLER"};
-    final Option algorithm = Option
-            .builder(ALGO)
-            .longOpt("algorithm")
-            .hasArg()
-            .argName("algorithm")
-            .desc("matching algorithm: skinchanger (default), gumtree, jdime, changedistiller")
-            .build();
+    final Option algorithm = Option.builder(ALGO)
+        .longOpt("algorithm")
+        .hasArg()
+        .argName("algorithm")
+        .desc("matching algorithm: skinchanger (default), gumtree, jdime, changedistiller")
+        .build();
 
     static final String LOG_LEVEL = "log-level";
-    final Option logLevel = Option
-            .builder(null)
-            .longOpt(LOG_LEVEL)
-            .hasArg()
-            .argName("level")
-            .desc("log level: all, severe, warning, info, config, fine, finer, finest, off (default)")
-            .build();
+    final Option logLevel = Option.builder(null)
+        .longOpt(LOG_LEVEL)
+        .hasArg()
+        .argName("level")
+        .desc("log level: all, severe, warning, info, config, fine, finer, finest, off (default)")
+        .build();
 
     static final String LOG_COLORFUL = "log-color";
-    final Option logColorful = Option
-            .builder(null)
-            .longOpt(LOG_COLORFUL)
-            .hasArg(false)
-            .desc("enable colorful log (default plain)")
-            .build();
+    final Option logColorful = Option.builder(null)
+        .longOpt(LOG_COLORFUL)
+        .hasArg(false)
+        .desc("enable colorful log (default plain)")
+        .build();
 
     static final String LOG_FILE = "log-file";
-    final Option logFile = Option
-            .builder(null)
-            .longOpt(LOG_FILE)
-            .hasArg()
-            .argName("file")
-            .desc("also dump log to a file")
-            .build();
+    final Option logFile = Option.builder(null)
+        .longOpt(LOG_FILE)
+        .hasArg()
+        .argName("file")
+        .desc("also dump log to a file")
+        .build();
 
     static final String FORMATTER = "formatter";
-    final Option formatter = Option
-            .builder(null)
-            .longOpt(FORMATTER)
-            .hasArg()
-            .argName("executable")
-            .desc("path to code formatter")
-            .build();
-    
+    final Option formatter = Option.builder(null)
+        .longOpt(FORMATTER)
+        .hasArg()
+        .argName("executable")
+        .desc("path to code formatter")
+        .build();
+
     static final String PORT = "p";
-    final Option port = Option
-            .builder(PORT)
-            .longOpt("port")
-            .hasArg()
-            .argName("port")
-            .desc("port (default 4567), only for webdiff")
-            .build();
+    final Option port = Option.builder(PORT)
+        .longOpt("port")
+        .hasArg()
+        .argName("port")
+        .desc("port (default 4567), only for webdiff")
+        .build();
 
     static final String HELP = "h";
     static final String HELP_DESC = "Usage ";
     final Option help = Option.builder(HELP)
-                            .longOpt("help")
-                            .hasArg(false)
-                            .desc("Show usage help.")
-                            .build();
+        .longOpt("help")
+        .hasArg(false)
+        .desc("Show usage help.")
+        .build();
+
+    static final String KEEP_COMMENT = "keep-comment";
+    final Option keepComment = Option.builder(null)
+        .longOpt(KEEP_COMMENT)
+        .desc("keep comment during merging (default not)")
+        .build();
+
+    private final Options options;
 
     public CLIParser() {
         options = new Options();
         options.addOption(lang);
         options.addOption(output);
+        options.addOption(algorithm);
+        options.addOption(formatter);
+        options.addOption(help);
+        options.addOption(keepComment);
+
         // log related
         options.addOption(logLevel);
         options.addOption(logColorful);
         options.addOption(logFile);
 
-        options.addOption(algorithm);
-
-        options.addOption(formatter);
-
         // for webdiff
         options.addOption(port);
-
-        options.addOption(help);
     }
 
     public void printHelp() {
@@ -180,6 +179,8 @@ public final class CLIParser {
                     throw new ParseException("Invalid algorithm: " + algorithm.getDescription());
                 }
             }
+
+            config.parserConfig.keepComment = cli.hasOption(KEEP_COMMENT);
         } else if (mode.equals("webdiff")) {
             if (arguments.length != 3) {
                 throw new ParseException("Please provide exactly 2 files as arguments.");
@@ -238,8 +239,7 @@ public final class CLIParser {
         }
 
         if (cli.hasOption(LOG_LEVEL)) {
-            Level level = Level.parse(cli.getOptionValue(LOG_LEVEL).toUpperCase());
-            config.logLevel = level;
+            config.logLevel = Level.parse(cli.getOptionValue(LOG_LEVEL).toUpperCase());
         }
         if (cli.hasOption(LOG_COLORFUL)) {
             config.logColorful = true;
@@ -250,6 +250,4 @@ public final class CLIParser {
 
         return config;
     }
-
-    private Options options;
 }
