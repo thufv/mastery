@@ -373,10 +373,10 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
         Map<String, Integer> identifierCount1 = new HashMap<>();
         Map<String, Integer> identifierCount2 = new HashMap<>();
         for (Tree node: tree1.preOrder())
-            if (node.identifier != null)
+            if (node.identifier != null && node.name.endsWith("Declaration"))
                 identifierCount1.put(node.identifier, identifierCount1.getOrDefault(node.identifier, 0) + 1);
         for (Tree node: tree2.preOrder())
-            if (node.identifier != null)
+            if (node.identifier != null && node.name.endsWith("Declaration"))
                 identifierCount2.put(node.identifier, identifierCount2.getOrDefault(node.identifier, 0) + 1);
         nodeOfIdentifier1.clear();
         nodeOfIdentifier2.clear();
