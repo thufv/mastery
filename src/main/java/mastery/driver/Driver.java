@@ -66,7 +66,7 @@ public final class Driver {
                 Tree[] trees = new Tree[config.files.length];
                 for (int i = 0; i < config.files.length; ++i) {
                     // Abnormal signal will be exited when parsing fails
-                    trees[i] = TreeBuilders.fromSource(config.files[i], config.language);
+                    trees[i] = TreeBuilders.fromSource(config.files[i], config.parserConfig);
                 }
 
                 // Mapping
@@ -96,9 +96,9 @@ public final class Driver {
             }
             else if (config.mode == Config.Mode.MERGE) {
                 // Parse AST from source code
-                Tree left = TreeBuilders.fromSource(config.left, config.language);
-                Tree base = TreeBuilders.fromSource(config.base, config.language);
-                Tree right = TreeBuilders.fromSource(config.right, config.language);
+                Tree left = TreeBuilders.fromSource(config.left, config.parserConfig);
+                Tree base = TreeBuilders.fromSource(config.base, config.parserConfig);
+                Tree right = TreeBuilders.fromSource(config.right, config.parserConfig);
 
                 // Phase I: Assign
                 Assigner assigner = new Assigner();
@@ -133,8 +133,8 @@ public final class Driver {
                 }
             } else if (config.mode == Config.Mode.WEBDIFF) {
                 assert config.files.length == 2;
-                Tree src = TreeBuilders.fromSource(config.files[0], config.language);
-                Tree dst = TreeBuilders.fromSource(config.files[1], config.language);
+                Tree src = TreeBuilders.fromSource(config.files[0], config.parserConfig);
+                Tree dst = TreeBuilders.fromSource(config.files[1], config.parserConfig);
 
                 Assigner assigner = new Assigner();
                 assigner.apply(src, dst);
@@ -164,8 +164,8 @@ public final class Driver {
                 webDiff.apply(fSrc, fDst, src, dst, mappings);
             } else if (config.mode == Config.Mode.TEXTDIFF) {
                 assert config.files.length == 2;
-                Tree src = TreeBuilders.fromSource(config.files[0], config.language);
-                Tree dst = TreeBuilders.fromSource(config.files[1], config.language);
+                Tree src = TreeBuilders.fromSource(config.files[0], config.parserConfig);
+                Tree dst = TreeBuilders.fromSource(config.files[1], config.parserConfig);
 
                 Assigner assigner = new Assigner();
                 assigner.apply(src, dst);

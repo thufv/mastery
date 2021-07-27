@@ -12,7 +12,7 @@ public abstract class InternalNode extends Tree {
         if (name.matches(".*(Declaration|Name)")) {
             for (Tree child : children) {
                 if (child.identifier != null) {
-                    this.identifier = name + ":" + child.getIdentifierName();
+                    setIdentifierName(child.getIdentifierName());
                 }
             }
         }

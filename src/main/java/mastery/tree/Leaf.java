@@ -1,31 +1,34 @@
 package mastery.tree;
 
+import com.github.javaparser.metamodel.BaseNodeMetaModel;
+
 import java.nio.charset.StandardCharsets;
 
 /**
  * A leaf node, i.e. a token.
  */
 public class Leaf extends Tree {
-    public String code;
-    public byte[] codeBytes;
+    public final String code;
+    public final byte[] codeBytes;
 
-    public Leaf(int label, String name, String code) {
+    public final BaseNodeMetaModel meta;
+
+    public Leaf(int label, String name, String code, BaseNodeMetaModel meta) {
         super(label, name);
         this.code = code;
         this.codeBytes = code.getBytes(StandardCharsets.UTF_8);
+        this.meta = meta;
     }
 
-    public Leaf(int label, String name, String code, String identifier) {
+    public Leaf(int label, String name, String code) {
+        this(label, name, code, null);
+    }
+
+    public Leaf(int label, String name, String code, boolean isIdentifier) {
         this(label, name, code);
-        if (identifier != null) {
-            this.identifier = name + ":" + identifier;
+        if (isIdentifier) {
+            setIdentifierName(code);
         }
-    }
-
-    public Leaf(int label, String name, int startPos, int endPos, String fullCode) {
-        this(label, name, fullCode.substring(startPos, endPos));
-        this.startPos = startPos;
-        this.endPos = endPos;
     }
 
     @Override
@@ -55,7 +58,7 @@ public class Leaf extends Tree {
 
     @Override
     public final Tree deepCopy() {
-        Tree copiedLeaf = new Leaf(label, name, code);
+        Tree copiedLeaf = new Leaf(label, name, code, meta);
         copiedLeaf.assignment = assignment;
         copiedLeaf.actionId = actionId;
         copiedLeaf.dfsIndex = dfsIndex;

@@ -42,10 +42,20 @@ public final class Config {
     // webdiff
     public int port = 4567;
 
+    public ParserConfig parserConfig = new ParserConfig(false);
+
     public Config(String left, String base, String right) {
         mode = Mode.MERGE;
         this.left = left;
         this.base = base;
         this.right = right;
+    }
+
+    public static final class ParserConfig {
+        public boolean keepComment;
+
+        public ParserConfig(boolean keepComment) {
+            this.keepComment = keepComment;
+        }
     }
 }

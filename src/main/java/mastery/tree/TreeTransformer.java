@@ -2,10 +2,12 @@ package mastery.tree;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.comments.Comment;
 import com.github.javaparser.ast.visitor.Visitable;
 import com.github.javaparser.metamodel.BaseNodeMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
 import com.github.javaparser.metamodel.PropertyMetaModel;
+import mastery.driver.Config.ParserConfig;
 import mastery.tree.extensions.ConflictWrapper;
 import mastery.tree.extensions.RawNode;
 
@@ -40,7 +42,13 @@ public final class TreeTransformer {
         }
     }
 
-    static ListNode generateListNode(Node node, PropertyMetaModel property) {
+    final ParserConfig config;
+
+    public TreeTransformer(ParserConfig config) {
+        this.config = config;
+    }
+
+    ListNode generateListNode(Node node, PropertyMetaModel property) {
         List<Tree> children = new ArrayList<>();
         Object value = property.getValue(node);
         if (value != null) {
@@ -56,7 +64,7 @@ public final class TreeTransformer {
         }
     }
 
-    static UnorderedList generateOptionalNode(Node node, PropertyMetaModel property) {
+    UnorderedList generateOptionalNode(Node node, PropertyMetaModel property) {
         List<Tree> children = new ArrayList<>();
         Object value = property.getValue(node);
         if (value != null) {
@@ -66,18 +74,21 @@ public final class TreeTransformer {
         return new UnorderedList(getLabel(name), name, children);
     }
 
-    static Leaf generateLeaf(Node node, PropertyMetaModel property) {
+    Leaf generateLeaf(Node node, PropertyMetaModel property) {
         String name = getTransformedName(property);
         String value = property.getValue(node).toString();
-        String identifier = property.is("identifier") ? value : null;
-        return new Leaf(getLabel(name), name, value, identifier);
+        return new Leaf(getLabel(name), name, value, property.is("identifier"));
     }
 
     // TODO: record code position
-    public static Tree generate(Node node) {
-        List<Tree> children = new ArrayList<>();
+    public Tree generate(Node node) {
+        List<PropertyMetaModel> properties = node.getMetaModel().getAllPropertyMetaModels();
+        if (!config.keepComment) {
+            properties.removeIf(p -> p.is("comment"));
+        }
 
-        for (PropertyMetaModel property : node.getMetaModel().getAllPropertyMetaModels()) {
+        List<Tree> children = new ArrayList<>();
+        for (PropertyMetaModel property : properties) {
             Tree child;
             if (property.isNodeList()) {
                 child = generateListNode(node, property);
@@ -92,7 +103,11 @@ public final class TreeTransformer {
         }
 
         String name = getTransformedName(node.getMetaModel());
-        return new Constructor(getLabel(name), name, children, node.getMetaModel());
+        if (children.isEmpty()) {
+            return new Leaf(getLabel(name), name, node.toString(), node.getMetaModel());
+        } else {
+            return new Constructor(getLabel(name), name, children, node.getMetaModel());
+        }
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -113,6 +128,11 @@ public final class TreeTransformer {
         return parseAttribute(((Leaf) tree).code, property.getType());
     }
 
+    static Node constructNode(BaseNodeMetaModel nodeMetaModel, Map<String, Object> parameters) {
+        return nodeMetaModel.construct(parameters)
+            .setComment((Comment) parameters.get("comment"));
+    }
+
     // restore just for printing
     public static class RestorationVisitor implements Tree.GenericVisitor<Visitable, Void> {
         @Override
@@ -120,6 +140,9 @@ public final class TreeTransformer {
             Map<String, Object> leftParams = new HashMap<>();
             Map<String, Object> rightParams = new HashMap<>();
             List<PropertyMetaModel> properties = tree.meta.getAllPropertyMetaModels();
+            if (!tree.hasComment()) {
+                properties.removeIf(p -> p.is("comment"));
+            }
             assert properties.size() == tree.children.size();
 
             for (int i = 0; i < properties.size(); ++i) {
@@ -156,11 +179,11 @@ public final class TreeTransformer {
                 }
             }
 
-            Node left = tree.meta.construct(leftParams);
+            Node left = constructNode(tree.meta, leftParams);
             if (leftParams.equals(rightParams)) {
                 return left;
             }
-            Node right = tree.meta.construct(rightParams);
+            Node right = constructNode(tree.meta, rightParams);
             return ConflictWrapper.construct(left, right);
         }
 
@@ -199,11 +222,12 @@ public final class TreeTransformer {
             return ConflictWrapper.construct(left, right);
         }
 
-        /**
-         * Only called when restoring a single leaf or a conflict of two leaves.
-         */
         @Override
         public Visitable visit(Leaf tree, Void arg) {
+            if (tree.meta != null) {
+                return tree.meta.construct(Collections.emptyMap());
+            }
+            // Only reached when restoring a single leaf or a conflict of two leaves.
             return new RawNode(tree.code);
         }
     }
