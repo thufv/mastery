@@ -70,7 +70,7 @@ public final class CLIParser {
             .longOpt(FORMATTER)
             .hasArg()
             .argName("executable")
-            .desc("path to code formatter (default `clang-format`)")
+            .desc("path to code formatter")
             .build();
     
     static final String PORT = "p";

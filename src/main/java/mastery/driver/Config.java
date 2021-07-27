@@ -34,7 +34,7 @@ public final class Config {
     public String output;
 
     // formatter
-    public String formatter = "clang-format";
+    public String formatter = null;
 
     // algorithm
     public String algorithm = "SKINCHANGER";

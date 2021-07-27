@@ -63,6 +63,7 @@ public class Assigner {
                 node.assignment = assignmentStart;
             }
             else {
+                // & 0xff for convert possible negative byte into positive byte
                 int childAssignment = node.codeBytes[charStart] & 0xff;
 
                 if (compressedAssignment[childAssignment] == 0) {
