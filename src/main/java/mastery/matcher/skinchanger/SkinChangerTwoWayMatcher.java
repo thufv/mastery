@@ -30,7 +30,6 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
         this.maxSize = maxSize;
     }
     public SkinChangerTwoWayMatcher() {
-        // default parameters in the paper of GumTree
         this.minHeight = 1;
         this.minDice = 0.44;
         this.maxSize = 160;
@@ -293,7 +292,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
         // }
     }
 
-    private final class TreePairComparator implements Comparator<Pair<Tree, Tree>>{
+    private final class TreePairComparator implements Comparator<Pair<Tree, Tree>> {
         final Map<Pair<Tree, Tree>, Double> mappingSimilarity = new HashMap<Pair<Tree, Tree>, Double>();
         final Map<Pair<Tree, Tree>, Float> codeSimilarity = new HashMap<Pair<Tree, Tree>, Float>();
 
@@ -558,11 +557,15 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
                         // let's check the dice!
 
                         Log.finer("Jaccad Similarity = %f, Dice Similarity = %f, mappingCount = %d, minDice = %f", Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size), Similarities.diceSimilarity(mappingCount, node.size, candidate.size), mappingCount, minDice);
-                        // Log.finer("String Distance = %f", StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(node), TreePrinters.rawCode(candidate)));
+                        
+                        if (node.size < 20 || candidate.size < 20)
+                            Log.finer("String Distance = %f", StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(node), TreePrinters.rawCode(candidate)));
 
                         if (Similarities.diceSimilarity(mappingCount, node.size, candidate.size) > minDice
-                        // I don't remember why I write the following line...Maybe it's not suitable for AST...I just comment it and remains it to the future.
-                        // || node.size < maxSize && candidate.size < maxSize && StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(node), TreePrinters.rawCode(candidate)) > 0.53
+                        // The following condition describes "the codes must be similar enough if one of node owns small subtree".
+                        // This heuristic is inspired by dubbo/99256faf8-dubbo-config-dubbo-config-spring-src-main-java-org-apache-dubbo-config-spring-ReferenceBean
+                        && !((node.size < 20 || candidate.size < 20)
+                            && StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(node), TreePrinters.rawCode(candidate)) < 0.6)
                         ) {
                             match(node, candidate, MappingType.container);
                             mappingCount += containerDfs(node, candidate) + 1;
