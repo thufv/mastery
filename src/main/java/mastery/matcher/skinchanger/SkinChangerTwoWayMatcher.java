@@ -294,6 +294,9 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
     }
 
     private final class TreePairComparator implements Comparator<Pair<Tree, Tree>>{
+        final Map<Pair<Tree, Tree>, Double> mappingSimilarity = new HashMap<Pair<Tree, Tree>, Double>();
+        final Map<Pair<Tree, Tree>, Float> codeSimilarity = new HashMap<Pair<Tree, Tree>, Float>();
+
         /**
          * 1 means p1 is more similar than p2,
          * 0 means they're probabilly equal,
@@ -310,7 +313,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
                 second1 = second1.parent;
                 first2 = first2.parent;
                 second2 = second2.parent;
-
+                
                 if (first1 == null && second1 == null && first2 == null && second2 == null) return 0;
                 else if (first1 == null && second1 == null) return 1;
                 else if (first2 == null && second2 == null) return -1;
@@ -323,19 +326,24 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
                 if (equivalence1 && !equivalence2) return 1;
                 else if (equivalence2 && !equivalence1) return -1;
 
-                double similarity1 = calcSimilarity(first1, second1);
-                double similarity2 = calcSimilarity(first2, second2);
-                if (similarity1 > similarity2 + 1e-8) return 1;
-                else if (similarity1 < similarity2 - 1e-8) return -1;
+                if (!mappingSimilarity.containsKey(p1))
+                    mappingSimilarity.put(p1, calcSimilarity(first1, second1));
+                if (!mappingSimilarity.containsKey(p2))
+                    mappingSimilarity.put(p2, calcSimilarity(first2, second2));
+                double mappingSimilarity1 = mappingSimilarity.get(p1);
+                double mappingSimilarity2 = mappingSimilarity.get(p2);
+                if (mappingSimilarity1 > mappingSimilarity2 + 1e-8) return 1;
+                else if (mappingSimilarity1 < mappingSimilarity2 - 1e-8) return -1;
 
-                if (first1.size < maxSize && second1.size < maxSize
-                    && first2.size < maxSize && second2.size < maxSize) {
-                    similarity1 = StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(first1), TreePrinters.rawCode(second1));
-                    similarity2 = StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(first2), TreePrinters.rawCode(second2));
+                if (!codeSimilarity.containsKey(p1))
+                    codeSimilarity.put(p1, StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(first1), TreePrinters.rawCode(second1)));
+                if (!codeSimilarity.containsKey(p2))
+                    codeSimilarity.put(p2, StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(first2), TreePrinters.rawCode(second2)));
+                float codeSimilarity1 = codeSimilarity.get(p1);
+                float codeSimilarity2 = codeSimilarity.get(p2);
 
-                    if (similarity1 > similarity2 + 1e-6) return 1;
-                    else if (similarity1 < similarity2 - 1e-6) return -1;
-                }
+                if (codeSimilarity1 > codeSimilarity2 + 1e-8) return 1;
+                else if (codeSimilarity1 < codeSimilarity2 - 1e-8) return -1;
             }
         }
     }
