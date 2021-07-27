@@ -172,8 +172,17 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
 
         fotileTree = new FotileTree(matched1to2, matched2to1);
 
+        Log.finer("collected %d node pairs before any checking.", cartesianProducts.size());
+        for (int i = cartesianProducts.size() - 1; i >= 0; --i)
+            Log.finer("\t%s %s\n", cartesianProducts.get(i).first, cartesianProducts.get(i).second);
+
         cartesianProducts = cartesianProducts.stream().filter(p -> checkStop(p.first, p.second)).collect(Collectors.toList());
         cartesianProducts.sort(new TreePairComparator());
+
+        Log.finer("sorted %d node pair:", cartesianProducts.size());
+        for (int i = cartesianProducts.size() - 1; i >= 0; --i)
+            Log.finer("\tNo. %d: %s %s\n", i, cartesianProducts.get(i).first, cartesianProducts.get(i).second);
+
         for (int i = cartesianProducts.size() - 1; i >= 0; --i) {
             var p = cartesianProducts.get(i);
             if (matched1to2[p.first.dfsIndex] == 0 && matched2to1[p.second.dfsIndex] == 0) {
@@ -223,7 +232,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
         //     Log.finer("An expected mapping!");
         // }
 
-        Log.finer("%s mapping: %s interval [%d, %d] <-> %s interval [%d, %d]", type, tree1, tree1.interval.l, tree1.interval.r, tree2, tree2.interval.l, tree2.interval.r);
+        Log.finer("%s mapping: %s <-> %s", type, tree1, tree2);
     }
     private void matchSubTree(Tree tree1, Tree tree2) {
         match(tree1, tree2, MappingType.isomorphic);
@@ -249,11 +258,10 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
         // compulsory checking
         Tree parent1 = node1.parent;
         Tree parent2 = node2.parent;
-        if (parent1 == null) { if(parent2 != null) return false; }
-        else {
-            if (parent2 == null) return false;
-            else if (parent1.isConstructor() && parent2.isConstructor() && parent1.label == parent2.label && node1.childNo != node2.childNo) return false;
-        }
+        if (parent1 == null) { if (parent2 != null) return false; }
+        else if (parent2 == null) return false;
+        else if (parent1.isConstructor() && parent2.isConstructor()
+            && parent1.label == parent2.label && node1.childNo != node2.childNo) return false;
 
         // homonymy checking
         if (homonymy1to2[node1.dfsIndex] != 0 && homonymy1to2[node1.dfsIndex] != node2.dfsIndex)
@@ -263,22 +271,36 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
 
         return true;
     }
+    /**
+     * Do we still need this for an ABSTRACT syntax tree?
+     * Not sure, comment the actual content temporarily...
+     * 
+     * @param node1
+     * @param node2
+     * @return
+     */
     private boolean checkStop(Tree node1, Tree node2) {
-        for (;;) {
-            Tree parent1 = node1.parent;
-            Tree parent2 = node2.parent;
-
-            if (parent1 == null || parent2 == null) return false;
-            else if (parent1.label != parent2.label) return false;
-            else if (calcSimilarity(parent1, parent2) > 1e-8) return true;
+        return true;
+        // for (;;) {
+        //     Tree parent1 = node1.parent;
+        //     Tree parent2 = node2.parent;
             
-            if (parent1.stop) return false;
-            node1 = parent1;
-            node2 = parent2;
-        }
+        //     if (parent1 == null || parent2 == null) return false;
+        //     else if (parent1.label != parent2.label) return false;
+        //     else if (calcSimilarity(parent1, parent2) > 1e-8) return true;
+            
+        //     if (parent1.stop) return false;
+        //     node1 = parent1;
+        //     node2 = parent2;
+        // }
     }
 
     private final class TreePairComparator implements Comparator<Pair<Tree, Tree>>{
+        /**
+         * 1 means p1 is more similar than p2,
+         * 0 means they're probabilly equal,
+         * -1 means p1 is less similar than p2.
+         */
         @Override
         public int compare(Pair<Tree, Tree> p1, Pair<Tree, Tree> p2) {
             Tree first1 = p1.first;
@@ -291,7 +313,6 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
                 first2 = first2.parent;
                 second2 = second2.parent;
 
-                // 1 means p1 is more similar than p2
                 if (first1 == null && second1 == null && first2 == null && second2 == null) return 0;
                 else if (first1 == null && second1 == null) return 1;
                 else if (first2 == null && second2 == null) return -1;
@@ -317,6 +338,13 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
         int mappingCount = fotileTree.query(fotileTree.roots[node1.interval.l - 1], fotileTree.roots[node1.interval.r], 1, fotileTree.size2, node2.interval.l, node2.interval.r);
         return Similarities.diceSimilarity(mappingCount, node1.size, node2.size);
     }
+    /**
+     * The fotile tree (persistent segment tree) is used to calculate the number of mappings between two subtrees.
+     * We consider a plane, where point (x, y) indicates
+     *   there's a mapping between a node of dfs index x in tree 1 and a node of dfs index y in tree 2.
+     * Thus, to count the mappings between two subtrees is to count the number of points in a matrix of the plane.
+     * This is a classical problem in competitive programming, which could be solved by the fotile tree.
+     */
     private static final class FotileTree {
         int size1, size2;
         int[] counts, leftsons, rightsons;
@@ -432,6 +460,8 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
         if (homonymy1to2[node1.dfsIndex] == 0 && homonymy2to1[node2.dfsIndex] == 0) {
             homonymy1to2[node1.dfsIndex] = node2.dfsIndex;
             homonymy2to1[node2.dfsIndex] = node1.dfsIndex;
+
+            Log.finer("preprocessed homonymy mapping: %s <-> %s", node1, node2);
 
             if (node1.isConstructor()
                 || node1.children.size() == 1 && node2.children.size() == 1) {

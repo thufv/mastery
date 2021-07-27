@@ -52,6 +52,8 @@ public final class OrderedList extends ListNode {
 
     @Override
     public String toString() {
-        return name + " [ordered] assignment " + assignment;
+        return name + " [ordered] assignment " + assignment
+            + (interval != null ? " dfs [" + interval.l + ", " + interval.r + "]" : "")
+            ;
     }
 }

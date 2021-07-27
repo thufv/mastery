@@ -69,8 +69,10 @@ public final class TreeTransformer {
     static Leaf generateLeaf(Node node, PropertyMetaModel property) {
         String name = getTransformedName(property);
         String value = property.getValue(node).toString();
-        String identifier = property.is("identifier") ? value : null;
-        return new Leaf(getLabel(name), name, value, identifier);
+        if (property.is("identifier"))
+            return new Leaf(getLabel(name), name, value, value);
+        else 
+            return new Leaf(getLabel(name), name, value);
     }
 
     // TODO: record code position

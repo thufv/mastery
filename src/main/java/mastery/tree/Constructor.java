@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A constructor, i.e. an internal node that has a fixed number of children.
+ * A constructor, i.e. an internal node that has a fixed positive number of children.
  * 
  * namasikanam: I don't like this ambiguous name.
  */
@@ -82,6 +82,8 @@ public final class Constructor extends InternalNode {
 
     @Override
     public String toString() {
-        return name + " (" + arity + "-ary) assignment " + assignment;
+        return name + " (" + arity + "-ary) assignment " + assignment
+            + (interval != null ? " dfs [" + interval.l + ", " + interval.r + "]" : "")
+            ;
     }
 }

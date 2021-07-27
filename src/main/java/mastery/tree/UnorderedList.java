@@ -53,14 +53,14 @@ public final class UnorderedList extends ListNode {
 
     @Override
     public String toString() {
-        return name + " [unordered] assignment " + assignment;
+        return name + " [unordered] assignment " + assignment
+            + (interval != null ? " dfs [" + interval.l + ", " + interval.r + "]" : "")
+            ;
     }
 
     // This method is only for debug
     @Override
     public boolean identicalTo(Tree that) {
-        // System.out.println("Check " + this + " if identical to " + that);
-
         if (label != that.label) {
             return false;
         }
@@ -71,25 +71,11 @@ public final class UnorderedList extends ListNode {
             return false;
         }
         if (children.size() != that.children.size()) {
-            // System.out.println("children.size = " + children.size() + ", that.children.size = " + that.children.size());
             return false;
         }
 
         children.sort(new AssignmentComparator());
         that.children.sort(new AssignmentComparator());
-
-        // System.out.print("Sorted children of " + this + ":");
-        // for (Tree child : children) {
-        //     System.out.print(" " + child);
-        // }
-        // System.out.println("");
-
-        // System.out.print("Sorted children of " + that + ":");
-        // for (Tree child : that.children) {
-        //     System.out.print(" " + child);
-        // }
-        // System.out.println("");
-
 
         var it = children.iterator();
         var jt = that.children.iterator();

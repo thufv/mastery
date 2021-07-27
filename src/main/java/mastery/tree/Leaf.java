@@ -17,9 +17,7 @@ public class Leaf extends Tree {
 
     public Leaf(int label, String name, String code, String identifier) {
         this(label, name, code);
-        if (identifier != null) {
-            this.identifier = name + ":" + identifier;
-        }
+        this.identifier = name + ":" + identifier;
     }
 
     public Leaf(int label, String name, int startPos, int endPos, String fullCode) {
@@ -90,6 +88,8 @@ public class Leaf extends Tree {
 
     @Override
     public String toString() {
-        return name + " '" + code + "'" + " assignment " + assignment;
+        return name + " '" + code + "'" + " assignment " + assignment
+            + (interval != null ? " dfs [" + interval.l + "]" : "")
+            ;
     }
 }
