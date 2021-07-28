@@ -11,7 +11,7 @@ public abstract class InternalNode extends Tree {
     protected InternalNode(int label, String name, List<Tree> children) {
         super(label, name, children);
 
-        if (name.matches("(?!Import).*(Declaration|Name)")) {
+        if (name.matches(".*Declaration|SimpleName")) {
             for (Tree child : children) {
                 if (child.identifier != null) {
                     setIdentifierName(child.getIdentifierName());

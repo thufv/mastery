@@ -1,7 +1,6 @@
 package mastery.tree;
 
 import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.comments.Comment;
@@ -17,8 +16,8 @@ import mastery.tree.extensions.RawNode;
 import java.util.*;
 
 public final class TreeTransformer {
-    public static final String IMPORT_NAME = "ImportName";
-    public static final String IMPORT_NAME_IDENTIFIER = "ImportName#identifier";
+    public static final String QUALIFIED_NAME = "QualifiedName";
+    public static final String QUALIFIED_NAME_IDENTIFIER = "QualifiedName#identifier";
 
     private static final Map<String, Integer> LABELS = new HashMap<>();
 
@@ -46,8 +45,8 @@ public final class TreeTransformer {
                 createLabel(getTransformedName(propertyMetaModel));
             }
         }
-        createLabel(IMPORT_NAME);
-        createLabel(IMPORT_NAME_IDENTIFIER);
+        createLabel(QUALIFIED_NAME);
+        createLabel(QUALIFIED_NAME_IDENTIFIER);
     }
 
     final ParserConfig config;
@@ -88,18 +87,18 @@ public final class TreeTransformer {
         return new Leaf(getLabel(name), name, value, property.is("identifier"));
     }
 
-    static Constructor generateImportName(String name) {
+    static Constructor generateQualifiedName(String name) {
         return new Constructor(
-            getLabel(IMPORT_NAME),
-            IMPORT_NAME,
-            List.of(new Leaf(getLabel(IMPORT_NAME_IDENTIFIER), IMPORT_NAME_IDENTIFIER, name, true))
+            getLabel(QUALIFIED_NAME),
+            QUALIFIED_NAME,
+            List.of(new Leaf(getLabel(QUALIFIED_NAME_IDENTIFIER), QUALIFIED_NAME_IDENTIFIER, name, true))
         );
     }
 
     // TODO: record code position
     public Tree generate(Node node) {
-        if (node.getParentNode().filter(p -> p instanceof ImportDeclaration).isPresent()) {
-            return generateImportName(((Name) node).asString());
+        if (node instanceof Name) {
+            return generateQualifiedName(((Name) node).asString());
         }
 
         List<PropertyMetaModel> properties = node.getMetaModel().getAllPropertyMetaModels();
@@ -157,7 +156,7 @@ public final class TreeTransformer {
     public static class RestorationVisitor implements Tree.GenericVisitor<Visitable, Void> {
         @Override
         public Node visit(Constructor tree, Void arg) {
-            if (tree.is(IMPORT_NAME)) {
+            if (tree.is(QUALIFIED_NAME)) {
                 return StaticJavaParser.parseName(((Leaf) tree.getOnlyChild()).code);
             }
 
