@@ -1,8 +1,11 @@
 package mastery.tree;
 
+import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.comments.Comment;
+import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.visitor.Visitable;
 import com.github.javaparser.metamodel.BaseNodeMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
@@ -14,6 +17,9 @@ import mastery.tree.extensions.RawNode;
 import java.util.*;
 
 public final class TreeTransformer {
+    public static final String IMPORT_NAME = "ImportName";
+    public static final String IMPORT_NAME_IDENTIFIER = "ImportName#identifier";
+
     private static final Map<String, Integer> LABELS = new HashMap<>();
 
     static String getTransformedName(BaseNodeMetaModel nodeMetaModel) {
@@ -40,6 +46,8 @@ public final class TreeTransformer {
                 createLabel(getTransformedName(propertyMetaModel));
             }
         }
+        createLabel(IMPORT_NAME);
+        createLabel(IMPORT_NAME_IDENTIFIER);
     }
 
     final ParserConfig config;
@@ -80,8 +88,20 @@ public final class TreeTransformer {
         return new Leaf(getLabel(name), name, value, property.is("identifier"));
     }
 
+    static Constructor generateImportName(String name) {
+        return new Constructor(
+            getLabel(IMPORT_NAME),
+            IMPORT_NAME,
+            List.of(new Leaf(getLabel(IMPORT_NAME_IDENTIFIER), IMPORT_NAME_IDENTIFIER, name, true))
+        );
+    }
+
     // TODO: record code position
     public Tree generate(Node node) {
+        if (node.getParentNode().filter(p -> p instanceof ImportDeclaration).isPresent()) {
+            return generateImportName(((Name) node).asString());
+        }
+
         List<PropertyMetaModel> properties = node.getMetaModel().getAllPropertyMetaModels();
         if (!config.keepComment) {
             properties.removeIf(p -> p.is("comment"));
@@ -137,6 +157,10 @@ public final class TreeTransformer {
     public static class RestorationVisitor implements Tree.GenericVisitor<Visitable, Void> {
         @Override
         public Node visit(Constructor tree, Void arg) {
+            if (tree.is(IMPORT_NAME)) {
+                return StaticJavaParser.parseName(((Leaf) tree.getOnlyChild()).code);
+            }
+
             Map<String, Object> leftParams = new HashMap<>();
             Map<String, Object> rightParams = new HashMap<>();
             List<PropertyMetaModel> properties = tree.meta.getAllPropertyMetaModels();
@@ -156,8 +180,7 @@ public final class TreeTransformer {
                     }
                 } else if (property.isOptional()) {
                     if (!child.isEmpty()) {
-                        assert child.children.size() == 1;
-                        value = child.children.get(0).accept(this, arg);
+                        value = child.getOnlyChild().accept(this, arg);
                     }
                 } else if (property.isAttribute()) {
                     if (child.isConflict()) {

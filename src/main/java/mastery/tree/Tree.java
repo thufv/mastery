@@ -416,6 +416,10 @@ public abstract class Tree {
         return children.isEmpty();
     }
 
+    public boolean is(String fullName) {
+        return name.equals(fullName);
+    }
+
     public boolean isProperty(String fieldName) {
         return name.endsWith("#" + fieldName);
     }
@@ -426,5 +430,10 @@ public abstract class Tree {
 
     public void setIdentifierName(String identifierName) {
         this.identifier = this.name + ":" + identifierName;
+    }
+
+    public Tree getOnlyChild() {
+        assert children.size() == 1;
+        return children.get(0);
     }
 }
