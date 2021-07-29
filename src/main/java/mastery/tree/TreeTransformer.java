@@ -18,6 +18,7 @@ import java.util.*;
 public final class TreeTransformer {
     public static final String QUALIFIED_NAME = "QualifiedName";
     public static final String QUALIFIED_NAME_IDENTIFIER = "QualifiedName#identifier";
+    public static final String NULL_LIST_INDICATOR = "NullListIndicator";
 
     private static final Map<String, Integer> LABELS = new HashMap<>();
 
@@ -47,6 +48,7 @@ public final class TreeTransformer {
         }
         createLabel(QUALIFIED_NAME);
         createLabel(QUALIFIED_NAME_IDENTIFIER);
+        createLabel(NULL_LIST_INDICATOR);
     }
 
     final ParserConfig config;
@@ -62,6 +64,8 @@ public final class TreeTransformer {
             for (Node child : (NodeList<?>) value) {
                 children.add(generate(child));
             }
+        } else {
+            children.add(leafOf(NULL_LIST_INDICATOR, "", false));
         }
         String name = getTransformedName(property);
         if (MetaModel.isOrderedList(property)) {
@@ -81,17 +85,21 @@ public final class TreeTransformer {
         return new UnorderedList(getLabel(name), name, children);
     }
 
-    Leaf generateLeaf(Node node, PropertyMetaModel property) {
+    static Leaf leafOf(String name, String value, boolean isIdentifier) {
+        return new Leaf(getLabel(name), name, value, isIdentifier);
+    }
+
+    static Leaf generateLeaf(Node node, PropertyMetaModel property) {
         String name = getTransformedName(property);
         String value = property.getValue(node).toString();
-        return new Leaf(getLabel(name), name, value, property.is("identifier"));
+        return leafOf(name, value, property.is("identifier"));
     }
 
     static Constructor generateQualifiedName(String name) {
         return new Constructor(
             getLabel(QUALIFIED_NAME),
             QUALIFIED_NAME,
-            List.of(new Leaf(getLabel(QUALIFIED_NAME_IDENTIFIER), QUALIFIED_NAME_IDENTIFIER, name, true))
+            List.of(leafOf(QUALIFIED_NAME_IDENTIFIER, name, true))
         );
     }
 
@@ -174,7 +182,7 @@ public final class TreeTransformer {
 
                 Object value = null;
                 if (property.isNodeList()) {
-                    if (!child.isEmpty() || !property.isOptional()) {
+                    if (child.children.stream().noneMatch(c -> c.is(NULL_LIST_INDICATOR))) {
                         value = child.accept(this, arg);
                     }
                 } else if (property.isOptional()) {
@@ -211,7 +219,7 @@ public final class TreeTransformer {
 
         public NodeList<Node> fromList(List<Tree> children, Void arg) {
             return children.stream()
-                .map(child -> (Node) child.accept(this, arg))
+                .map(c -> (Node) c.accept(this, arg))
                 .collect(NodeList.toNodeList());
         }
 
@@ -249,7 +257,7 @@ public final class TreeTransformer {
             if (tree.meta != null) {
                 return tree.meta.construct(Collections.emptyMap());
             }
-            // Only reached when restoring a single leaf or a conflict of two leaves.
+            // not reached when restoring a constructor
             return new RawNode(tree.code);
         }
     }
