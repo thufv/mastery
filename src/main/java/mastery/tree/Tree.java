@@ -436,4 +436,20 @@ public abstract class Tree {
         assert children.size() == 1;
         return children.get(0);
     }
+
+    public Tree getOnlyLeftTree() {
+        List<Tree> trees = ((Conflict) this).left;
+        assert trees.size() == 1;
+        return trees.get(0);
+    }
+
+    public Tree getOnlyRightTree() {
+        List<Tree> trees = ((Conflict) this).right;
+        assert trees.size() == 1;
+        return trees.get(0);
+    }
+
+    public String getValue() {
+        return ((Leaf) this).code;
+    }
 }

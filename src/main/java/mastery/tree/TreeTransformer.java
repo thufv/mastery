@@ -152,7 +152,7 @@ public final class TreeTransformer {
     }
 
     static Object parseAttribute(Tree tree, PropertyMetaModel property) {
-        return parseAttribute(((Leaf) tree).code, property.getType());
+        return parseAttribute(tree.getValue(), property.getType());
     }
 
     static Node constructNode(BaseNodeMetaModel nodeMetaModel, Map<String, Object> parameters) {
@@ -165,7 +165,15 @@ public final class TreeTransformer {
         @Override
         public Node visit(Constructor tree, Void arg) {
             if (tree.is(QUALIFIED_NAME)) {
-                return StaticJavaParser.parseName(((Leaf) tree.getOnlyChild()).code);
+                Tree child = tree.getOnlyChild();
+                if (child.isConflict()) {
+                    return ConflictWrapper.construct(
+                        StaticJavaParser.parseName(child.getOnlyLeftTree().getValue()),
+                        StaticJavaParser.parseName(child.getOnlyRightTree().getValue())
+                    );
+                } else {
+                    return StaticJavaParser.parseName(child.getValue());
+                }
             }
 
             Map<String, Object> leftParams = new HashMap<>();
@@ -191,11 +199,8 @@ public final class TreeTransformer {
                     }
                 } else if (property.isAttribute()) {
                     if (child.isConflict()) {
-                        Conflict conflict = (Conflict) child;
-                        assert conflict.left.size() == 1;
-                        assert conflict.right.size() == 1;
-                        leftParams.put(property.getName(), parseAttribute(conflict.left.get(0), property));
-                        rightParams.put(property.getName(), parseAttribute(conflict.right.get(0), property));
+                        leftParams.put(property.getName(), parseAttribute(child.getOnlyLeftTree(), property));
+                        rightParams.put(property.getName(), parseAttribute(child.getOnlyRightTree(), property));
                     } else {
                         value = parseAttribute(child, property);
                     }
