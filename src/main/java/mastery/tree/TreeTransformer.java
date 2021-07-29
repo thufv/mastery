@@ -194,7 +194,7 @@ public final class TreeTransformer {
                         value = child.accept(this, arg);
                     }
                 } else if (property.isOptional()) {
-                    if (!child.isEmpty()) {
+                    if (!child.children.isEmpty()) {
                         value = child.getOnlyChild().accept(this, arg);
                     }
                 } else if (property.isAttribute()) {
@@ -222,15 +222,15 @@ public final class TreeTransformer {
             return ConflictWrapper.construct(left, right);
         }
 
-        public NodeList<Node> fromList(List<Tree> children, Void arg) {
+        public NodeList<Node> constructNodeList(List<Tree> children) {
             return children.stream()
-                .map(c -> (Node) c.accept(this, arg))
+                .map(c -> (Node) c.accept(this, null))
                 .collect(NodeList.toNodeList());
         }
 
         @Override
         public NodeList<Node> visit(ListNode tree, Void arg) {
-            return fromList(tree.children, arg);
+            return constructNodeList(tree.children);
         }
 
         /**
@@ -240,21 +240,17 @@ public final class TreeTransformer {
          */
         @Override
         public Visitable visit(Conflict tree, Void arg) {
-            if (tree.getAny() instanceof ListNode) {
-                assert tree.left.size() == 1;
-                assert tree.right.size() == 1;
-                Conflict conflict = Conflict.wrap(tree.left.get(0).children, tree.right.get(0).children);
-                return fromList(List.of(conflict), arg);
+            if (tree.hasInAnySide(ListNode.class::isInstance)) {
+                Conflict conflict = Conflict.wrap(
+                    tree.getOnlyLeftTree().children,
+                    tree.getOnlyRightTree().children
+                );
+                return constructNodeList(List.of(conflict));
             }
-            List<Node> left = new ArrayList<>();
-            List<Node> right = new ArrayList<>();
-            for (Tree subtree : tree.left) {
-                left.add((Node) subtree.accept(this, arg));
-            }
-            for (Tree subtree : tree.right) {
-                right.add((Node) subtree.accept(this, arg));
-            }
-            return ConflictWrapper.construct(left, right);
+            return ConflictWrapper.construct(
+                constructNodeList(tree.left),
+                constructNodeList(tree.right)
+            );
         }
 
         @Override

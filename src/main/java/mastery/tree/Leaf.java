@@ -97,4 +97,9 @@ public class Leaf extends Tree {
             + (interval != null ? " dfs [" + interval.l + "]" : "")
             ;
     }
+
+    @Override
+    public String getValue() {
+        return code;
+    }
 }

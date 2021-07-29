@@ -412,10 +412,6 @@ public abstract class Tree {
             children.get(i).childNo = i;
     }
 
-    public boolean isEmpty() {
-        return children.isEmpty();
-    }
-
     public boolean is(String fullName) {
         return name.equals(fullName);
     }
@@ -438,18 +434,14 @@ public abstract class Tree {
     }
 
     public Tree getOnlyLeftTree() {
-        List<Tree> trees = ((Conflict) this).left;
-        assert trees.size() == 1;
-        return trees.get(0);
+        throw new IllegalStateException("the tree is not a conflict");
     }
 
     public Tree getOnlyRightTree() {
-        List<Tree> trees = ((Conflict) this).right;
-        assert trees.size() == 1;
-        return trees.get(0);
+        throw new IllegalStateException("the tree is not a conflict");
     }
 
     public String getValue() {
-        return ((Leaf) this).code;
+        throw new IllegalStateException("the tree has no value");
     }
 }
