@@ -683,7 +683,11 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
         if (matched1to2[node.dfsIndex] == 0) {
             boolean matched = false;
             Tree buddy = node.recoveryBuddy;
-            if (checkMapping(node, buddy)) {
+            if (checkMapping(node, buddy)
+                // This is a little overfit...But we restrict matching between ImportDeclaration nodes 
+                // only if the imported qualified names are exactly same, that is,
+                // the mapping between ImportDeclaration nodes could only be isomorphic mapping.
+                && !node.name.equals("ImportDeclaration")) {
                 match(node, buddy, MappingType.recovery);
                 ++mappingCount;
                 matched = true;
