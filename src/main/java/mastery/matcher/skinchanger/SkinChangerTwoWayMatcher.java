@@ -116,7 +116,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
                             Integer checkedCount = 0;
                             int j = -1;
                             for (int _j = 0; _j < list2.size(); ++_j)
-                                if (checkMapping(node1, list2.get(_j))) {
+                                if (checkMapping(node1, list2.get(_j), MappingType.isomorphic)) {
                                     ++checkedCount;
                                     j = _j;
                                 }
@@ -124,7 +124,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
                                 Tree node2 = list2.get(j);
                                 boolean only_i = true;
                                 for (int _i = 0; _i < list1.size(); ++_i)
-                                    if (i != _i && checkMapping(list1.get(_i), node2))
+                                    if (i != _i && checkMapping(list1.get(_i), node2, MappingType.isomorphic))
                                         only_i = false;
                                 if (only_i) {
                                     matchSubTree(node1, node2);
@@ -141,7 +141,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
                         for (int i = 0; i < list2.size(); ++i) checked2.add(false);
                         for (int i = 0; i < list1.size(); ++i)
                             for (int j = 0; j < list2.size(); ++j)
-                                if (checkMapping(list1.get(i), list2.get(j))) {
+                                if (checkMapping(list1.get(i), list2.get(j), MappingType.isomorphic)) {
                                     cartesianProducts.add(Pair.of(list1.get(i), list2.get(j)));
                                     checked1.set(i, true);
                                     checked2.set(j, true);
@@ -240,7 +240,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
             matchSubTree(tree1.children.get(i), tree2.children.get(i));
     }
 
-    private boolean checkMapping(Tree node1, Tree node2) {
+    private boolean checkMapping(Tree node1, Tree node2, MappingType type) {
         // basic checking
         if (node1 == null) return false;
         if (node2 == null) return false;
@@ -265,31 +265,41 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
             return false;
         if (homonymy2to1[node2.dfsIndex] != 0 && homonymy2to1[node2.dfsIndex] != node1.dfsIndex)
             return false;
+        
+        // This is a little overfit...But we restrict matching between ImportDeclaration nodes 
+        // only if the imported qualified names are exactly same, that is,
+        // the mapping between ImportDeclaration nodes could only be isomorphic mapping.
+        if (type != MappingType.isomorphic && node1.name.equals("ImportDeclaration"))
+            return false;
 
         return true;
     }
     /**
-     * Do we still need this for an ABSTRACT syntax tree?
-     * Not sure, comment the actual content temporarily...
+     * Check if the "environment"s of the two nodes to match are similar enough.
+     * Inspired by dubbo/b1324511d-dubbo-cluster-src-main-java-org-apache-dubbo-rpc-cluster-directory-AbstractDirectory
      * 
      * @param node1
      * @param node2
      * @return
      */
     private boolean checkStop(Tree node1, Tree node2) {
-        return true;
-        // for (;;) {
-        //     Tree parent1 = node1.parent;
-        //     Tree parent2 = node2.parent;
+        if (node1.stop) return true;
+        for (;;) {
+            Tree parent1 = node1.parent;
+            Tree parent2 = node2.parent;
             
-        //     if (parent1 == null || parent2 == null) return false;
-        //     else if (parent1.label != parent2.label) return false;
-        //     else if (calcSimilarity(parent1, parent2) > 1e-8) return true;
+            if (parent1 == null || parent2 == null) return false;
+            else if (parent1.label != parent2.label) return false;
+            else if (calcSimilarity(parent1, parent2) > 1e-8) return true;
             
-        //     if (parent1.stop) return false;
-        //     node1 = parent1;
-        //     node2 = parent2;
-        // }
+            if (parent1.stop) {
+                // TODO: the threshold is arbitrarily determined now
+                if (StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(parent1), TreePrinters.rawCode(parent2)) > 0.7) return true;
+                else return false;
+            }
+            node1 = parent1;
+            node2 = parent2;
+        }
     }
 
     private final class TreePairComparator implements Comparator<Pair<Tree, Tree>> {
@@ -482,7 +492,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
                 for (int i = 0; i < node1.children.size(); ++i) {
                     Tree child1 = node1.children.get(i);
                     Tree child2 = node2.children.get(i);
-                    if (checkMapping(child1, child2))
+                    if (checkMapping(child1, child2, MappingType.homonymy))
                         homonymyDfs(child1, child2);
                 }
             }
@@ -514,7 +524,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
             else if (homonymy1to2[node.dfsIndex] != 0) {
                 Tree candidate = nodeInDfsOrdering2[homonymy1to2[node.dfsIndex]];
 
-                assert checkMapping(node, candidate);
+                assert checkMapping(node, candidate, MappingType.homonymy);
 
                 match(node, candidate, MappingType.homonymy);
                 mappingCount += containerDfs(node, candidate) + 1;
@@ -546,13 +556,13 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
                     }
 
                     if (candidate != null) {
-                        Log.finer("candidate of %s[%d, %d] is %s[%d, %d]", node, node.interval.l, node.interval.r, candidate, candidate.interval.l, candidate.interval.r);
+                        Log.finer("candidate of %s is %s", node, candidate);
                     }
                     else {
-                        Log.finer("candidate of %s[%d, %d] is null", node, node.interval.l, node.interval.r);
+                        Log.finer("candidate of %s is null", node);
                     }
 
-                    if (candidate != null && checkMapping(node, candidate)) {
+                    if (candidate != null && checkMapping(node, candidate, MappingType.container)) {
                         // get the candidate!
                         // let's check the dice!
 
@@ -561,11 +571,14 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
                         if (node.size < 20 || candidate.size < 20)
                             Log.finer("String Distance = %f", StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(node), TreePrinters.rawCode(candidate)));
 
-                        if (Similarities.diceSimilarity(mappingCount, node.size, candidate.size) > minDice
-                        // The following condition describes "the codes must be similar enough if one of node owns small subtree".
-                        // This heuristic is inspired by dubbo/99256faf8-dubbo-config-dubbo-config-spring-src-main-java-org-apache-dubbo-config-spring-ReferenceBean
-                        && !((node.size < 20 || candidate.size < 20)
-                            && StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(node), TreePrinters.rawCode(candidate)) < 0.6)
+                        // If one of subtree is small enough, we consider the code similarity rather than mapping similarity.
+                        // This heuristic is inspired by
+                        // 1. dubbo/99256faf8-dubbo-config-dubbo-config-spring-src-main-java-org-apache-dubbo-config-spring-ReferenceBean
+                        // 2. dubbo/99256faf8-dubbo-config-dubbo-config-spring-src-main-java-org-apache-dubbo-config-spring-ReferenceBean
+                        // The thresholds are arbitrarily set now...
+                        if (node.size < 20 || candidate.size < 20
+                            ? StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(node), TreePrinters.rawCode(candidate)) > 0.53
+                            : Similarities.diceSimilarity(mappingCount, node.size, candidate.size) > minDice
                         ) {
                             match(node, candidate, MappingType.container);
                             mappingCount += containerDfs(node, candidate) + 1;
@@ -604,7 +617,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
                     
                     Log.finer("compulsory to check: %s <-> %s", child1, child2);
 
-                    if (checkMapping(child1, child2)) {
+                    if (checkMapping(child1, child2, MappingType.compulsory)) {
                         match(child1, child2, MappingType.compulsory);
                         mappingCount += containerDfs(child1, child2) + 1;
                         node.postLCA = Tree.getLCA(node.postLCA, child1.postLCA);
@@ -620,7 +633,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
                 if (matched1to2[child1.dfsIndex] == 0)
                     child1.preInterval = node.preInterval;
 
-                if (checkMapping(child1, child2)) {
+                if (checkMapping(child1, child2, MappingType.compulsory)) {
                     match(child1, child2, MappingType.compulsory);
                     mappingCount += containerDfs(child1, child2) + 1;
                     node.postLCA = Tree.getLCA(node.postLCA, child1.postLCA);
@@ -683,11 +696,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
         if (matched1to2[node.dfsIndex] == 0) {
             boolean matched = false;
             Tree buddy = node.recoveryBuddy;
-            if (checkMapping(node, buddy)
-                // This is a little overfit...But we restrict matching between ImportDeclaration nodes 
-                // only if the imported qualified names are exactly same, that is,
-                // the mapping between ImportDeclaration nodes could only be isomorphic mapping.
-                && !node.name.equals("ImportDeclaration")) {
+            if (checkMapping(node, buddy, MappingType.recovery)) {
                 match(node, buddy, MappingType.recovery);
                 ++mappingCount;
                 matched = true;
@@ -702,7 +711,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
 
                         buddy = nodeInDfsOrdering2[parentBuddyDfsIndex].children.get(node.childNo);
                         
-                        if (checkMapping(node, buddy)) {
+                        if (checkMapping(node, buddy, MappingType.recovery)) {
                             match(node, buddy, MappingType.recovery);
                             ++mappingCount;
                         }
