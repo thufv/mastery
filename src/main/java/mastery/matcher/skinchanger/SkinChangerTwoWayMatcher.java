@@ -172,16 +172,16 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
 
         fotileTree = new FotileTree(matched1to2, matched2to1);
 
-        Log.finer("collected %d node pairs before any checking.", cartesianProducts.size());
-        for (int i = cartesianProducts.size() - 1; i >= 0; --i)
-            Log.finer("\t%s %s\n", cartesianProducts.get(i).first, cartesianProducts.get(i).second);
+        // Log.finer("collected %d node pairs before any checking.", cartesianProducts.size());
+        // for (int i = cartesianProducts.size() - 1; i >= 0; --i)
+        //     Log.finer("\t%s %s\n", cartesianProducts.get(i).first, cartesianProducts.get(i).second);
 
         cartesianProducts = cartesianProducts.stream().filter(p -> checkStop(p.first, p.second)).collect(Collectors.toList());
         cartesianProducts.sort(new TreePairComparator());
 
         Log.finer("sorted %d node pair:", cartesianProducts.size());
         for (int i = cartesianProducts.size() - 1; i >= 0; --i)
-            Log.finer("\tNo. %d: %s %s\n", i, cartesianProducts.get(i).first, cartesianProducts.get(i).second);
+            Log.finer("\tNo. %d: %s <-> %s\n", i, cartesianProducts.get(i).first, cartesianProducts.get(i).second);
 
         for (int i = cartesianProducts.size() - 1; i >= 0; --i) {
             var p = cartesianProducts.get(i);
@@ -229,7 +229,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
         //     Log.finer("An expected mapping!");
         // }
 
-        Log.finer("%s mapping: %s <-> %s", type, tree1, tree2);
+        // Log.finer("%s mapping: %s <-> %s", type, tree1, tree2);
     }
     private void matchSubTree(Tree tree1, Tree tree2) {
         match(tree1, tree2, MappingType.isomorphic);
@@ -284,21 +284,24 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
      */
     private boolean checkStop(Tree node1, Tree node2) {
         if (node1.stop) return true;
-        for (;;) {
-            Tree parent1 = node1.parent;
-            Tree parent2 = node2.parent;
-            
+        Tree parent1 = node1.parent;
+        Tree parent2 = node2.parent;
+        while (true) {    
             if (parent1 == null || parent2 == null) return false;
             else if (parent1.label != parent2.label) return false;
+            // If there's one another mapping between them, we return true.
             else if (calcSimilarity(parent1, parent2) > 1e-8) return true;
             
             if (parent1.stop) {
-                // TODO: the threshold is arbitrarily determined now
-                if (StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(parent1), TreePrinters.rawCode(parent2)) > 0.7) return true;
+                Log.finer("code similarity between %s (ancestor of %s) and %s (ancestor of %s) is %.2f\n", parent1, node1, parent2, node2, StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(parent1), TreePrinters.rawCode(parent2)));
+
+                // This threshold is adjusted according to the following scenarios:
+                // 1. dubbo/a41930e55-dubbo-common-src-main-java-org-apache-dubbo-common-Constants, 0.76, false
+                if (StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(parent1), TreePrinters.rawCode(parent2)) > 0.77) return true;
                 else return false;
             }
-            node1 = parent1;
-            node2 = parent2;
+            parent1 = parent1.parent;
+            parent2 = parent2.parent;
         }
     }
 
