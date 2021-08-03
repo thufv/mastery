@@ -572,15 +572,14 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher{
                         Log.finer("Jaccad Similarity = %f, Dice Similarity = %f, mappingCount = %d, minDice = %f", Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size), Similarities.diceSimilarity(mappingCount, node.size, candidate.size), mappingCount, minDice);
                         
                         if (node.size < 20 || candidate.size < 20)
-                            Log.finer("String Distance = %f", StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(node), TreePrinters.rawCode(candidate)));
+                            Log.finer("code similarity = %f", StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(node), TreePrinters.rawCode(candidate)));
 
                         // If one of subtree is small enough, we consider the code similarity rather than mapping similarity.
-                        // This heuristic is inspired by
-                        // 1. dubbo/99256faf8-dubbo-config-dubbo-config-spring-src-main-java-org-apache-dubbo-config-spring-ReferenceBean
-                        // 2. dubbo/99256faf8-dubbo-config-dubbo-config-spring-src-main-java-org-apache-dubbo-config-spring-ReferenceBean
-                        // The thresholds are arbitrarily set now...
+                        // This heuristic is inspired by dubbo/99256faf8-dubbo-config-dubbo-config-spring-src-main-java-org-apache-dubbo-config-spring-ReferenceBean
+                        // The thresholds are set according to the followings:
+                        // 1. dubbo/9f5cc83d3-dubbo-rpc-dubbo-rpc-dubbo-src-main-java-org-apache-dubbo-rpc-protocol-dubbo-CallbackServiceCodec, true, 0.458716
                         if (node.size < 20 || candidate.size < 20
-                            ? StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(node), TreePrinters.rawCode(candidate)) > 0.53
+                            ? StringMetrics.qGramsDistance().compare(TreePrinters.rawCode(node), TreePrinters.rawCode(candidate)) > 0.45
                             : Similarities.diceSimilarity(mappingCount, node.size, candidate.size) > minDice
                         ) {
                             match(node, candidate, MappingType.container);
