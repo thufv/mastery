@@ -16,7 +16,7 @@ public class Assigner {
     private void addNodesAtHeight(Tree tree) {
         for (Tree node: tree.postOrder()) {
             while (node.height >= nodesOfHeight.size())
-                nodesOfHeight.add(new ArrayList<Tree>());
+                nodesOfHeight.add(new ArrayList<>());
             nodesOfHeight.get(node.height).add(node);
         }
     }
@@ -27,14 +27,14 @@ public class Assigner {
     private int assign(List<Tree> nodes, int childStart, int assignmentStart) {
         boolean noChildExists = false;
         List<List<Tree>> nodesOfAssignment = new ArrayList<>();
-        Integer assignmentCount = 0;
+        int assignmentCount = 0;
         for (Tree node: nodes) {
             if (node.children.size() == childStart) {
                 noChildExists = true;
                 node.assignment = assignmentStart;
             }
             else {
-                Integer childAssignment = node.children.get(childStart).assignment;
+                int childAssignment = node.children.get(childStart).assignment;
                 if (compressedAssignment[childAssignment] == 0) {
                     compressedAssignment[childAssignment] = ++assignmentCount;
                     nodesOfAssignment.add(new ArrayList<>());
@@ -47,10 +47,11 @@ public class Assigner {
                 compressedAssignment[node.children.get(childStart).assignment] = 0;
         // [assignmentStart, assignmentEnd) is the assigned interval
         int assignmentEnd = assignmentStart + (noChildExists ? 1: 0);
-        for (var undistinguishableNodes: nodesOfAssignment)
-            assignmentEnd += assign(undistinguishableNodes, childStart + 1, assignmentEnd);
+        for (var indistinguishableNodes: nodesOfAssignment)
+            assignmentEnd += assign(indistinguishableNodes, childStart + 1, assignmentEnd);
         return assignmentEnd - assignmentStart;
     }
+
     // Classify nodes by the children starting at [childStart],
     // and assignment starting at [assignmentStart]
     private int assignLeaf(List<Leaf> nodes, int charStart, int assignmentStart) {
@@ -82,6 +83,7 @@ public class Assigner {
             assignmentEnd += assignLeaf(undistinguishableNodes, charStart + 1, assignmentEnd);
         return assignmentEnd - assignmentStart;
     }
+
     public void apply(Tree... trees)
     {
         // Calculate information about dfs ordering
@@ -99,11 +101,12 @@ public class Assigner {
         compressedAssignment = new int[compressedAssignmentSize];
 
         // Initialize assign as label
-        Integer assignmentEnd;
+        int assignmentEnd;
         {
+            // discretize labels for each height
             for (var nodes: nodesOfHeight) {
                 List<Integer> compressedLabel = new ArrayList<>();
-                Integer labelCount = 0;
+                int labelCount = 0;
                 for (Tree node: nodes) {
                     while (compressedLabel.size() <= node.label)
                         compressedLabel.add(0);
@@ -113,7 +116,8 @@ public class Assigner {
                 }
             }
 
-            Integer assignmentCount = 0;
+            int assignmentCount = 0;
+            // assign unordered lists which are actual leaves
             for (Tree node: nodesOfHeight.get(0)) {
                 if (node instanceof UnorderedList) {
                     if (compressedAssignment[node.assignment] == 0)
@@ -121,11 +125,12 @@ public class Assigner {
                     node.assignment = compressedAssignment[node.assignment];
                 }
             }
-            
+
             assignmentEnd = assignmentCount + 1;
             assignmentCount = 0;
 
             List<List<Leaf>> nodesOfAssignment = new ArrayList<>();
+            // sort leaves by label
             for (Tree node: nodesOfHeight.get(0)) {
                 if (node instanceof Leaf) {
                     if (compressedAssignment[node.assignment] == 0) {
@@ -141,11 +146,11 @@ public class Assigner {
             for (var nodes: nodesOfAssignment)
                 assignmentEnd += assignLeaf(nodes, 0, assignmentEnd);
         }
-        
+
         for (int height = 0; height < nodesOfHeight.size(); ++height) {
             if (height > 0) {
                 List<List<Tree>> childrenOfAssignment = new ArrayList<>();
-                Integer assignmentCount = 0;
+                int assignmentCount = 0;
 
                 childrenOfAssignment.add(new ArrayList<>());
 
@@ -153,7 +158,7 @@ public class Assigner {
                 for (Tree node: nodesOfHeight.get(height)) {
                     if (node.isUnorderedList()) {
                         for (Tree child: node.children) {
-                            
+
                             if (child.assignment >= compressedAssignmentSize) {
                                 System.out.println("height = " + height);
                                 System.out.println("child = " + child);
@@ -182,7 +187,7 @@ public class Assigner {
 
             // Assign
             List<List<Tree>> nodesOfAssignment = new ArrayList<>();
-            Integer assignmentCount = 0;
+            int assignmentCount = 0;
             for (Tree node: nodesOfHeight.get(height)) {
                 if (compressedAssignment[node.assignment] == 0) {
                     compressedAssignment[node.assignment] = ++assignmentCount;
@@ -199,6 +204,7 @@ public class Assigner {
     }
 
     private Integer dfsIndex;
+
     private void dfs(Tree node) {
         node.dfsIndex = ++dfsIndex;
         for (Tree child: node.children)
@@ -206,6 +212,7 @@ public class Assigner {
         Integer rightIndex = dfsIndex;
         node.interval = Interval.of(node.dfsIndex, rightIndex);
     }
+
     private void calDfs(Tree tree) {
         dfsIndex = 0;
         dfs(tree);

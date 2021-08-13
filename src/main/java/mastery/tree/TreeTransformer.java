@@ -20,6 +20,8 @@ public final class TreeTransformer {
     public static final String QUALIFIED_NAME_IDENTIFIER = "QualifiedName#identifier";
     public static final String NULL_LIST_INDICATOR = "NullListIndicator";
 
+    public static final int LABEL_MAX;
+
     private static final Map<String, Integer> LABELS = new HashMap<>();
 
     static String getTransformedName(BaseNodeMetaModel nodeMetaModel) {
@@ -31,7 +33,7 @@ public final class TreeTransformer {
     }
 
     static void createLabel(String name) {
-        LABELS.put(name, LABELS.size());
+        LABELS.put(name, LABELS.size() + 1);
     }
 
     static int getLabel(String name) {
@@ -49,6 +51,7 @@ public final class TreeTransformer {
         createLabel(QUALIFIED_NAME);
         createLabel(QUALIFIED_NAME_IDENTIFIER);
         createLabel(NULL_LIST_INDICATOR);
+        LABEL_MAX = LABELS.size();
     }
 
     final ParserConfig config;

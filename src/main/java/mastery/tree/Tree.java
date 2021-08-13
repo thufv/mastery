@@ -34,10 +34,13 @@ public abstract class Tree {
     public int size;
 
     /**
-     * Label, i.e. grammar kind/type.
+     * Label, i.e. grammar kind/type, starts from 1.
      * -1 stands for weird label.
+     * -2 stands for conflict.
      */
     public int label;
+
+    public static final int LABEL_MAX = TreeTransformer.LABEL_MAX;
 
     /**
      * Human-readable string representation of label.
