@@ -2,7 +2,7 @@
 # Usage: ./scripts/test.sh [formatter]
 
 ./gradlew build -x test
-for d in sample/* ; do
+for d in samples/* ; do
     # check if there're base, left and right versions
     b=true
     for version in base left right ; do
