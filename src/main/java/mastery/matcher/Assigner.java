@@ -2,216 +2,156 @@ package mastery.matcher;
 
 import mastery.tree.Leaf;
 import mastery.tree.Tree;
-import mastery.tree.UnorderedList;
 import mastery.util.Interval;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class Assigner {
-    // nodesWithHeight[height][]: nodes at some specific height
-    List<List<Tree>> nodesOfHeight = new ArrayList<>();
+    int dfsIndex = 0;
 
-    private void addNodesAtHeight(Tree tree) {
-        for (Tree node: tree.postOrder()) {
-            while (node.height >= nodesOfHeight.size())
-                nodesOfHeight.add(new ArrayList<Tree>());
-            nodesOfHeight.get(node.height).add(node);
-        }
-    }
-
-    int[] compressedAssignment;
-    // Classify nodes by the children starting at [childStart],
-    // and assignment starting at [assignmentStart]
-    private int assign(List<Tree> nodes, int childStart, int assignmentStart) {
-        boolean noChildExists = false;
-        List<List<Tree>> nodesOfAssignment = new ArrayList<>();
-        Integer assignmentCount = 0;
-        for (Tree node: nodes) {
-            if (node.children.size() == childStart) {
-                noChildExists = true;
-                node.assignment = assignmentStart;
-            }
-            else {
-                Integer childAssignment = node.children.get(childStart).assignment;
-                if (compressedAssignment[childAssignment] == 0) {
-                    compressedAssignment[childAssignment] = ++assignmentCount;
-                    nodesOfAssignment.add(new ArrayList<>());
-                }
-                nodesOfAssignment.get(compressedAssignment[childAssignment] - 1).add(node);
-            }
-        }
-        for (Tree node: nodes)
-            if (node.children.size() > childStart)
-                compressedAssignment[node.children.get(childStart).assignment] = 0;
-        // [assignmentStart, assignmentEnd) is the assigned interval
-        int assignmentEnd = assignmentStart + (noChildExists ? 1: 0);
-        for (var undistinguishableNodes: nodesOfAssignment)
-            assignmentEnd += assign(undistinguishableNodes, childStart + 1, assignmentEnd);
-        return assignmentEnd - assignmentStart;
-    }
-    // Classify nodes by the children starting at [childStart],
-    // and assignment starting at [assignmentStart]
-    private int assignLeaf(List<Leaf> nodes, int charStart, int assignmentStart) {
-        boolean noCharExists = false;
-        List<List<Leaf>> nodesOfAssignment = new ArrayList<>();
-        Integer assignmentCount = 0;
-        for (Leaf node: nodes) {
-            if (node.code.length() == charStart) {
-                noCharExists = true;
-                node.assignment = assignmentStart;
-            }
-            else {
-                int childAssignment = node.code.charAt(charStart);
-
-                if (childAssignment > compressedAssignment.length) {
-                    System.out.println("char: " + node.code.charAt(charStart));
-                    System.out.println("int: " + node.code.charAt(charStart));
-                }
-
-                if (compressedAssignment[childAssignment] == 0) {
-                    compressedAssignment[childAssignment] = ++assignmentCount;
-                    nodesOfAssignment.add(new ArrayList<>());
-                }
-                nodesOfAssignment.get(compressedAssignment[childAssignment] - 1).add(node);
-            }
-        }
-        for (Leaf node: nodes)
-            if (node.code.length() > charStart)
-                compressedAssignment[node.code.charAt(charStart)] = 0;
-        // [assignmentStart, assignmentEnd) is the assigned interval
-        int assignmentEnd = assignmentStart + (noCharExists ? 1: 0);
-        for (var undistinguishableNodes: nodesOfAssignment)
-            assignmentEnd += assignLeaf(undistinguishableNodes, charStart + 1, assignmentEnd);
-        return assignmentEnd - assignmentStart;
-    }
-    public void apply(Tree... trees)
-    {
-        // Calculate information about dfs ordering
-        for (Tree tree: trees)
-            calDfs(tree);
-
-        // put nodes into the 2D-list
-        for (Tree tree: trees)
-            addNodesAtHeight(tree);
-
-        // Enumerate nodes by height increasing order
-
-        // Initialize compressedAssignment
-        int compressedAssignmentSize = Math.max(256, Arrays.stream(trees).mapToInt((Tree tree)->tree.size).sum() + 1);
-        compressedAssignment = new int[compressedAssignmentSize];
-
-        // Initialize assign as label
-        Integer assignmentEnd;
-        {
-            for (var nodes: nodesOfHeight) {
-                List<Integer> compressedLabel = new ArrayList<>();
-                Integer labelCount = 0;
-                for (Tree node: nodes) {
-                    while (compressedLabel.size() <= node.label)
-                        compressedLabel.add(0);
-                    if (compressedLabel.get(node.label) == 0)
-                        compressedLabel.set(node.label, ++labelCount);
-                    node.assignment = compressedLabel.get(node.label);
-                }
-            }
-
-            Integer assignmentCount = 0;
-            for (Tree node: nodesOfHeight.get(0)) {
-                if (node instanceof UnorderedList) {
-                    if (compressedAssignment[node.assignment] == 0)
-                        compressedAssignment[node.assignment] = ++assignmentCount;
-                    node.assignment = compressedAssignment[node.assignment];
-                }
-            }
-            
-            assignmentEnd = assignmentCount + 1;
-            assignmentCount = 0;
-
-            List<List<Leaf>> nodesOfAssignment = new ArrayList<>();
-            for (Tree node: nodesOfHeight.get(0)) {
-                if (node instanceof Leaf) {
-                    if (compressedAssignment[node.assignment] == 0) {
-                        compressedAssignment[node.assignment] = ++assignmentCount;
-                        nodesOfAssignment.add(new ArrayList<>());
-                    }
-                    nodesOfAssignment.get(compressedAssignment[node.assignment] - 1).add((Leaf)node);
-                }
-            }
-
-            Arrays.fill(compressedAssignment, 0);
-
-            for (var nodes: nodesOfAssignment)
-                assignmentEnd += assignLeaf(nodes, 0, assignmentEnd);
-        }
-        
-        for (int height = 0; height < nodesOfHeight.size(); ++height) {
-            if (height > 0) {
-                List<List<Tree>> childrenOfAssignment = new ArrayList<>();
-                Integer assignmentCount = 0;
-
-                childrenOfAssignment.add(new ArrayList<>());
-
-                // Sort children of unorderedList
-                for (Tree node: nodesOfHeight.get(height)) {
-                    if (node.isUnorderedList()) {
-                        for (Tree child: node.children) {
-                            
-                            if (child.assignment >= compressedAssignmentSize) {
-                                System.out.println("height = " + height);
-                                System.out.println("child = " + child);
-                                System.out.println("compressedAssignmentSize = " + compressedAssignmentSize);
-                            }
-
-                            if (compressedAssignment[child.assignment] == 0) {
-                                compressedAssignment[child.assignment] = ++assignmentCount;
-                                childrenOfAssignment.add(new ArrayList<>());
-                            }
-
-                            childrenOfAssignment.get(compressedAssignment[child.assignment]).add(child);
-                        }
-                        node.children.clear();
-                    }
-                }
-
-                for (var nodes: childrenOfAssignment)
-                    for (Tree node: nodes)
-                        node.parent.children.add(node);
-
-                for (var nodes: childrenOfAssignment)
-                    for (Tree node: nodes)
-                        compressedAssignment[node.assignment] = 0;
-            }
-
-            // Assign
-            List<List<Tree>> nodesOfAssignment = new ArrayList<>();
-            Integer assignmentCount = 0;
-            for (Tree node: nodesOfHeight.get(height)) {
-                if (compressedAssignment[node.assignment] == 0) {
-                    compressedAssignment[node.assignment] = ++assignmentCount;
-                    nodesOfAssignment.add(new ArrayList<>());
-                }
-                nodesOfAssignment.get(compressedAssignment[node.assignment] - 1).add(node);
-            }
-            for (Tree node: nodesOfHeight.get(height))
-                compressedAssignment[node.assignment] = 0;
-
-            for (var nodes: nodesOfAssignment)
-                assignmentEnd += assign(nodes, 0, assignmentEnd);
-        }
-    }
-
-    private Integer dfsIndex;
-    private void dfs(Tree node) {
+    public void computeDfsIndex(Tree node) {
         node.dfsIndex = ++dfsIndex;
-        for (Tree child: node.children)
-            dfs(child);
-        Integer rightIndex = dfsIndex;
-        node.interval = Interval.of(node.dfsIndex, rightIndex);
+        for (Tree child : node.children) {
+            computeDfsIndex(child);
+        }
+        node.interval = Interval.of(node.dfsIndex, dfsIndex);
     }
-    private void calDfs(Tree tree) {
-        dfsIndex = 0;
-        dfs(tree);
+
+    int[] indexOfValue;
+    int assignmentEnd = 0;
+
+    /*
+     Leaf and Constructor may have the same label, but never have the same assignment,
+     because Leaf has zero height while Constructor has positive height.
+    */
+    public void apply(Tree... trees) {
+        for (Tree tree : trees) {
+            dfsIndex = 0;
+            computeDfsIndex(tree);
+        }
+
+        int assignmentLimit = Arrays.stream(trees).mapToInt(t -> t.size).sum();
+        indexOfValue = new int[Math.max(Math.max(255, Tree.LABEL_MAX), assignmentLimit) + 1];
+
+        List<List<Tree>> nodesOfHeight = new ArrayList<>();
+        for (Tree tree : trees) {
+            while (nodesOfHeight.size() < tree.height + 1) {
+                nodesOfHeight.add(new ArrayList<>());
+            }
+            for (Tree node : tree.preOrder()) {
+                nodesOfHeight.get(node.height).add(node);
+            }
+        }
+
+        for (List<Tree> nodes : nodesOfHeight) {
+            reorderChildren(nodes.stream().filter(Tree::isUnorderedList));
+            assign(nodes);
+        }
+    }
+
+    private void reorderChildren(Stream<Tree> nodes) {
+        List<List<Tree>> childrenOfIndex = new ArrayList<>();
+        nodes.forEach(node -> {
+            if (node.isUnorderedList()) {
+                for (Tree child : node.children) {
+                    if (indexOfValue[child.assignment] == 0) {
+                        childrenOfIndex.add(new ArrayList<>());
+                        indexOfValue[child.assignment] = childrenOfIndex.size();
+                    }
+                    childrenOfIndex.get(indexOfValue[child.assignment] - 1).add(child);
+                }
+                node.children.clear();
+            }
+        });
+        for (List<Tree> children : childrenOfIndex) {
+            for (Tree child : children) {
+                indexOfValue[child.assignment] = 0;
+                child.parent.children.add(child);
+            }
+        }
+    }
+
+    private final static class NodeData {
+        private final int[] data;
+        final Tree node;
+
+        NodeData(Tree node) {
+            this.node = node;
+            if (node.isLeaf()) {
+                byte[] codeBytes = ((Leaf) node).code.getBytes(StandardCharsets.UTF_8);
+                data = new int[codeBytes.length + 1];
+                for (int i = 0; i < codeBytes.length; ++i) {
+                    data[i + 1] = Byte.toUnsignedInt(codeBytes[i]);
+                }
+            } else {
+                data = new int[node.children.size() + 1];
+                for (int i = 0; i < node.children.size(); ++i) {
+                    data[i + 1] = node.children.get(i).assignment;
+                }
+            }
+            data[0] = node.label;
+        }
+
+        boolean equals(NodeData nodeData) {
+            return Arrays.equals(data, nodeData.data);
+        }
+
+        int get(int i) {
+            return data[i];
+        }
+
+        int size() {
+            return data.length;
+        }
+    }
+
+    /*
+     It works like radix sort, but does not care about the true order,
+     only ensures identical nodes are stored consecutively, w.r.t. the current round.
+     */
+    private void assign(List<Tree> nodes) {
+        List<NodeData> currentNodes = new ArrayList<>();
+        for (Tree node : nodes) {
+            currentNodes.add(new NodeData(node));
+        }
+
+        for (int k = 0; !currentNodes.isEmpty(); ++k) {
+            int[] countOfIndex = new int[currentNodes.size() + 1];
+            int indexEnd = 0;
+            for (NodeData nodeData : currentNodes) {
+                if (indexOfValue[nodeData.get(k)] == 0) {
+                    indexOfValue[nodeData.get(k)] = ++indexEnd;
+                }
+                ++countOfIndex[indexOfValue[nodeData.get(k)]];
+            }
+            for (int j = 1; j <= indexEnd; ++j) {
+                countOfIndex[j] += countOfIndex[j - 1];
+            }
+
+            NodeData[] reorderedNodes = new NodeData[currentNodes.size()];
+            for (NodeData nodeData : currentNodes) {
+                reorderedNodes[--countOfIndex[indexOfValue[nodeData.get(k)]]] = nodeData;
+            }
+            currentNodes.clear();
+
+            NodeData lastEnded = null;
+            for (NodeData nodeData : reorderedNodes) {
+                indexOfValue[nodeData.get(k)] = 0;
+                if (nodeData.size() == k + 1) {
+                    if (lastEnded == null || !nodeData.equals(lastEnded)) {
+                        nodeData.node.assignment = ++assignmentEnd;
+                        lastEnded = nodeData;
+                    } else {
+                        nodeData.node.assignment = lastEnded.node.assignment;
+                    }
+                } else {
+                    currentNodes.add(nodeData);
+                }
+            }
+        }
     }
 }

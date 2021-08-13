@@ -1,11 +1,9 @@
 public class IntelliMerge {
   public void saveAll(Path root) {
-    for (Map.Entry<Path, ParseResult<CompilationUnit>> cu :
-         content.entrySet()) {
+    for (Map.Entry<Path, ParseResult<CompilationUnit>> cu : content.entrySet()) {
       final Path path = root.resolve(cu.getKey()); 
 <<<<<<< sample/IntelliMerge/left.java
-      try (PrintWriter out =
-               new PrintWriter(path.toFile(), StandardCharsets.UTF_8)) {
+      try (PrintWriter out = new PrintWriter(path.toFile(), StandardCharsets.UTF_8)) {
         out.println(code);
       } 
 =======

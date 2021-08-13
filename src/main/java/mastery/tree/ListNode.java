@@ -11,6 +11,11 @@ import java.util.List;
 public abstract class ListNode extends InternalNode implements Iterable<Tree> {
     protected ListNode(int label, String name, List<Tree> children) {
         super(label, name, children);
+
+        if (!children.isEmpty()) {
+            this.startPos = children.get(0).startPos;
+            this.endPos = children.get(children.size() - 1).endPos;
+        }
     }
 
     @Override

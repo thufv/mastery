@@ -20,7 +20,7 @@ import static org.junit.Assert.assertNotNull;
  * @see OrderedList
  * @see UnorderedList
  * @see Leaf
- * @see Constructor (target tree only)
+ * @see Conflict (target tree only)
  */
 public abstract class Tree {
     /**
@@ -34,10 +34,13 @@ public abstract class Tree {
     public int size;
 
     /**
-     * Label, i.e. grammar kind/type.
+     * Label, i.e. grammar kind/type, starts from 1.
      * -1 stands for weird label.
+     * -2 stands for conflict.
      */
     public int label;
+
+    public static final int LABEL_MAX = TreeTransformer.LABEL_MAX;
 
     /**
      * Human-readable string representation of label.
@@ -71,9 +74,10 @@ public abstract class Tree {
     public Interval preInterval = null;
 
     /**
-     * LCA stands for the lowest common ancestor
-     * The current node is considered.
-     * (for base tree)
+     * LCA stands for the lowest common ancestor of the buddies of all descendants of the current node.
+     * (the current node itself is also considered)
+     * This field is only for base tree.
+     * This field is used to calculate the candidate, which is used in the bottom-up phase.
      */
     public Tree postLCA = null;
 
@@ -86,7 +90,7 @@ public abstract class Tree {
     /**
      * The number of child that the node is
      */
-    public Integer childno = 0;
+    public Integer childNo = 0;
 
     /**
      * The buddy of recovery mapping (if the current node is one node of recovery mapping)
@@ -122,7 +126,7 @@ public abstract class Tree {
     /**
      * names that are allowed to look ahead
      */
-    public static HashSet<String> lookaheadNames;
+    public static HashSet<String> lookaheadNames; // FIXME: now there're no lookahead names
 
     /**
      * Deep copy this node.
@@ -148,25 +152,29 @@ public abstract class Tree {
      */
     @SuppressWarnings("unchecked")
     public interface Visitor<C> {
-        default void visitLeaf(Leaf leaf, C... ctx) {
+        default void visitInternal(InternalNode internal, C... ctx) {
         }
 
         default void visitConstructor(Constructor constructor, C... ctx) {
             visitInternal(constructor, ctx);
         }
 
+        default void visitListNode(ListNode listNode, C... ctx) {
+            visitInternal(listNode, ctx);
+        }
+
         default void visitOrderedList(OrderedList ordered, C... ctx) {
-            visitInternal(ordered, ctx);
+            visitListNode(ordered, ctx);
         }
 
         default void visitUnorderedList(UnorderedList unordered, C... ctx) {
-            visitInternal(unordered, ctx);
+            visitListNode(unordered, ctx);
+        }
+
+        default void visitLeaf(Leaf leaf, C... ctx) {
         }
 
         default void visitConflict(Conflict conflict, C... ctx) {
-        }
-
-        default void visitInternal(InternalNode internal, C... ctx) {
         }
     }
 
@@ -176,15 +184,68 @@ public abstract class Tree {
      * Like `Visitor` but returns a value of type `T`.
      */
     public interface RichVisitor<T> {
-        T visitLeaf(Leaf leaf);
+        default T visitInternal(InternalNode internal) {
+            return null;
+        }
 
-        T visitConstructor(Constructor constructor);
+        default T visitConstructor(Constructor constructor) {
+            return visitInternal(constructor);
+        }
 
-        T visitOrderedList(OrderedList ordered);
+        default T visitListNode(ListNode listNode) {
+            return visitInternal(listNode);
+        }
 
-        T visitUnorderedList(UnorderedList unordered);
+        default T visitOrderedList(OrderedList ordered) {
+            return visitListNode(ordered);
+        }
 
-        T visitConflict(Conflict conflict);
+        default T visitUnorderedList(UnorderedList unordered) {
+            return visitListNode(unordered);
+        }
+
+        default T visitLeaf(Leaf leaf) {
+            return null;
+        }
+
+        default T visitConflict(Conflict conflict) {
+            return null;
+        }
+    }
+
+    public abstract <R, A> R accept(GenericVisitor<R, A> v, A arg);
+
+    /**
+     * Like `Visitor` but returns a value of type `R`.
+     */
+    public interface GenericVisitor<R, A> {
+        default R visit(InternalNode tree, A arg) {
+            return null;
+        }
+
+        default R visit(Constructor tree, A arg) {
+            return visit((InternalNode) tree, arg);
+        }
+
+        default R visit(ListNode tree, A arg) {
+            return visit((InternalNode) tree, arg);
+        }
+
+        default R visit(OrderedList tree, A arg) {
+            return visit((ListNode) tree, arg);
+        }
+
+        default R visit(UnorderedList tree, A arg) {
+            return visit((ListNode) tree, arg);
+        }
+
+        default R visit(Leaf tree, A arg) {
+            return null;
+        }
+
+        default R visit(Conflict tree, A arg) {
+            return null;
+        }
     }
 
     /**
@@ -278,46 +339,23 @@ public abstract class Tree {
         this.name = name;
         this.children = children;
 
-        // compute height
-        this.height = children.stream().mapToInt((Tree child) -> {
-            return child.height;
-        }).max().orElse(-1) + 1;
-
-        // compute size
-        int size = 1;
-        for (var child : children) {
-            size += child.size;
-        }
-        this.size = size;
+        this.height = children.stream()
+            .mapToInt(child -> child.height).max().orElse(-1) + 1;
+        this.size = children.stream()
+            .mapToInt(child -> child.size).sum() + 1;
 
         for (int i = 0; i < children.size(); ++i) {
             Tree child = children.get(i);
-
-            child.childno = i; // set the number as child
+            child.childNo = i; // set the number as child
             child.parent = this; // set parent here
         }
-        this.parent = null;
     }
 
     protected Tree(int label, String name) {
-        this.label = label;
-        this.name = name;
-        this.children = Collections.emptyList();
-        this.height = 0;
-        this.size = 1;
-        this.parent = null;
+        this(label, name, Collections.emptyList());
     }
 
-    protected Tree(int label, String name, String code) {
-        this.label = label;
-        this.name = name;
-        this.children = Collections.emptyList();
-        this.height = 0;
-        this.size = 1;
-        this.parent = null;
-    }
-
-    public final static Tree getLCA(Tree node1, Tree node2) {
+    public static Tree getLCA(Tree node1, Tree node2) {
         if (node1 == null) return node2;
         if (node2 == null) return node1;
 
@@ -352,7 +390,7 @@ public abstract class Tree {
 
     public void updateNumberOfChildren() {
         for (int i = 0; i < children.size(); ++i)
-            children.get(i).childno = i;
+            children.get(i).childNo = i;
     }
 
     // the node itself is excluded
@@ -368,17 +406,45 @@ public abstract class Tree {
         for (Tree child: children)
             child.refresh();
 
-        // compute height
-        height = children.stream().mapToInt((Tree child) -> {
-            return child.height;
-        }).max().orElse(-1) + 1;
-
-        // compute size
-        size = 1;
-        for (var child : children)
-            size += child.size;
+        this.height = children.stream()
+            .mapToInt(child -> child.height).max().orElse(-1) + 1;
+        this.size = children.stream()
+            .mapToInt(child -> child.size).sum() + 1;
 
         for (int i = 0; i < children.size(); ++i)
-            children.get(i).childno = i;
+            children.get(i).childNo = i;
+    }
+
+    public boolean is(String fullName) {
+        return name.equals(fullName);
+    }
+
+    public boolean isProperty(String fieldName) {
+        return name.endsWith("#" + fieldName);
+    }
+
+    public String getIdentifierName() {
+        return identifier.substring(identifier.indexOf(':') + 1);
+    }
+
+    public void setIdentifierName(String identifierName) {
+        this.identifier = this.name + ":" + identifierName;
+    }
+
+    public Tree getOnlyChild() {
+        assert children.size() == 1;
+        return children.get(0);
+    }
+
+    public Tree getOnlyLeftTree() {
+        throw new IllegalStateException("the tree is not a conflict");
+    }
+
+    public Tree getOnlyRightTree() {
+        throw new IllegalStateException("the tree is not a conflict");
+    }
+
+    public String getValue() {
+        throw new IllegalStateException("the tree has no value");
     }
 }

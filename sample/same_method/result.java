@@ -1,13 +1,19 @@
 public class A {
-  public void 
+  public void fun() {
+    double 
 <<<<<<< sample/same_method/left.java
-  fun1 
+        left
 =======
-  fun2 
+        right
 >>>>>>> sample/same_method/right.java
-      () {
+        ;
+  }
+
+  public void fun1() {
     int x = 1;
   }
-  public void fun() { double left; }
-  public void fun() { int right; }
+
+  public void fun2() {
+    int x = 1;
+  }
 }

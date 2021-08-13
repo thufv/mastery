@@ -1,11 +1,18 @@
 package mastery.tree;
 
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.visitor.Visitable;
+import com.github.javaparser.printer.DefaultPrettyPrinter;
+import com.github.javaparser.printer.configuration.DefaultPrinterConfiguration;
+import mastery.tree.extensions.ConflictPrinterVisitor;
+import mastery.util.Pair;
 import mastery.util.log.IndentPrinter;
+import org.apache.commons.lang3.StringUtils;
 
-
-
-import java.util.*;
 import java.io.*;
+import java.util.Arrays;
 
 public class TreePrinters {
     public static void textTree(Tree tree, IndentPrinter printer) {
@@ -28,7 +35,7 @@ public class TreePrinters {
 
                 sb.append(inherited).append(prompt);
                 sb.append(leaf.name).append(" '").append(leaf.code).append("'");
-                sb.append(" dfsIndex ").append(leaf.dfsIndex);
+                // sb.append(" dfsIndex ").append(leaf.dfsIndex);
                 sb.append('\n');
             }
 
@@ -39,8 +46,8 @@ public class TreePrinters {
 
                 sb.append(inherited).append(prompt);
                 sb.append(internal.toString());
-                sb.append(" size ").append(internal.size);
-                sb.append(" interval [").append(internal.interval.l).append(", ").append(internal.interval.r).append("]");
+                // sb.append(" size ").append(internal.size);
+                // sb.append(" interval [").append(internal.interval.l).append(", ").append(internal.interval.r).append("]");
                 sb.append('\n');
 
                 if (!internal.children.isEmpty()) {
@@ -189,93 +196,67 @@ public class TreePrinters {
     }
 
     public static String rawCode(Tree tree) {
-        var sb = new StringBuilder();
-        var tokenWalker = new Tree.PreOrderWalker() {
-            @Override
-            public void visitLeaf(Leaf leaf, Object... ctx) {
-                sb.append(leaf.code);
-                sb.append(' ');
-            }
-        };
-
-        tokenWalker.accept(tree);
-        return sb.toString();
+        return StringUtils.normalizeSpace(prettyCode(tree, "", ""));
     }
 
-    /**
-     * Pretty code formatted according to syntax.
-     *
-     * @param tree
-     * @param formatter
-     * @param language
-     * @return The output as a string
-     */
-    public static String prettyCode(Tree tree, String formatter, String language, String leftfile, String rightfile) {
-        var sb = new StringBuilder();
-        var tokenWalker = new Tree.Visitor<Object>() {
-            @Override
-            public void visitLeaf(Leaf leaf, Object... ctx) {
-                sb.append(leaf.code);
-                sb.append(' ');
-            }
-
-            @Override
-            public void visitInternal(InternalNode internal, Object... ctx) {
-                for (Tree child : internal.children) {
-                    child.accept(this);
-                }
-            }
-
-            @Override
-            public void visitConflict(Conflict conflict, Object... ctx) {
-                sb.append("\n<<<<<<< " + leftfile + "\n");
-                for (Tree node : conflict.left) {
-                    node.accept(this);
-                }
-                sb.append("\n=======\n");
-                for (Tree node : conflict.right) {
-                    node.accept(this);
-                }
-                sb.append("\n>>>>>>> " + rightfile + "\n");
-            }
-        };
-        tree.accept(tokenWalker);
-        String rawCode = sb.toString();
-        String formattedCode = "";
-
-        if (formatter == null) {
-            formattedCode = rawCode;
+    public static String prettyCode(Tree tree, String leftFile, String rightFile) {
+        Visitable node = TreeTransformer.restore(tree);
+        CompilationUnit cu;
+        if (node instanceof CompilationUnit) {
+            cu = (CompilationUnit) node;
         } else {
-            try {
-                // Use clang-format
-                ProcessBuilder pb = new ProcessBuilder(Arrays.asList(formatter, "-assume-filename=" + "output." + fileExtension.get(language)));
-                Process p = pb.start();
-
-                OutputStream os = p.getOutputStream();
-                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
-                bw.append(rawCode);
-                bw.flush();
-                bw.close();
-
-                InputStream is = p.getInputStream();
-                BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                String line = null;
-                while ((line = br.readLine()) != null)
-                    formattedCode += line + "\n";
-                br.close();
-                int r = p.waitFor(); // Let the process finish.
-                assert (r == 0);
-            } catch (Exception e) {
-                System.out.println("An error occurs when formatting.");
-                e.printStackTrace();
+            cu = new CompilationUnit();
+            if (node instanceof Node) {
+                ((Node) node).setParentNode(cu);
+            } else if (node instanceof NodeList) {
+                ((NodeList<?>) node).setParentNode(cu);
+            } else {
+                throw new IllegalStateException();
             }
         }
-
-        return formattedCode;
+        cu.printer(new DefaultPrettyPrinter(
+            config -> new ConflictPrinterVisitor(config, Pair.of(leftFile, rightFile)),
+            new DefaultPrinterConfiguration()
+        ));
+        return node.toString();
     }
-    public static Map<String, String> fileExtension = Map.of(
-        "JAVA", "java",
-        "C#", "cs",
-        "C", "c"
-    );
+
+    public static String prettyCode(Tree tree, String leftFile, String rightFile, String formatter) {
+        String code = prettyCode(tree, leftFile, rightFile);
+        if (formatter == null) {
+            return code;
+        }
+
+        StringBuilder formattedCode = new StringBuilder();
+        try {
+            // Use clang-format
+            ProcessBuilder pb = new ProcessBuilder(Arrays.asList("clang-format", "-assume-filename=output.java", "-style=Google"));
+            Process p = pb.start();
+
+            OutputStream os = p.getOutputStream();
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
+            bw.append(code);
+            bw.flush();
+            bw.close();
+
+            InputStream is = p.getInputStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            String line;
+            while ((line = br.readLine()) != null)
+                formattedCode.append(line).append("\n");
+            br.close();
+
+            int r = p.waitFor(); // Let the process finish.
+            assert (r == 0);
+        } catch (Exception e) {
+            System.out.println("An error occurs when formatting.");
+            e.printStackTrace();
+        }
+        return formattedCode.toString();
+    }
+
+    public static String prettyCode(Tree tree, String leftFile, String rightFile, String formatter, String language) {
+        assert language.equals("JAVA");
+        return prettyCode(tree, leftFile, rightFile, formatter);
+    }
 }

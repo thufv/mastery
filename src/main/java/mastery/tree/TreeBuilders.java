@@ -1,20 +1,16 @@
 package mastery.tree;
 
+import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.CompilationUnit;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import mastery.translator.ParsingStrategy;
-import mastery.translator.TreeGenerator;
-import mastery.translator.c.CParsingStrategy;
-import mastery.translator.cs.CSharpParsingStrategy;
-import mastery.translator.java.JavaParsingStrategy;
-import mastery.translator.xml.XMLParsingStrategy;
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.misc.Pair;
+import mastery.driver.Config.ParserConfig;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public final class TreeBuilders {
@@ -73,7 +69,7 @@ public final class TreeBuilders {
      * @return updated tree
      */
     public static Tree fromUpdate(Tree tree, Tree origin, Tree update) {
-        return tree.accept(new Tree.RichVisitor<Tree>() {
+        return tree.accept(new Tree.RichVisitor<>() {
             @Override
             public Tree visitLeaf(Leaf leaf) {
                 return leaf == origin ? update : leaf.deepCopy();
@@ -83,13 +79,12 @@ public final class TreeBuilders {
             public Tree visitConstructor(Constructor constructor) {
                 if (constructor == origin) {
                     return update;
-                }
-                else {
+                } else {
                     var updated = new ArrayList<Tree>();
                     for (var child : constructor.children) {
                         updated.add(child.accept(this));
                     }
-                    return new Constructor(constructor.label, constructor.name, updated);
+                    return new Constructor(constructor, updated);
                 }
             }
 
@@ -97,8 +92,7 @@ public final class TreeBuilders {
             public Tree visitOrderedList(OrderedList ordered) {
                 if (ordered == origin) {
                     return update;
-                }
-                else {
+                } else {
                     var updated = new ArrayList<Tree>();
                     for (var child : ordered.children) {
                         updated.add(child.accept(this));
@@ -111,8 +105,7 @@ public final class TreeBuilders {
             public Tree visitUnorderedList(UnorderedList unordered) {
                 if (unordered == origin) {
                     return update;
-                }
-                else {
+                } else {
                     var updated = new ArrayList<Tree>();
                     for (var child : unordered.children) {
                         updated.add(child.accept(this));
@@ -130,37 +123,10 @@ public final class TreeBuilders {
 
     /**
      * Build a tree from source file.
-     *
-     * @param srcFile
-     * @param language
-     * @return the tree
      */
-    public static Tree fromSource(String srcFile, String language)
-            throws IOException {
-        ParsingStrategy strategy;
-        if (language.equals("JAVA")) {
-            strategy = new JavaParsingStrategy();
-        } else if (language.equals("C")) {
-            strategy = new CParsingStrategy();
-        } else if (language.equals("C#")) {
-            strategy = new CSharpParsingStrategy();
-        } else if (language.equals("XML")) {
-            strategy = new XMLParsingStrategy();
-        } else {
-            throw new IllegalStateException(language + " is not a valid language for me.");
-        }
-
-        Pair<Parser, ParserRuleContext> p = strategy.apply(srcFile);
-        TreeGenerator generator = new TreeGenerator(
-                p.a, p.b,
-                strategy.getListNodeNames(),
-                strategy.getOrderedListNodeNames(),
-                strategy.getAlternativeNames(),
-                strategy.getStopNames(),
-                strategy.getDeclarationNames());
-        Tree.lookaheadNames = strategy.getLookaheadLabels();
-
-        Tree tree = generator.generate();
-        return tree;
+    public static Tree fromSource(String srcFile, ParserConfig config) throws IOException {
+        String code = Files.readString(Paths.get(srcFile));
+        CompilationUnit cu = StaticJavaParser.parse(code);
+        return new TreeTransformer(config).generate(cu);
     }
 }

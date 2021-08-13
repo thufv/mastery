@@ -3,6 +3,8 @@ package mastery.tree;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public class Conflict extends Tree {
     public final List<Tree> left;
@@ -32,6 +34,10 @@ public class Conflict extends Tree {
         left.forEach(e -> l.add(e.deepCopy()));
         right.forEach(e -> r.add(e.deepCopy()));
         return new Conflict(l, r);
+    }
+
+    public static Conflict wrap(List<Tree> left, List<Tree> right) {
+        return new Conflict(left, right);
     }
 
     @Override
@@ -118,7 +124,28 @@ public class Conflict extends Tree {
     }
 
     @Override
+    public <R, A> R accept(GenericVisitor<R, A> v, A arg) {
+        return v.visit(this, arg);
+    }
+
+    @Override
     public String toString() {
         return "<CONFLICT>";
+    }
+
+    public boolean hasInAnySide(Predicate<? super Tree> predicate) {
+        return Stream.concat(left.stream(), right.stream()).anyMatch(predicate);
+    }
+
+    @Override
+    public Tree getOnlyLeftTree() {
+        assert left.size() == 1;
+        return left.get(0);
+    }
+
+    @Override
+    public Tree getOnlyRightTree() {
+        assert right.size() == 1;
+        return right.get(0);
     }
 }

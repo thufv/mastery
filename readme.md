@@ -2,6 +2,12 @@
 
 Mastery is a three-way structured merge tool.
 
+## Build
+
+```bash
+./gradlew build -x test
+```
+
 ## User Guide
 
 ### Requirements

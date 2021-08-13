@@ -2,12 +2,26 @@ package mastery.tree;
 
 import java.util.List;
 
+import mastery.util.log.Log;
+
 /**
  * An internal node, which has a (nonempty) list of children.
  */
 public abstract class InternalNode extends Tree {
     protected InternalNode(int label, String name, List<Tree> children) {
         super(label, name, children);
+
+        if (name.matches(".*Declaration|SimpleName")) {
+            for (Tree child : children) {
+                if (child.identifier != null) {
+                    setIdentifierName(child.getIdentifierName());
+                }
+            }
+        }
+
+        if (name.matches(".*(Declaration|Stmt)|CompilationUnit")) {
+            this.stop = true;
+        }
     }
 
     @Override
@@ -26,7 +40,6 @@ public abstract class InternalNode extends Tree {
             return false;
         }
 
-        // zip(this.children, that.children).forall(_ isomorphicTo _)
         var it = children.iterator();
         var jt = that.children.iterator();
         while (it.hasNext()) {

@@ -5,7 +5,6 @@ import java.util.logging.Level;
 import mastery.tree.Tree;
 
 import mastery.util.log.Log;
-import mastery.util.Interval;
 
 public class ThreeWayMatcher {
     TwoWayMatcher twoWayMatcher;
@@ -36,11 +35,6 @@ public class ThreeWayMatcher {
 
         Log.fine("2-way matching: base <-> left");
         var leftMappings = twoWayMatcher.apply(base, left);
-
-//        System.out.printf("base: %s\n", base);
-//        System.out.printf("base: %s\n", base.toReadableString());
-//        System.out.printf("base: %s\n", left);
-//        System.out.printf("base: %s\n", left.toReadableString());
 
         for (Mapping mapping: leftMappings.asSet())
             matchingSet.setLeftMatch(mapping.first, mapping.second);
