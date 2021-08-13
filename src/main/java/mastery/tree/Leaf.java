@@ -9,14 +9,12 @@ import java.nio.charset.StandardCharsets;
  */
 public class Leaf extends Tree {
     public final String code;
-    public final byte[] codeBytes;
 
     public final BaseNodeMetaModel meta;
 
     public Leaf(int label, String name, String code, BaseNodeMetaModel meta) {
         super(label, name);
         this.code = code;
-        this.codeBytes = code.getBytes(StandardCharsets.UTF_8);
         this.meta = meta;
     }
 
