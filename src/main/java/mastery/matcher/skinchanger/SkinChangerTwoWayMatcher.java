@@ -214,15 +214,19 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
         // Log.finer("want %s mapping: %s <-> %s", type, tree1, tree2);
 
         assert tree1.label == tree2.label;
-        assert !tree1.isConstructor() || tree2.isConstructor() && tree1.children.size() == tree2.children.size();
+        if (tree1.isConstructor() && tree2.isConstructor()) {
+            assert tree1.children.size() == tree2.children.size();
+        } else {
+            assert !tree1.isConstructor() && !tree2.isConstructor();
+        }
         assert tree1.postLCA == null || Interval.isSubinterval(tree1.postLCA.interval, tree2.interval);
 
         m.link(tree1, tree2);
 
-        assertEquals(matched1to2[tree1.dfsIndex], 0);
+        assertEquals(0, matched1to2[tree1.dfsIndex]);
         matched1to2[tree1.dfsIndex] = tree2.dfsIndex;
 
-        assertEquals(matched2to1[tree2.dfsIndex], 0);
+        assertEquals(0, matched2to1[tree2.dfsIndex]);
         matched2to1[tree2.dfsIndex] = tree1.dfsIndex;
 
         tree1.preInterval = tree2.interval;
@@ -245,7 +249,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
     }
 
     private boolean checkMapping(Tree node1, Tree node2, MappingType type) {
-            return _checkMapping(node1, node2, type);
+        return _checkMapping(node1, node2, type);
     }
 
     private boolean _checkMapping(Tree node1, Tree node2, MappingType type) {
@@ -278,7 +282,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
         // This is a little overfit...But we restrict matching between ImportDeclaration nodes 
         // only if the imported qualified names are exactly same, that is,
         // the mapping between ImportDeclaration nodes could only be isomorphic mapping.
-        if (type != MappingType.isomorphic && node1.name.equals("ImportDeclaration"))
+        if (type != MappingType.isomorphic && node1.is("ImportDeclaration"))
             return false;
 
         return true;
@@ -294,9 +298,9 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
         Tree parent2 = node2.parent;
         while (true) {
             if (parent1 == null || parent2 == null) return false;
-            else if (parent1.label != parent2.label) return false;
+            if (parent1.label != parent2.label) return false;
             // If there's one another mapping between them, we return true.
-            else if (calcSimilarity(parent1, parent2) > 1e-8) return true;
+            if (calcSimilarity(parent1, parent2) > 1e-8) return true;
 
             if (parent1.stop) {
                 // This threshold is adjusted according to the following scenarios:
