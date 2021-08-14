@@ -78,33 +78,49 @@ public final class StringAlgorithms {
         return s1.substring(start, (start + max));
     }
 
-    public static int qGramDistance(String s1, String s2, int q) {
-        Map<String, Integer> profile = new HashMap<>();
-        for (int i = 0; i < s1.length() - q + 1; ++i) {
-            String seq = s1.substring(i, i + q);
-            profile.put(seq, profile.getOrDefault(seq, 0) + 1);
+    public static final class QGramProfile extends ArrayList<Pair<String, Integer>> {
+        private final int qGramCount;
+
+        QGramProfile(String str, int q) {
+            qGramCount = str.length() - q + 1;
+            SortedMap<String, Integer> counter = new TreeMap<>();
+            for (int i = 0; i < qGramCount; ++i) {
+                String seq = str.substring(i, i + q);
+                counter.compute(seq, (k, v) -> (v == null ? 0 : v) + 1);
+            }
+            counter.forEach((k, v) -> add(Pair.of(k, v)));
         }
-        for (int i = 0; i < s2.length() - q + 1; ++i) {
-            String seq = s2.substring(i, i + q);
-            profile.put(seq, profile.getOrDefault(seq, 0) - 1);
+
+        public static QGramProfile withPadding(String s, int q) {
+            String padding = StringUtils.repeat('#', q - 1);
+            return new QGramProfile(padding + s + padding, q);
         }
-        return profile.values().stream().mapToInt(Math::abs).sum();
-    }
 
-    public static double qGramCompare(String s1, String s2, int q) {
-        return 1 - (double) qGramDistance(s1, s2, q) / (s1.length() + s2.length() - (q - 1) * 2);
-    }
+        public static int distance(QGramProfile v1, QGramProfile v2) {
+            int total = 0;
+            int i = 0;
+            int j = 0;
+            while (i < v1.size() && j < v2.size()) {
+                Pair<String, Integer> p1 = v1.get(i);
+                Pair<String, Integer> p2 = v2.get(j);
+                int r = p1.first.compareTo(p2.first);
+                if (r == 0) {
+                    total += Math.abs(p1.second - p2.second);
+                }
+                if (r <= 0) ++i;
+                if (r >= 0) ++j;
+            }
+            for (; i < v1.size(); ++i) {
+                total += v1.get(i).second;
+            }
+            for (; j < v2.size(); ++j) {
+                total += v2.get(j).second;
+            }
+            return total;
+        }
 
-    /*
-     This is probably not needed, just to make sure the computed value is
-     exactly the same as org.simmetrics.StringMetrics.qGramsDistance.
-    */
-    public static double qGramCompareWithPadding(String s1, String s2, int q) {
-        String padding = StringUtils.repeat('#', q - 1);
-        return qGramCompare(padding + s1 + padding, padding + s2 + padding, q);
-    }
-
-    public static double qGramCompare(String s1, String s2) {
-        return qGramCompareWithPadding(s1, s2, 3);
+        public static double compare(QGramProfile v1, QGramProfile v2) {
+            return 1 - (double) distance(v1, v2) / (v1.qGramCount + v2.qGramCount);
+        }
     }
 }
