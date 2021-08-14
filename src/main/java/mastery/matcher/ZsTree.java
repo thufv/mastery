@@ -2,7 +2,9 @@ package mastery.matcher;
 
 import mastery.tree.Tree;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 // The tree class for ZS algorithm
 public class ZsTree {

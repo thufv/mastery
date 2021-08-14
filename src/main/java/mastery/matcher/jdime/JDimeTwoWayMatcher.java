@@ -1,17 +1,17 @@
 package mastery.matcher.jdime;
 
 import mastery.matcher.Mapping;
-import mastery.matcher.TwoWayMatcher;
 import mastery.matcher.MappingStore;
-
+import mastery.matcher.TwoWayMatcher;
+import mastery.tree.Leaf;
 import mastery.tree.Tree;
 import mastery.tree.TreeTraverse;
-import mastery.tree.Leaf;
 import mastery.util.Pair;
 import mastery.util.log.Log;
 
 import java.lang.reflect.Array;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Optional;
 
 public class JDimeTwoWayMatcher extends TwoWayMatcher {
     // the flag that indicates that if lookahead technique enabled

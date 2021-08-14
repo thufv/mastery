@@ -301,9 +301,8 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
             if (parent1.stop) {
                 // This threshold is adjusted according to the following scenarios:
                 // 1. dubbo/a41930e55-dubbo-common-src-main-java-org-apache-dubbo-common-Constants, 0.76, false
-                double codeSimilarity = StringAlgorithms.qGramCompare(TreePrinters.rawCode(parent1), TreePrinters.rawCode(parent2));
-                Log.finer("code similarity between %s (ancestor of %s) and %s (ancestor of %s) is %.2f\n", parent1, node1, parent2, node2, codeSimilarity);
-                return codeSimilarity > 0.77;
+                Log.finer("code similarity between %s (ancestor of %s) and %s (ancestor of %s) is %.2f\n", parent1, node1, parent2, node2, Similarities.codeSimilarity(parent1, parent2));
+                return Similarities.codeSimilarity(parent1, parent2) > 0.77;
             }
             parent1 = parent1.parent;
             parent2 = parent2.parent;
@@ -353,9 +352,9 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
                 else if (mappingSimilarity1 < mappingSimilarity2 - 1e-8) return -1;
 
                 if (!codeSimilarity.containsKey(p1))
-                    codeSimilarity.put(p1, StringAlgorithms.qGramCompare(TreePrinters.rawCode(first1), TreePrinters.rawCode(second1)));
+                    codeSimilarity.put(p1, Similarities.codeSimilarity(first1, second1));
                 if (!codeSimilarity.containsKey(p2))
-                    codeSimilarity.put(p2, StringAlgorithms.qGramCompare(TreePrinters.rawCode(first2), TreePrinters.rawCode(second2)));
+                    codeSimilarity.put(p2, Similarities.codeSimilarity(first2, second2));
                 double codeSimilarity1 = codeSimilarity.get(p1);
                 double codeSimilarity2 = codeSimilarity.get(p2);
 
@@ -576,7 +575,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
 
                         boolean cond = false;
                         if (node.size < 20 || candidate.size < 20) {
-                            Log.finer("String Distance = %f", StringAlgorithms.qGramCompare(TreePrinters.rawCode(node), TreePrinters.rawCode(candidate)));
+                            Log.finer("String Distance = %f", Similarities.codeSimilarity(node, candidate));
                         }
 
                         // If one of subtree is small enough, we consider the code similarity rather than mapping similarity.
@@ -585,7 +584,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
                         // 2. dubbo/99256faf8-dubbo-config-dubbo-config-spring-src-main-java-org-apache-dubbo-config-spring-ReferenceBean
                         // The thresholds are arbitrarily set now...
                         if (node.size < 20 || candidate.size < 20
-                            ? StringAlgorithms.qGramCompare(TreePrinters.rawCode(node), TreePrinters.rawCode(candidate)) > 0.53
+                            ? Similarities.codeSimilarity(node, candidate) > 0.53
                             : Similarities.diceSimilarity(mappingCount, node.size, candidate.size) > minDice
                         ) {
                             match(node, candidate, MappingType.container);
@@ -820,7 +819,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
                 Leaf l1 = (Leaf) n1;
                 Leaf l2 = (Leaf) n2;
                 if ("".equals(l1.code) || "".equals(l2.code)) return 1D;
-                else return 1D - StringAlgorithms.qGramCompare(l1.code, l2.code);
+                else return 1D - Similarities.codeSimilarity(l1, l2);
             } else return 1D;
         } else
             return Double.MAX_VALUE;

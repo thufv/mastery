@@ -2,7 +2,6 @@ package mastery.matcher;
 
 import mastery.tree.Leaf;
 import mastery.tree.Tree;
-import mastery.util.StringAlgorithms;
 
 import java.util.ArrayDeque;
 
@@ -136,7 +135,7 @@ public class ZsMatcher extends TwoWayMatcher {
                 Leaf l1 = (Leaf) n1;
                 Leaf l2 = (Leaf) n2;
                 if ("".equals(l1.code) || "".equals(l2.code)) return 1D;
-                else return 1D - StringAlgorithms.qGramCompare(l1.code, l2.code);
+                else return 1D - Similarities.codeSimilarity(l1, l2);
             } else return 1D;
         } else
             return Double.MAX_VALUE;

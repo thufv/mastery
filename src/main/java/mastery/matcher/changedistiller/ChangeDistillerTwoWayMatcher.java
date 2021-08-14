@@ -5,7 +5,6 @@ import mastery.matcher.Similarities;
 import mastery.matcher.TwoWayMatcher;
 import mastery.tree.Leaf;
 import mastery.tree.Tree;
-import mastery.util.StringAlgorithms;
 
 import java.util.*;
 
@@ -29,7 +28,7 @@ public class ChangeDistillerTwoWayMatcher extends TwoWayMatcher {
         for (Leaf leaf1 : leaves1)
             for (Leaf leaf2 : leaves2)
                 if (isMappingAllowed(leaf1, leaf2)) {
-                    double sim = StringAlgorithms.qGramCompare(leaf1.code, leaf2.code);
+                    double sim = Similarities.codeSimilarity(leaf1, leaf2);
                     if (sim > LABEL_SIM_THRESHOLD)
                         leavesMappings.add(new Mapping(leaf1, leaf2));
                 }
@@ -99,15 +98,13 @@ public class ChangeDistillerTwoWayMatcher extends TwoWayMatcher {
     }
 
     private static class LeafMappingComparator implements Comparator<Mapping> {
-
         @Override
         public int compare(Mapping m1, Mapping m2) {
             return Double.compare(sim(m1), sim(m2));
         }
 
         public double sim(Mapping m) {
-            return StringAlgorithms.qGramCompare(((Leaf)(m.first)).code, ((Leaf)(m.second)).code);
+            return Similarities.codeSimilarity(m.first, m.second);
         }
-
     }
 }

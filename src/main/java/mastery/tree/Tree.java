@@ -62,7 +62,7 @@ public abstract class Tree {
     /**
      * Information about dfs order (1-based) to keep monotonicity.
      */
-    public Integer dfsIndex = 0;
+    public int dfsIndex = 0;
 
     /**
      * The current node is considered.
