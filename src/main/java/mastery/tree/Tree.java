@@ -90,7 +90,7 @@ public abstract class Tree {
     /**
      * The number of child that the node is
      */
-    public Integer childNo = 0;
+    public int childNo = 0;
 
     /**
      * The buddy of recovery mapping (if the current node is one node of recovery mapping)

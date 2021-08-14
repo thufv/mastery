@@ -2,10 +2,9 @@ package mastery.matcher;
 
 import mastery.tree.Leaf;
 import mastery.tree.Tree;
+import mastery.util.StringAlgorithms;
 
-import org.simmetrics.StringMetrics;
-
-import java.util.*;
+import java.util.ArrayDeque;
 
 public class ZsMatcher extends TwoWayMatcher {
     private ZsTree zsSrc;
@@ -30,7 +29,7 @@ public class ZsMatcher extends TwoWayMatcher {
     private void forestDist(int i, int j) {
         forestDist[zsSrc.lld(i) - 1][zsDst.lld(j) - 1] = 0;
         for (int di = zsSrc.lld(i); di <= i; di++) {
-            double costDel =  getDeletionCost(zsSrc.tree(di));
+            double costDel = getDeletionCost(zsSrc.tree(di));
             forestDist[di][zsDst.lld(j) - 1] = forestDist[di - 1][zsDst.lld(j) - 1] + costDel;
             for (int dj = zsDst.lld(j); dj <= j; dj++) {
                 double costIns = getInsertionCost(zsDst.tree(dj));
@@ -38,15 +37,16 @@ public class ZsMatcher extends TwoWayMatcher {
 
                 if ((zsSrc.lld(di) == zsSrc.lld(i) && (zsDst.lld(dj) == zsDst.lld(j)))) {
                     double costUpd = getUpdateCost(zsSrc.tree(di), zsDst.tree(dj));
-                    forestDist[di][dj] = Math.min(Math.min(forestDist[di - 1][dj] + costDel,
-                                    forestDist[di][dj - 1] + costIns),
-                            forestDist[di - 1][dj - 1] + costUpd);
+                    forestDist[di][dj] = Math.min(
+                        Math.min(forestDist[di - 1][dj] + costDel, forestDist[di][dj - 1] + costIns),
+                        forestDist[di - 1][dj - 1] + costUpd
+                    );
                     treeDist[di][dj] = forestDist[di][dj];
                 } else {
-                    forestDist[di][dj] = Math.min(Math.min(forestDist[di - 1][dj] + costDel,
-                                    forestDist[di][dj - 1] + costIns),
-                            forestDist[zsSrc.lld(di) - 1][zsDst.lld(dj) - 1]
-                                    + treeDist[di][dj]);
+                    forestDist[di][dj] = Math.min(
+                        Math.min(forestDist[di - 1][dj] + costDel, forestDist[di][dj - 1] + costIns),
+                        forestDist[zsSrc.lld(di) - 1][zsDst.lld(dj) - 1] + treeDist[di][dj]
+                    );
                 }
             }
         }
@@ -64,7 +64,7 @@ public class ZsMatcher extends TwoWayMatcher {
         ArrayDeque<int[]> treePairs = new ArrayDeque<>();
 
         // push the pair of trees (ted1,ted2) to stack
-        treePairs.addFirst(new int[] { zsSrc.nodeCount, zsDst.nodeCount });
+        treePairs.addFirst(new int[]{zsSrc.nodeCount, zsDst.nodeCount});
 
         while (!treePairs.isEmpty()) {
             int[] treePair = treePairs.removeFirst();
@@ -87,18 +87,18 @@ public class ZsMatcher extends TwoWayMatcher {
 
             while ((row > firstRow) || (col > firstCol)) {
                 if ((row > firstRow)
-                        && (forestDist[row - 1][col] + 1D == forestDist[row][col])) {
+                    && (forestDist[row - 1][col] + 1D == forestDist[row][col])) {
                     // node with postorderID row is deleted from ted1
                     row--;
                 } else if ((col > firstCol)
-                        && (forestDist[row][col - 1] + 1D == forestDist[row][col])) {
+                    && (forestDist[row][col - 1] + 1D == forestDist[row][col])) {
                     // node with postorderID col is inserted into ted2
                     col--;
                 } else {
                     // node with postorderID row in ted1 is renamed to node col
                     // in ted2
                     if ((zsSrc.lld(row) - 1 == zsSrc.lld(lastRow) - 1)
-                            && (zsDst.lld(col) - 1 == zsDst.lld(lastCol) - 1)) {
+                        && (zsDst.lld(col) - 1 == zsDst.lld(lastCol) - 1)) {
                         // if both subforests are trees, map nodes
                         Tree tSrc = zsSrc.tree(row);
                         Tree tDst = zsDst.tree(col);
@@ -110,7 +110,7 @@ public class ZsMatcher extends TwoWayMatcher {
                         col--;
                     } else {
                         // pop subtree pair
-                        treePairs.addFirst(new int[] { row, col });
+                        treePairs.addFirst(new int[]{row, col});
                         // continue with forest to the left of the popped
                         // subtree pair
 
@@ -133,14 +133,12 @@ public class ZsMatcher extends TwoWayMatcher {
     private double getUpdateCost(Tree n1, Tree n2) {
         if (n1.label == n2.label) {
             if (n1 instanceof Leaf && n2 instanceof Leaf) {
-                Leaf l1 = (Leaf)n1;
-                Leaf l2 = (Leaf)n2;
+                Leaf l1 = (Leaf) n1;
+                Leaf l2 = (Leaf) n2;
                 if ("".equals(l1.code) || "".equals(l2.code)) return 1D;
-                else return 1D - StringMetrics.qGramsDistance().compare(l1.code, l2.code);
-            }
-            else return 1D;
-        }
-        else
+                else return 1D - StringAlgorithms.qGramCompare(l1.code, l2.code);
+            } else return 1D;
+        } else
             return Double.MAX_VALUE;
     }
 }
