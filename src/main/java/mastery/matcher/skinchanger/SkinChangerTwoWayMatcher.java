@@ -301,9 +301,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
             if (parent1.stop) {
                 // This threshold is adjusted according to the following scenarios:
                 // 1. dubbo/a41930e55-dubbo-common-src-main-java-org-apache-dubbo-common-Constants, 0.76, false
-                String rawCode1 = TreePrinters.rawCode(parent1);
-                String rawCode2 = TreePrinters.rawCode(parent2);
-                double codeSimilarity = StringAlgorithms.qGramCompare(rawCode1, rawCode2);
+                double codeSimilarity = StringAlgorithms.qGramCompare(TreePrinters.rawCode(parent1), TreePrinters.rawCode(parent2));
                 Log.finer("code similarity between %s (ancestor of %s) and %s (ancestor of %s) is %.2f\n", parent1, node1, parent2, node2, codeSimilarity);
                 return codeSimilarity > 0.77;
             }
@@ -576,8 +574,10 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
 
                         Log.finer("Jaccad Similarity = %f, Dice Similarity = %f, mappingCount = %d, minDice = %f", Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size), Similarities.diceSimilarity(mappingCount, node.size, candidate.size), mappingCount, minDice);
 
-                        if (node.size < 20 || candidate.size < 20)
+                        boolean cond = false;
+                        if (node.size < 20 || candidate.size < 20) {
                             Log.finer("String Distance = %f", StringAlgorithms.qGramCompare(TreePrinters.rawCode(node), TreePrinters.rawCode(candidate)));
+                        }
 
                         // If one of subtree is small enough, we consider the code similarity rather than mapping similarity.
                         // This heuristic is inspired by

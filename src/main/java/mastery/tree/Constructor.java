@@ -4,6 +4,7 @@ import com.github.javaparser.metamodel.BaseNodeMetaModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * A constructor, i.e. an internal node that has a fixed positive number of children.
@@ -14,11 +15,17 @@ public final class Constructor extends InternalNode {
     public final int arity;
 
     public final BaseNodeMetaModel meta;
+    private final Supplier<String> contentSupplier;
 
-    public Constructor(int label, String name, List<Tree> children, BaseNodeMetaModel meta) {
+    public Constructor(int label, String name, List<Tree> children, BaseNodeMetaModel meta, Supplier<String> contentSupplier) {
         super(label, name, children);
         this.arity = children.size();
         this.meta = meta;
+        this.contentSupplier = contentSupplier;
+    }
+
+    public Constructor(int label, String name, List<Tree> children, BaseNodeMetaModel meta) {
+        this(label, name, children, meta, null);
     }
 
     public Constructor(int label, String name, List<Tree> children) {
@@ -86,8 +93,12 @@ public final class Constructor extends InternalNode {
 
     @Override
     public String toString() {
-        return name + " (" + arity + "-ary) assignment " + assignment
-            + (interval != null ? " dfs [" + interval.l + ", " + interval.r + "]" : "")
-            ;
+        return String.format("%s (%d-ary) assignment %d", name, arity, assignment)
+            + (interval != null ? String.format(" dfs [%d, %d]", interval.l, interval.r) : "");
+    }
+
+    @Override
+    public String getContent() {
+        return contentSupplier.get();
     }
 }

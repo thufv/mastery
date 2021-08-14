@@ -1,21 +1,18 @@
 package mastery.tree;
 
 import mastery.util.Interval;
+import mastery.util.StringAlgorithms;
 import mastery.util.log.IndentPrinter;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static org.junit.Assert.assertNotNull;
 
 /**
- * A parse tree.
- * <p>
- * Nodes are classified into five categories:
+ * A unified abstract syntax tree.
  *
+ * Nodes are classified into five categories:
  * @see Constructor
  * @see OrderedList
  * @see UnorderedList
@@ -307,6 +304,10 @@ public abstract class Tree {
      */
     public abstract String toString();
 
+    public String getContent() {
+        throw new UnsupportedOperationException();
+    }
+
     public final void prettyPrintTo(IndentPrinter printer) {
         TreePrinters.textTree(this, printer);
     }
@@ -314,7 +315,7 @@ public abstract class Tree {
     public String toReadableString() {
         var sb = new StringBuilder();
         sb.append(name).append(" `");
-        var code = TreePrinters.rawCode(this).strip();
+        var code = TreePrinters.normalizedCode(this).strip();
         if (code.length() < 50) {
             sb.append(code);
         } else {
@@ -375,8 +376,8 @@ public abstract class Tree {
     }
 
     public final boolean equals(Tree node) {
-        assert assignment != 0;
-        assert node.assignment != 0;
+        assert assignment != -1;
+        assert node.assignment != -1;
         return assignment == node.assignment;
     }
 

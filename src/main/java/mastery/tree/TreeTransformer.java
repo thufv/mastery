@@ -136,7 +136,7 @@ public final class TreeTransformer {
         if (children.isEmpty()) {
             return new Leaf(getLabel(name), name, node.toString(), node.getMetaModel());
         } else {
-            return new Constructor(getLabel(name), name, children, node.getMetaModel());
+            return new Constructor(getLabel(name), name, children, node.getMetaModel(), node::toString);
         }
     }
 
@@ -236,13 +236,13 @@ public final class TreeTransformer {
             return constructNodeList(tree.children);
         }
 
-        /**
-         * A conflict can be a member of a node list containing a sublist.
-         * If a conflict is a node list property, it will be converted to this case.
-         * After the conversion, children of a conflict must be either all Constructor or all Leaf.
-         */
         @Override
         public Visitable visit(Conflict tree, Void arg) {
+            /*
+             If a conflict contains two ListNodes, convert it to a ListNode containing a conflict.
+             This only happens when the corresponding property is NodeList.
+             After the conversion, children of a conflict must be either all Constructor or all Leaf.
+             */
             if (tree.hasInAnySide(ListNode.class::isInstance)) {
                 Conflict conflict = Conflict.wrap(
                     tree.getOnlyLeftTree().children,
@@ -250,6 +250,7 @@ public final class TreeTransformer {
                 );
                 return constructNodeList(List.of(conflict));
             }
+
             return ConflictWrapper.construct(
                 constructNodeList(tree.left),
                 constructNodeList(tree.right)
