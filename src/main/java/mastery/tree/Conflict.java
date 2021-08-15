@@ -6,6 +6,11 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+/**
+ * A conflict node.
+ * When its parent is ListNode, it contains two sublists of its parent.
+ * Otherwise, it contains two single nodes.
+ */
 public class Conflict extends Tree {
     public final List<Tree> left;
     public final List<Tree> right;

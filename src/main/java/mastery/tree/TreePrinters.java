@@ -13,6 +13,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static mastery.tree.TreeTransformer.QUALIFIED_NAME;
 
 public class TreePrinters {
     public static void textTree(Tree tree, IndentPrinter printer) {
@@ -195,8 +200,30 @@ public class TreePrinters {
         printer.println(textTreePrinter.get());
     }
 
+    private final static Map<Integer, String> rawCodeCache = new HashMap<>();
+
+    /**
+     * Generate code for computing code similarity.
+     */
     public static String rawCode(Tree tree) {
-        return StringUtils.normalizeSpace(prettyCode(tree, "", ""));
+        if (tree.assignment == -1) {
+            throw new IllegalStateException();
+        }
+
+        String code = rawCodeCache.get(tree.assignment);
+        if (code == null) {
+            if (tree instanceof ListNode) {
+                code = tree.children.stream()
+                    .map(TreePrinters::rawCode)
+                    .collect(Collectors.joining(", ", "[", "]"));
+            } else if (tree.is(QUALIFIED_NAME)) {
+                code = tree.getValue();
+            } else {
+                code = tree.getContent();
+            }
+            rawCodeCache.put(tree.assignment, code);
+        }
+        return code;
     }
 
     public static String prettyCode(Tree tree, String leftFile, String rightFile) {
@@ -219,6 +246,10 @@ public class TreePrinters {
             new DefaultPrinterConfiguration()
         ));
         return node.toString();
+    }
+
+    public static String normalizedCode(Tree tree) {
+        return StringUtils.normalizeSpace(prettyCode(tree, "", ""));
     }
 
     public static String prettyCode(Tree tree, String leftFile, String rightFile, String formatter) {

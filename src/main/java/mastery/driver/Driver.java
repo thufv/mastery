@@ -31,12 +31,7 @@ import mastery.actions.model.*;
 
 import org.apache.commons.cli.ParseException;
 
-// import java.lang.management.ManagementFactory;
-// import java.lang.management.ThreadMXBean;
-
 public final class Driver {
-    // public static ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-
     public static void fromCLI(String[] args) {
         CLIParser parser = new CLIParser();
         try {
@@ -105,17 +100,13 @@ public final class Driver {
                 assigner.apply(base, left, right);
 
                 // Phase II: Mapping
-                // long CPUTimeStamp = bean.getCurrentThreadCpuTime();
                 TwoWayMatcher twoWayMatcher = getTwoWayMatcherFromAlgorithm(config.algorithm);
                 ThreeWayMatcher threeWayMatcher = new ThreeWayMatcher(twoWayMatcher);
                 MatchingSet mapping = threeWayMatcher.apply(base, left, right);
-                // Log.config("[CPU time of matcher] %.4f", (double)(bean.getCurrentThreadCpuTime() - CPUTimeStamp) / 1e9);
 
                 // Phase III: Merge
-                // CPUTimeStamp = bean.getCurrentThreadCpuTime();
                 Merger merger = new TopDownPruningMerger();
                 Tree target = merger.apply(mapping);
-                // Log.config("[CPU time of merger] %.4f", (double)(bean.getCurrentThreadCpuTime() - CPUTimeStamp) / 1e9);
 
                 // Log.ifLoggable(Level.FINEST, printer -> {
                 //     printer.println("target");
