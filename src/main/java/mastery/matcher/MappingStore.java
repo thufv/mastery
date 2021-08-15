@@ -1,9 +1,9 @@
 package mastery.matcher;
 
-import java.util.*;
-
 import mastery.tree.Tree;
 import mastery.util.log.Log;
+
+import java.util.*;
 
 public class MappingStore implements Iterable<Mapping> {
 

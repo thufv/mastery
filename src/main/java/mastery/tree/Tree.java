@@ -1,21 +1,18 @@
 package mastery.tree;
 
 import mastery.util.Interval;
+import mastery.util.StringAlgorithms;
 import mastery.util.log.IndentPrinter;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static org.junit.Assert.assertNotNull;
 
 /**
- * A parse tree.
- * <p>
- * Nodes are classified into five categories:
+ * A unified abstract syntax tree.
  *
+ * Nodes are classified into five categories:
  * @see Constructor
  * @see OrderedList
  * @see UnorderedList
@@ -34,10 +31,13 @@ public abstract class Tree {
     public int size;
 
     /**
-     * Label, i.e. grammar kind/type.
+     * Label, i.e. grammar kind/type, starts from 1.
      * -1 stands for weird label.
+     * -2 stands for conflict.
      */
     public int label;
+
+    public static final int LABEL_MAX = TreeTransformer.LABEL_MAX;
 
     /**
      * Human-readable string representation of label.
@@ -62,7 +62,7 @@ public abstract class Tree {
     /**
      * Information about dfs order (1-based) to keep monotonicity.
      */
-    public Integer dfsIndex = 0;
+    public int dfsIndex = 0;
 
     /**
      * The current node is considered.
@@ -87,7 +87,7 @@ public abstract class Tree {
     /**
      * The number of child that the node is
      */
-    public Integer childNo = 0;
+    public int childNo = 0;
 
     /**
      * The buddy of recovery mapping (if the current node is one node of recovery mapping)
@@ -304,6 +304,10 @@ public abstract class Tree {
      */
     public abstract String toString();
 
+    public String getContent() {
+        throw new UnsupportedOperationException();
+    }
+
     public final void prettyPrintTo(IndentPrinter printer) {
         TreePrinters.textTree(this, printer);
     }
@@ -311,7 +315,7 @@ public abstract class Tree {
     public String toReadableString() {
         var sb = new StringBuilder();
         sb.append(name).append(" `");
-        var code = TreePrinters.rawCode(this).strip();
+        var code = TreePrinters.normalizedCode(this).strip();
         if (code.length() < 50) {
             sb.append(code);
         } else {
@@ -372,8 +376,8 @@ public abstract class Tree {
     }
 
     public final boolean equals(Tree node) {
-        assert assignment != 0;
-        assert node.assignment != 0;
+        assert assignment != -1;
+        assert node.assignment != -1;
         return assignment == node.assignment;
     }
 
@@ -412,10 +416,6 @@ public abstract class Tree {
             children.get(i).childNo = i;
     }
 
-    public boolean isEmpty() {
-        return children.isEmpty();
-    }
-
     public boolean is(String fullName) {
         return name.equals(fullName);
     }
@@ -438,18 +438,14 @@ public abstract class Tree {
     }
 
     public Tree getOnlyLeftTree() {
-        List<Tree> trees = ((Conflict) this).left;
-        assert trees.size() == 1;
-        return trees.get(0);
+        throw new IllegalStateException("the tree is not a conflict");
     }
 
     public Tree getOnlyRightTree() {
-        List<Tree> trees = ((Conflict) this).right;
-        assert trees.size() == 1;
-        return trees.get(0);
+        throw new IllegalStateException("the tree is not a conflict");
     }
 
     public String getValue() {
-        return ((Leaf) this).code;
+        throw new IllegalStateException("the tree has no value");
     }
 }

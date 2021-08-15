@@ -14,19 +14,16 @@ repositories {
 }
 
 dependencies {
-    compile 'org.antlr:antlr4-maven-plugin:4.7.1'
-    compile 'com.google.code.gson:gson:2.8.6'
+    compile 'com.google.code.gson:gson:2.8.7'
     compile 'commons-cli:commons-cli:1.4'
-    compile 'junit:junit:4.12'
-    compile 'org.jetbrains:annotations:15.0'
-    compile 'com.github.mpkorstanje:simmetrics-core:3.2.3'
+    compile 'junit:junit:4.13.2'
+    compile 'org.jetbrains:annotations:21.0.1'
     compile 'net.sf.trove4j:trove4j:3.0.3'
-    compile 'com.sparkjava:spark-core:2.7.1'
+    compile 'com.sparkjava:spark-core:2.9.3'
     compile('org.rendersnake:rendersnake:1.9.0') {
 		exclude group: 'javax.servlet', module: 'servlet-api'
 	}
-    compile 'org.slf4j:slf4j-nop:1.6.1'
-//    compile 'org.eclipse.jdt:org.eclipse.jdt.core:3.12.3'
+    compile 'org.slf4j:slf4j-nop:1.7.32'
     compile 'com.github.javaparser:javaparser-core:3.22.1'
 }
 

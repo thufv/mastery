@@ -1,13 +1,11 @@
 package mastery.matcher.gumtree;
 
-import java.util.*;
-
 import mastery.matcher.*;
 import mastery.tree.Leaf;
 import mastery.tree.Tree;
-import mastery.util.log.Log;
-import mastery.util.Interval;
 import mastery.util.WeightedQueue;
+
+import java.util.*;
 
 public class GumTreeTwoWayMatcher extends TwoWayMatcher {
     @Override
@@ -22,7 +20,7 @@ public class GumTreeTwoWayMatcher extends TwoWayMatcher {
     // This value is consistent with both the paper and implementation of GumTree.
     public final int MIN_HEIGHT = 0;
     void topDown(Tree tree1, Tree tree2) {
-        List<Mapping> ambiguousMappings = new ArrayList<Mapping>();
+        List<Mapping> ambiguousMappings = new ArrayList<>();
 
         var queue1 = new WeightedQueue<Tree>(Tree -> Tree.height);
         var queue2 = new WeightedQueue<Tree>(Tree -> Tree.height);
@@ -95,7 +93,7 @@ public class GumTreeTwoWayMatcher extends TwoWayMatcher {
         }
 
         // Rank the mappings by score.
-        Collections.sort(ambiguousMappings, new SiblingsMappingComparator(ambiguousMappings, m, Math.max(tree1.size, tree2.size)));
+        ambiguousMappings.sort(new SiblingsMappingComparator(ambiguousMappings, m, Math.max(tree1.size, tree2.size)));
 
         // Select the best ambiguous mappings
         for (Mapping mapping: ambiguousMappings)
@@ -175,16 +173,14 @@ public class GumTreeTwoWayMatcher extends TwoWayMatcher {
 
         Tree cSrc = src.deepCopy();
         Tree cDst = dst.deepCopy();
-        List<Tree> children1 = new ArrayList<>();
-        children1.addAll(cSrc.children);
+        List<Tree> children1 = new ArrayList<>(cSrc.children);
         for (Tree node: children1)
             removeMatched(node, true);
         cSrc.refresh();
 
         // System.out.println("removeMatched of " + src);/
 
-        List<Tree> children2 = new ArrayList<>();
-        children2.addAll(cDst.children);
+        List<Tree> children2 = new ArrayList<>(cDst.children);
         for (Tree node: children2)
             removeMatched(node, false);
         cDst.refresh();
