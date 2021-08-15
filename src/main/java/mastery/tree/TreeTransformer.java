@@ -20,6 +20,8 @@ public final class TreeTransformer {
     public static final String QUALIFIED_NAME_IDENTIFIER = "QualifiedName#identifier";
     public static final String NULL_LIST_INDICATOR = "NullListIndicator";
 
+    public static final int LABEL_MAX;
+
     private static final Map<String, Integer> LABELS = new HashMap<>();
 
     static String getTransformedName(BaseNodeMetaModel nodeMetaModel) {
@@ -31,7 +33,7 @@ public final class TreeTransformer {
     }
 
     static void createLabel(String name) {
-        LABELS.put(name, LABELS.size());
+        LABELS.put(name, LABELS.size() + 1);
     }
 
     static int getLabel(String name) {
@@ -49,6 +51,7 @@ public final class TreeTransformer {
         createLabel(QUALIFIED_NAME);
         createLabel(QUALIFIED_NAME_IDENTIFIER);
         createLabel(NULL_LIST_INDICATOR);
+        LABEL_MAX = LABELS.size();
     }
 
     final ParserConfig config;
@@ -133,7 +136,7 @@ public final class TreeTransformer {
         if (children.isEmpty()) {
             return new Leaf(getLabel(name), name, node.toString(), node.getMetaModel());
         } else {
-            return new Constructor(getLabel(name), name, children, node.getMetaModel());
+            return new Constructor(getLabel(name), name, children, node.getMetaModel(), node::toString);
         }
     }
 
@@ -194,7 +197,7 @@ public final class TreeTransformer {
                         value = child.accept(this, arg);
                     }
                 } else if (property.isOptional()) {
-                    if (!child.isEmpty()) {
+                    if (!child.children.isEmpty()) {
                         value = child.getOnlyChild().accept(this, arg);
                     }
                 } else if (property.isAttribute()) {
@@ -222,39 +225,36 @@ public final class TreeTransformer {
             return ConflictWrapper.construct(left, right);
         }
 
-        public NodeList<Node> fromList(List<Tree> children, Void arg) {
+        public NodeList<Node> constructNodeList(List<Tree> children) {
             return children.stream()
-                .map(c -> (Node) c.accept(this, arg))
+                .map(c -> (Node) c.accept(this, null))
                 .collect(NodeList.toNodeList());
         }
 
         @Override
         public NodeList<Node> visit(ListNode tree, Void arg) {
-            return fromList(tree.children, arg);
+            return constructNodeList(tree.children);
         }
 
-        /**
-         * A conflict can be a member of a node list containing a sublist.
-         * If a conflict is a node list property, it will be converted to this case.
-         * After the conversion, children of a conflict must be either all Constructor or all Leaf.
-         */
         @Override
         public Visitable visit(Conflict tree, Void arg) {
-            if (tree.getAny() instanceof ListNode) {
-                assert tree.left.size() == 1;
-                assert tree.right.size() == 1;
-                Conflict conflict = Conflict.wrap(tree.left.get(0).children, tree.right.get(0).children);
-                return fromList(List.of(conflict), arg);
+            /*
+             If a conflict contains two ListNodes, convert it to a ListNode containing a conflict.
+             This only happens when the corresponding property is NodeList.
+             After the conversion, children of a conflict must be either all Constructor or all Leaf.
+             */
+            if (tree.hasInAnySide(ListNode.class::isInstance)) {
+                Conflict conflict = Conflict.wrap(
+                    tree.getOnlyLeftTree().children,
+                    tree.getOnlyRightTree().children
+                );
+                return constructNodeList(List.of(conflict));
             }
-            List<Node> left = new ArrayList<>();
-            List<Node> right = new ArrayList<>();
-            for (Tree subtree : tree.left) {
-                left.add((Node) subtree.accept(this, arg));
-            }
-            for (Tree subtree : tree.right) {
-                right.add((Node) subtree.accept(this, arg));
-            }
-            return ConflictWrapper.construct(left, right);
+
+            return ConflictWrapper.construct(
+                constructNodeList(tree.left),
+                constructNodeList(tree.right)
+            );
         }
 
         @Override

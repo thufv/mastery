@@ -1,10 +1,9 @@
 package mastery.matcher;
 
-import java.util.logging.Level;
-
 import mastery.tree.Tree;
-
 import mastery.util.log.Log;
+
+import java.util.logging.Level;
 
 public class ThreeWayMatcher {
     TwoWayMatcher twoWayMatcher;

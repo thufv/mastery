@@ -2,21 +2,17 @@ package mastery.tree;
 
 import com.github.javaparser.metamodel.BaseNodeMetaModel;
 
-import java.nio.charset.StandardCharsets;
-
 /**
  * A leaf node, i.e. a token.
  */
 public class Leaf extends Tree {
     public final String code;
-    public final byte[] codeBytes;
 
     public final BaseNodeMetaModel meta;
 
     public Leaf(int label, String name, String code, BaseNodeMetaModel meta) {
         super(label, name);
         this.code = code;
-        this.codeBytes = code.getBytes(StandardCharsets.UTF_8);
         this.meta = meta;
     }
 
@@ -93,8 +89,17 @@ public class Leaf extends Tree {
 
     @Override
     public String toString() {
-        return name + " '" + code + "'" + " assignment " + assignment
-            + (interval != null ? " dfs [" + interval.l + "]" : "")
-            ;
+        return String.format("%s '%s' assignment %d", name, code, assignment)
+            + (interval != null ? String.format(" dfs [%d]", interval.l) : "");
+    }
+
+    @Override
+    public String getContent() {
+        return code;
+    }
+
+    @Override
+    public String getValue() {
+        return code;
     }
 }

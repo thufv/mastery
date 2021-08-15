@@ -2,8 +2,6 @@ package mastery.tree;
 
 import java.util.List;
 
-import mastery.util.log.Log;
-
 /**
  * An internal node, which has a (nonempty) list of children.
  */

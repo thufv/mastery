@@ -3,8 +3,14 @@ package mastery.tree;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+/**
+ * A conflict node.
+ * When its parent is ListNode, it contains two sublists of its parent.
+ * Otherwise, it contains two single nodes.
+ */
 public class Conflict extends Tree {
     public final List<Tree> left;
     public final List<Tree> right;
@@ -132,7 +138,19 @@ public class Conflict extends Tree {
         return "<CONFLICT>";
     }
 
-    public Tree getAny() {
-        return Stream.concat(left.stream(), right.stream()).findAny().orElseThrow();
+    public boolean hasInAnySide(Predicate<? super Tree> predicate) {
+        return Stream.concat(left.stream(), right.stream()).anyMatch(predicate);
+    }
+
+    @Override
+    public Tree getOnlyLeftTree() {
+        assert left.size() == 1;
+        return left.get(0);
+    }
+
+    @Override
+    public Tree getOnlyRightTree() {
+        assert right.size() == 1;
+        return right.get(0);
     }
 }
