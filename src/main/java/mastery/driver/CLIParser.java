@@ -10,7 +10,7 @@ import java.util.logging.Level;
 
 public final class CLIParser {
     static final String LANG = "l";
-    static final String[] LANGS = {"JAVA", "XML"/*, "C", "C#"*/};
+    static final String[] LANGS = {"JAVA"/*, "XML", "C", "C#"*/};
     final Option lang = Option.builder(LANG)
         .longOpt("lang")
         .hasArg()
@@ -73,6 +73,20 @@ public final class CLIParser {
         .argName("port")
         .desc("port (default 4567), only for webdiff")
         .build();
+    
+    static final String KEEP_COMMENT = "keep-comment";
+    final Option keepComment = Option.builder(null)
+        .longOpt(KEEP_COMMENT)
+        .desc("keep comment during merging (default not)")
+        .build();
+    
+    static final String HYPERPARAMETERS = "hyperparameters";
+    final Option hyperparameters = Option.builder(null)
+        .longOpt(HYPERPARAMETERS)
+        .hasArgs()
+        .argName("para value")
+        .desc("customize hyperparameters (" + Arrays.toString(Config.Hyperparameter.values()) + ")")
+        .build();
 
     static final String HELP = "h";
     static final String HELP_DESC = "Usage ";
@@ -82,12 +96,6 @@ public final class CLIParser {
         .desc("Show usage help.")
         .build();
 
-    static final String KEEP_COMMENT = "keep-comment";
-    final Option keepComment = Option.builder(null)
-        .longOpt(KEEP_COMMENT)
-        .desc("keep comment during merging (default not)")
-        .build();
-
     private final Options options;
 
     public CLIParser() {
@@ -95,9 +103,8 @@ public final class CLIParser {
         options.addOption(lang);
         options.addOption(output);
         options.addOption(algorithm);
-        options.addOption(formatter);
+        options.addOption(hyperparameters);
         options.addOption(help);
-        options.addOption(keepComment);
 
         // log related
         options.addOption(logLevel);
@@ -106,6 +113,10 @@ public final class CLIParser {
 
         // for webdiff
         options.addOption(port);
+
+        // formatter and comment
+        options.addOption(formatter);
+        options.addOption(keepComment);
     }
 
     public void printHelp() {
@@ -143,7 +154,7 @@ public final class CLIParser {
             String file1 = arguments[1];
             String file2 = arguments[2];
 
-            config = new Config(file1, file2, Config.Mode.CHECK);
+            config = new Config(file1, file2, Config.Mode.check);
 
             if (cli.hasOption(LANG)) {
                 config.language = cli.getOptionValue(LANG).toUpperCase();
@@ -179,6 +190,19 @@ public final class CLIParser {
                     throw new ParseException("Invalid algorithm: " + algorithm.getDescription());
                 }
             }
+            if (cli.hasOption(HYPERPARAMETERS)) {
+                String[] hyperparameters = cli.getOptionValues(HYPERPARAMETERS);
+                for (int i = 0; i + 1 < hyperparameters.length; i += 2)
+                    try {
+                        String name = hyperparameters[i];
+                        if (name.endsWith("Sim"))
+                            config.hyperparameters.put(Config.Hyperparameter.valueOf(name), Double.valueOf(hyperparameters[i + 1]));
+                        else
+                            config.hyperparameters.put(Config.Hyperparameter.valueOf(name), Integer.valueOf(hyperparameters[i + 1]));
+                    } catch (Exception e) {
+                        throw new ParseException("Invalid hyperparameters: " + Arrays.toString(hyperparameters));
+                    }
+            }
 
             config.parserConfig.keepComment = cli.hasOption(KEEP_COMMENT);
         } else if (mode.equals("webdiff")) {
@@ -189,7 +213,7 @@ public final class CLIParser {
             String sSrc = arguments[1];
             String sDst = arguments[2];
 
-            config = new Config(sSrc, sDst, Config.Mode.WEBDIFF);
+            config = new Config(sSrc, sDst, Config.Mode.webdiff);
 
             if (cli.hasOption(LANG)) {
                 config.language = cli.getOptionValue(LANG).toUpperCase();
@@ -217,7 +241,7 @@ public final class CLIParser {
             String sSrc = arguments[1];
             String sDst = arguments[2];
 
-            config = new Config(sSrc, sDst, Config.Mode.TEXTDIFF);
+            config = new Config(sSrc, sDst, Config.Mode.textdiff);
 
             if (cli.hasOption(LANG)) {
                 config.language = cli.getOptionValue(LANG).toUpperCase();

@@ -3,12 +3,11 @@ package mastery.matcher.skinchanger;
 import mastery.matcher.Similarities;
 import mastery.matcher.TwoWayMatcher;
 import mastery.matcher.ZsTree;
+import mastery.driver.Config.Hyperparameter;
 import mastery.tree.Leaf;
 import mastery.tree.Tree;
-import mastery.tree.TreePrinters;
 import mastery.util.Interval;
 import mastery.util.Pair;
-import mastery.util.StringAlgorithms;
 import mastery.util.WeightedQueue;
 import mastery.util.log.Log;
 
@@ -19,18 +18,23 @@ import static org.junit.Assert.assertEquals;
 
 public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
     // Parameters
-    public final int minHeight;
-    public final double minDice;
-    public final int maxSize;
+    public int minHeight = 1;
+    public int sepSize = 40;
+    public double minCodeSim = 0.61;
+    public double minDiceSim = 0.44;
+    public int maxSize = 1000;
 
-    public SkinChangerTwoWayMatcher(int minHeight, double minDice, int maxSize) {
-        this.minHeight = minHeight;
-        this.minDice = minDice;
-        this.maxSize = maxSize;
-    }
-
-    public SkinChangerTwoWayMatcher() {
-        this(1, 0.44, 400);
+    public SkinChangerTwoWayMatcher(Map<Hyperparameter, Object> hyperparameters) {
+        if (hyperparameters.containsKey(Hyperparameter.minHeight))
+            minHeight = (int) hyperparameters.get(Hyperparameter.minHeight);
+        if (hyperparameters.containsKey(Hyperparameter.sepSize))
+            sepSize = (int) hyperparameters.get(Hyperparameter.sepSize);
+        if (hyperparameters.containsKey(Hyperparameter.minCodeSim))
+            minCodeSim = (double) hyperparameters.get(Hyperparameter.minCodeSim);
+        if (hyperparameters.containsKey(Hyperparameter.minDiceSim))
+            minDiceSim = (double) hyperparameters.get(Hyperparameter.minDiceSim);
+        if (hyperparameters.containsKey(Hyperparameter.maxSize))
+            maxSize = (int) hyperparameters.get(Hyperparameter.maxSize);
     }
 
     private Tree root1;
@@ -575,17 +579,23 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
                         // get the candidate!
                         // let's check the dice!
 
-                        Log.finer("Jaccad Similarity = %f, Dice Similarity = %f, mappingCount = %d, minDice = %f", Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size), Similarities.diceSimilarity(mappingCount, node.size, candidate.size), mappingCount, minDice);
-                        if (node.size < 20 || candidate.size < 20)
+                        Log.finer("Jaccad Similarity = %f, Dice Similarity = %f, mappingCount = %d, minDice = %f", Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size), Similarities.diceSimilarity(mappingCount, node.size, candidate.size), mappingCount, minDiceSim);
+                        if (node.size < sepSize || candidate.size < sepSize)
                             Log.finer("code similarity = %f", Similarities.codeSimilarity(node, candidate));
 
                         // If one of subtree is small enough, we consider the code similarity rather than mapping similarity.
                         // This heuristic is inspired by dubbo/99256faf8-dubbo-config-dubbo-config-spring-src-main-java-org-apache-dubbo-config-spring-ReferenceBean
+<<<<<<< HEAD
                         // The thresholds are set according to the followings:
                         // 1. dubbo/9f5cc83d3-dubbo-rpc-dubbo-rpc-dubbo-src-main-java-org-apache-dubbo-rpc-protocol-dubbo-CallbackServiceCodec, true, 0.458716
                         if (node.size < 20 || candidate.size < 20
                             ? Similarities.codeSimilarity(node, candidate) > 0.53
                             : Similarities.diceSimilarity(mappingCount, node.size, candidate.size) > minDice
+=======
+                        if (node.size < sepSize || candidate.size < sepSize
+                            ? Similarities.codeSimilarity(node, candidate) > minCodeSim
+                            : Similarities.diceSimilarity(mappingCount, node.size, candidate.size) > minDiceSim
+>>>>>>> c7ae31bfe204f91fcb8c84982a5b3ed1dcdee958
                         ) {
                             match(node, candidate, MappingType.container);
                             mappingCount += containerDfs(node, candidate) + 1;

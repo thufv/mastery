@@ -56,7 +56,7 @@ public final class Driver {
             }
             Log.config("logger setup");
 
-            if (config.mode == Config.Mode.CHECK) {
+            if (config.mode == Config.Mode.check) {
                 // Parse AST from source code
                 Tree[] trees = new Tree[config.files.length];
                 for (int i = 0; i < config.files.length; ++i) {
@@ -89,7 +89,7 @@ public final class Driver {
                     System.exit(1);
                 }
             }
-            else if (config.mode == Config.Mode.MERGE) {
+            else if (config.mode == Config.Mode.merge) {
                 // Parse AST from source code
                 Tree left = TreeBuilders.fromSource(config.left, config.parserConfig);
                 Tree base = TreeBuilders.fromSource(config.base, config.parserConfig);
@@ -100,7 +100,7 @@ public final class Driver {
                 assigner.apply(base, left, right);
 
                 // Phase II: Mapping
-                TwoWayMatcher twoWayMatcher = getTwoWayMatcherFromAlgorithm(config.algorithm);
+                TwoWayMatcher twoWayMatcher = getTwoWayMatcherFromAlgorithm(config.algorithm, config.hyperparameters);
                 ThreeWayMatcher threeWayMatcher = new ThreeWayMatcher(twoWayMatcher);
                 MatchingSet mapping = threeWayMatcher.apply(base, left, right);
 
@@ -122,7 +122,7 @@ public final class Driver {
                     out.write(code);
                     out.close();
                 }
-            } else if (config.mode == Config.Mode.WEBDIFF) {
+            } else if (config.mode == Config.Mode.webdiff) {
                 assert config.files.length == 2;
                 Tree src = TreeBuilders.fromSource(config.files[0], config.parserConfig);
                 Tree dst = TreeBuilders.fromSource(config.files[1], config.parserConfig);
@@ -139,7 +139,7 @@ public final class Driver {
                     dst.prettyPrintTo(printer);
                 });
 
-                TwoWayMatcher twoWayMatcher = config.algorithm.equals("GUMTREE") ? new GumTreeTwoWayMatcher(): new SkinChangerTwoWayMatcher();
+                TwoWayMatcher twoWayMatcher = config.algorithm.equals("GUMTREE") ? new GumTreeTwoWayMatcher(): new SkinChangerTwoWayMatcher(config.hyperparameters);
                 MappingStore mappings = twoWayMatcher.apply(src, dst);
 
                 for (Tree node: src.preOrder())
@@ -153,7 +153,7 @@ public final class Driver {
                 File fDst = pDst.toFile();
                 WebDiff webDiff = new WebDiff(config.port, config.algorithm);
                 webDiff.apply(fSrc, fDst, src, dst, mappings);
-            } else if (config.mode == Config.Mode.TEXTDIFF) {
+            } else if (config.mode == Config.Mode.textdiff) {
                 assert config.files.length == 2;
                 Tree src = TreeBuilders.fromSource(config.files[0], config.parserConfig);
                 Tree dst = TreeBuilders.fromSource(config.files[1], config.parserConfig);
@@ -170,7 +170,7 @@ public final class Driver {
                     dst.prettyPrintTo(printer);
                 });
 
-                TwoWayMatcher twoWayMatcher = getTwoWayMatcherFromAlgorithm(config.algorithm);
+                TwoWayMatcher twoWayMatcher = getTwoWayMatcherFromAlgorithm(config.algorithm, config.hyperparameters);
                 MappingStore mappings = twoWayMatcher.apply(src, dst);
 
                 for (Tree node: src.preOrder())
@@ -193,12 +193,12 @@ public final class Driver {
         }
     }
 
-    private static TwoWayMatcher getTwoWayMatcherFromAlgorithm(String algorithm) {
+    private static TwoWayMatcher getTwoWayMatcherFromAlgorithm(String algorithm, Map<Config.Hyperparameter, Object> hyperparameters) {
         switch (algorithm) {
             case "GUMTREE":
                 return new GumTreeTwoWayMatcher();
             case "SKINCHANGER":
-                return new SkinChangerTwoWayMatcher();
+                return new SkinChangerTwoWayMatcher(hyperparameters);
             case "JDIME":
                 return new JDimeTwoWayMatcher(false);
             case "JDIME-LOOKAHEAD":
