@@ -1,10 +1,17 @@
 package mastery.matcher;
 
+import mastery.driver.Config;
 import mastery.tree.Tree;
 import mastery.util.Interval;
 import mastery.util.log.Log;
 
-public abstract class TwoWayMatcher{
+import java.util.Map;
+
+public abstract class TwoWayMatcher {
+    public TwoWayMatcher() {}
+
+    public TwoWayMatcher(Map<Config.Hyperparameter, Object> hyperparameters) {}
+
     // WARNING: The ORDER is considered!
     // You must pass the BASE tree as FIRST parameter.
     abstract protected void match(Tree tree1, Tree tree2);

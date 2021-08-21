@@ -1,15 +1,24 @@
 package mastery.driver;
 
 import java.util.logging.Level;
+import java.util.*;
 
 public final class Config {
-    enum Mode {
-        CHECK,
-        MERGE,
-        WEBDIFF,
-        TEXTDIFF
+    public enum Mode {
+        check,
+        merge,
+        webdiff,
+        textdiff
     }
     public Mode mode;
+
+    public enum Hyperparameter {
+        minHeight,
+        sepSize,
+        minCodeSim,
+        minDiceSim,
+        maxSize
+    }
 
     // common arguments
     public String language = "JAVA";
@@ -42,10 +51,13 @@ public final class Config {
     // webdiff
     public int port = 4567;
 
+    // hyperparameters
+    public Map<Hyperparameter, Object> hyperparameters = new HashMap<Hyperparameter, Object>();
+
     public ParserConfig parserConfig = new ParserConfig(false);
 
     public Config(String left, String base, String right) {
-        mode = Mode.MERGE;
+        mode = Mode.merge;
         this.left = left;
         this.base = base;
         this.right = right;
