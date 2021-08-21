@@ -30,7 +30,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
     }
 
     public SkinChangerTwoWayMatcher() {
-        this(1, 0.44, 160);
+        this(1, 0.44, 400);
     }
 
     private Tree root1;
@@ -306,7 +306,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
                 // This threshold is adjusted according to the following scenarios:
                 // 1. dubbo/a41930e55-dubbo-common-src-main-java-org-apache-dubbo-common-Constants, 0.76, false
                 Log.finer("code similarity between %s (ancestor of %s) and %s (ancestor of %s) is %.2f\n", parent1, node1, parent2, node2, Similarities.codeSimilarity(parent1, parent2));
-                return Similarities.codeSimilarity(parent1, parent2) > 0.77;
+                return Similarities.codeSimilarity(parent1, parent2) > 0.9;
             }
             parent1 = parent1.parent;
             parent2 = parent2.parent;
@@ -584,7 +584,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
                         // The thresholds are set according to the followings:
                         // 1. dubbo/9f5cc83d3-dubbo-rpc-dubbo-rpc-dubbo-src-main-java-org-apache-dubbo-rpc-protocol-dubbo-CallbackServiceCodec, true, 0.458716
                         if (node.size < 20 || candidate.size < 20
-                            ? Similarities.codeSimilarity(node, candidate) > 0.45
+                            ? Similarities.codeSimilarity(node, candidate) > 0.53
                             : Similarities.diceSimilarity(mappingCount, node.size, candidate.size) > minDice
                         ) {
                             match(node, candidate, MappingType.container);
