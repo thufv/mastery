@@ -12,12 +12,15 @@ public final class Config {
     }
     public Mode mode;
 
+    // "ending with 'Sim'" means the type is double,
+    // otherwise, the type is assumed to be int
     public enum Hyperparameter {
         minHeight,
         sepSize,
         minCodeSim,
         minDiceSim,
-        maxSize
+        maxSize,
+        stopCodeSim
     }
 
     // common arguments

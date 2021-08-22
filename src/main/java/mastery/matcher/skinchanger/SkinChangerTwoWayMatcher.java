@@ -18,11 +18,12 @@ import static org.junit.Assert.assertEquals;
 
 public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
     // Parameters
-    public int minHeight = 1;
-    public int sepSize = 40;
-    public double minCodeSim = 0.61;
-    public double minDiceSim = 0.44;
-    public int maxSize = 1000;
+    private int minHeight = 1;
+    private int sepSize = 40;
+    private double minCodeSim = 0.53;
+    private double minDiceSim = 0.3;
+    private int maxSize = 160;
+    private double stopCodeSim = 0.9;
 
     public SkinChangerTwoWayMatcher(Map<Hyperparameter, Object> hyperparameters) {
         if (hyperparameters.containsKey(Hyperparameter.minHeight))
@@ -35,6 +36,8 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
             minDiceSim = (double) hyperparameters.get(Hyperparameter.minDiceSim);
         if (hyperparameters.containsKey(Hyperparameter.maxSize))
             maxSize = (int) hyperparameters.get(Hyperparameter.maxSize);
+        if (hyperparameters.containsKey(Hyperparameter.stopCodeSim))
+            stopCodeSim = (double) hyperparameters.get(Hyperparameter.stopCodeSim);
     }
 
     private Tree root1;
@@ -307,10 +310,8 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
             if (calcSimilarity(parent1, parent2) > 1e-8) return true;
 
             if (parent1.stop) {
-                // This threshold is adjusted according to the following scenarios:
-                // 1. dubbo/a41930e55-dubbo-common-src-main-java-org-apache-dubbo-common-Constants, 0.76, false
                 Log.finer("code similarity between %s (ancestor of %s) and %s (ancestor of %s) is %.2f\n", parent1, node1, parent2, node2, Similarities.codeSimilarity(parent1, parent2));
-                return Similarities.codeSimilarity(parent1, parent2) > 0.9;
+                return Similarities.codeSimilarity(parent1, parent2) > stopCodeSim;
             }
             parent1 = parent1.parent;
             parent2 = parent2.parent;
