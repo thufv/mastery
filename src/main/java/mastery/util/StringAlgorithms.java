@@ -101,14 +101,18 @@ public final class StringAlgorithms {
             int i = 0;
             int j = 0;
             while (i < v1.size() && j < v2.size()) {
-                Pair<String, Integer> p1 = v1.get(i);
-                Pair<String, Integer> p2 = v2.get(j);
+                Pair<String, Integer> p1 = v1.get(i++);
+                Pair<String, Integer> p2 = v2.get(j++);
                 int r = p1.first.compareTo(p2.first);
-                if (r == 0) {
+                if (r < 0) {
+                    total += p1.second;
+                    --j;
+                } else if (r > 0) {
+                    total += p2.second;
+                    --i;
+                } else {
                     total += Math.abs(p1.second - p2.second);
                 }
-                if (r <= 0) ++i;
-                if (r >= 0) ++j;
             }
             for (; i < v1.size(); ++i) {
                 total += v1.get(i).second;
