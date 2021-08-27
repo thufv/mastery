@@ -8,7 +8,8 @@ public final class Config {
         check,
         merge,
         webdiff,
-        textdiff
+        textdiff,
+        match
     }
     public Mode mode;
 

@@ -125,7 +125,8 @@ public final class CLIParser {
         formatter.printHelp("\n  mastery merge <left> <base> <right> [options]\n"
                 + "  mastery check <file1> <file2> [options]\n"
                 + "  mastery webdiff <file1> <file2> [options]\n"
-                + "  mastery textdiff <file1> <file2> [options]",
+                + "  mastery textdiff <file1> <file2> [options]\n"
+                + "  mastery match <file1> <file2> [options]",
             header, options, "");
     }
 
@@ -257,6 +258,28 @@ public final class CLIParser {
             }
 
             config.output = cli.getOptionValue(OUTPUT);
+        } else if (mode.equals("match")) {
+            if (arguments.length != 3) {
+                throw new ParseException("Please provide exactly 2 files as arguments.");
+            }
+
+            String sSrc = arguments[1];
+            String sDst = arguments[2];
+
+            config = new Config(sSrc, sDst, Config.Mode.match);
+
+            if (cli.hasOption(LANG)) {
+                config.language = cli.getOptionValue(LANG).toUpperCase();
+                if (!Arrays.asList(LANGS).contains(config.language)) {
+                    throw new ParseException("Invalid language: " + lang.getDescription());
+                }
+            }
+            if (cli.hasOption(ALGO)) {
+                config.algorithm = cli.getOptionValue(ALGO).toUpperCase();
+                if (!Arrays.asList(ALGOs).contains(config.algorithm)) {
+                    throw new ParseException("Invalid algorithm: " + algorithm.getDescription());
+                }
+            }
         }
         else {
             throw new ParseException("Please specify mode: merge, check, webdiff, or textdiff?");

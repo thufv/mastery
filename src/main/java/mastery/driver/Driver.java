@@ -183,13 +183,33 @@ public final class Driver {
                 List<Action> actions = g.getActions();
 
                 dumpTextDiff(actions, mappings, config.output);
+            } else if (config.mode == Config.Mode.match) {
+                assert config.files.length == 2;
+                Tree src = TreeBuilders.fromSource(config.files[0], config.parserConfig);
+                Tree dst = TreeBuilders.fromSource(config.files[1], config.parserConfig);
+
+                Assigner assigner = new Assigner();
+                assigner.apply(src, dst);
+
+                Log.ifLoggable(Level.FINEST, printer -> {
+                    printer.println(config.files[0]);
+                    src.prettyPrintTo(printer);
+                });
+                Log.ifLoggable(Level.FINEST, printer -> {
+                    printer.println(config.files[1]);
+                    dst.prettyPrintTo(printer);
+                });
+
+                TwoWayMatcher twoWayMatcher = getTwoWayMatcherFromAlgorithm(config.algorithm, config.hyperparameters);
+                MappingStore mappings = twoWayMatcher.apply(src, dst);
+
+                System.out.println(mappings.getSize());
             }
             // Everything is done.
             // Valar Morghulis
             Log.fine("done");
         } catch (Exception e) {
             e.printStackTrace();
-//            System.exit(1);
         }
     }
 
