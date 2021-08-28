@@ -123,7 +123,7 @@ public abstract class Tree {
     /**
      * names that are allowed to look ahead
      */
-    public static HashSet<String> lookaheadNames; // FIXME: now there're no lookahead names
+    public static Set<String> lookaheadNames = Set.of("IfStmt", "TryStmt", "CatchClause");
 
     /**
      * Deep copy this node.

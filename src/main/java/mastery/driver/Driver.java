@@ -203,7 +203,22 @@ public final class Driver {
                 TwoWayMatcher twoWayMatcher = getTwoWayMatcherFromAlgorithm(config.algorithm, config.hyperparameters);
                 MappingStore mappings = twoWayMatcher.apply(src, dst);
 
-                System.out.println(mappings.getSize());
+                int shifted_code = 0;
+                for (Mapping mapping: mappings) {
+                    Tree fp = mapping.first.parent;
+                    Tree sp = mapping.second.parent;
+                    if (fp != null && sp != null) {
+                        if (mappings.hasSrc(fp) && mappings.getDst(fp) != sp) {
+                            System.out.printf("beneath %s <-> %s\n", fp, mappings.getDst(fp));
+                            System.out.printf("shifted code %s <-> %s\n", mapping.first, mapping.second);
+
+                            shifted_code += 1;
+                            continue;
+                        }
+                    }
+                }
+
+                System.out.println(shifted_code);
             }
             // Everything is done.
             // Valar Morghulis
