@@ -102,11 +102,11 @@ public final class Driver {
                 // Phase II: Mapping
                 TwoWayMatcher twoWayMatcher = getTwoWayMatcherFromAlgorithm(config.algorithm, config.hyperparameters);
                 ThreeWayMatcher threeWayMatcher = new ThreeWayMatcher(twoWayMatcher);
-                MatchingSet mapping = threeWayMatcher.apply(base, left, right);
+                MatchingSet mappings = threeWayMatcher.apply(base, left, right);
 
                 // Phase III: Merge
                 Merger merger = new TopDownPruningMerger();
-                Tree target = merger.apply(mapping);
+                Tree target = merger.apply(mappings);
 
                 // Log.ifLoggable(Level.FINEST, printer -> {
                 //     printer.println("target");
@@ -209,8 +209,8 @@ public final class Driver {
                     Tree sp = mapping.second.parent;
                     if (fp != null && sp != null) {
                         if (mappings.hasSrc(fp) && mappings.getDst(fp) != sp) {
-                            System.out.printf("beneath %s <-> %s\n", fp, mappings.getDst(fp));
-                            System.out.printf("shifted code %s <-> %s\n", mapping.first, mapping.second);
+                            Log.config("beneath %s <-> %s\n", fp, mappings.getDst(fp));
+                            Log.config("shifted code %s <-> %s\n", mapping.first, mapping.second);
 
                             shifted_code += 1;
                             continue;
