@@ -12,6 +12,7 @@ import mastery.util.log.Log;
 import java.lang.reflect.Array;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.logging.Level;
 
 public class JDimeTwoWayMatcher extends TwoWayMatcher {
     // the flag that indicates that if lookahead technique enabled
@@ -43,21 +44,27 @@ public class JDimeTwoWayMatcher extends TwoWayMatcher {
 
                 if (resume.isPresent()) {
                     Pair<Tree, Tree> toMatch = resume.get();
-                    Log.finest("lookahead to match %s and %s while matching %s and %s", toMatch.first.toReadableString(), toMatch.second.toReadableString(), tree1.toReadableString(), tree2.toReadableString());
+                    if (Log.isLoggable(Level.FINEST)) {
+                        Log.finest("lookahead to match %s and %s while matching %s and %s", toMatch.first.toReadableString(), toMatch.second.toReadableString(), tree1.toReadableString(), tree2.toReadableString());
+                    }
                     match(toMatch.first, toMatch.second);
                 } else {
                     /*
                      * The roots do not match and we cannot lookahead anything. We therefore ignore the rest of the
                      * subtrees and return early to save time.
                      */
-                    Log.finest("early return as lookahead technique finds nothing while matching %s and %s", tree1.toReadableString(), tree2.toReadableString());
+                    if (Log.isLoggable(Level.FINEST)) {
+                        Log.finest("early return as lookahead technique finds nothing while matching %s and %s", tree1.toReadableString(), tree2.toReadableString());
+                    }
                 }
             } else {
                 /*
                  * The roots do not match and we cannot use the look-ahead feature.  We therefore ignore the rest of the
                  * subtrees and return early to save time.
                  */
-                Log.finest("early return as different labels while matching %s and %s", tree1.toReadableString(), tree2.toReadableString());
+                if (Log.isLoggable(Level.FINEST)) {
+                    Log.finest("early return as different labels while matching %s and %s", tree1.toReadableString(), tree2.toReadableString());
+                }
             }
             return;
         }

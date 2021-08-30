@@ -72,8 +72,12 @@ public class Log {
      *
      * @return logger
      */
-    public Logger getLogger() {
+    public static Logger getLogger() {
         return L;
+    }
+
+    public static boolean isLoggable(Level level) {
+        return L.isLoggable(level);
     }
 
     /**

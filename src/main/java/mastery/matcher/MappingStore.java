@@ -4,6 +4,7 @@ import mastery.tree.Tree;
 import mastery.util.log.Log;
 
 import java.util.*;
+import java.util.logging.Level;
 
 public class MappingStore implements Iterable<Mapping> {
 
@@ -46,16 +47,24 @@ public class MappingStore implements Iterable<Mapping> {
     }
 
     public void link(Tree src, Tree dst) {
-        Log.finer("link %s <-> %s", src, dst);
-        Log.finer("link %s <-> %s", src.toReadableString(), dst.toReadableString());
+        if (Log.isLoggable(Level.FINER)) {
+            Log.finer("link %s <-> %s", src, dst);
+        }
+        if (Log.isLoggable(Level.FINER)) {
+            Log.finer("link %s <-> %s", src.toReadableString(), dst.toReadableString());
+        }
         
         srcs.put(src, dst);
         dsts.put(dst, src);
     }
 
     public void unlink(Tree src, Tree dst) {
-        Log.finer("unlink %s <-> %s", src, dst);
-        Log.finer("unlink %s <-> %s", src.toReadableString(), dst.toReadableString());
+        if (Log.isLoggable(Level.FINER)) {
+            Log.finer("unlink %s <-> %s", src, dst);
+        }
+        if (Log.isLoggable(Level.FINER)) {
+            Log.finer("unlink %s <-> %s", src.toReadableString(), dst.toReadableString());
+        }
 
         srcs.remove(src);
         dsts.remove(dst);

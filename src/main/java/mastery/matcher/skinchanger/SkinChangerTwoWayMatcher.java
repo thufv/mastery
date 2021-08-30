@@ -12,6 +12,7 @@ import mastery.util.WeightedQueue;
 import mastery.util.log.Log;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
@@ -174,7 +175,9 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
             }
         }
 
-        Log.finer("Sort!");
+        if (Log.isLoggable(Level.FINER)) {
+            Log.finer("Sort!");
+        }
 
         fotileTree = new FotileTree(matched1to2, matched2to1);
 
@@ -187,9 +190,13 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
             .sorted(new TreePairComparator())
             .collect(Collectors.toList());
 
-        Log.finer("sorted %d node pair:", filteredCartesianProducts.size());
+        if (Log.isLoggable(Level.FINER)) {
+            Log.finer("sorted %d node pair:", filteredCartesianProducts.size());
+        }
         for (int i = filteredCartesianProducts.size() - 1; i >= 0; --i)
-            Log.finer("\tNo. %d: %s <-> %s\n", i, filteredCartesianProducts.get(i).first, filteredCartesianProducts.get(i).second);
+            if (Log.isLoggable(Level.FINER)) {
+                Log.finer("\tNo. %d: %s <-> %s\n", i, filteredCartesianProducts.get(i).first, filteredCartesianProducts.get(i).second);
+            }
 
         for (int i = filteredCartesianProducts.size() - 1; i >= 0; --i) {
             var p = filteredCartesianProducts.get(i);
@@ -310,7 +317,9 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
             if (calcSimilarity(parent1, parent2) > 1e-8) return true;
 
             if (parent1.stop) {
-                Log.finer("code similarity between %s (ancestor of %s) and %s (ancestor of %s) is %.2f\n", parent1, node1, parent2, node2, Similarities.codeSimilarity(parent1, parent2));
+                if (Log.isLoggable(Level.FINER)) {
+                    Log.finer("code similarity between %s (ancestor of %s) and %s (ancestor of %s) is %.2f\n", parent1, node1, parent2, node2, Similarities.codeSimilarity(parent1, parent2));
+                }
                 return Similarities.codeSimilarity(parent1, parent2) > stopCodeSim;
             }
             parent1 = parent1.parent;
@@ -502,7 +511,9 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
             homonymy1to2[node1.dfsIndex] = node2.dfsIndex;
             homonymy2to1[node2.dfsIndex] = node1.dfsIndex;
 
-            Log.finer("preprocessed homonymy mapping: %s <-> %s", node1, node2);
+            if (Log.isLoggable(Level.FINER)) {
+                Log.finer("preprocessed homonymy mapping: %s <-> %s", node1, node2);
+            }
 
             if (node1.isConstructor()
                 || node1.children.size() == 1 && node2.children.size() == 1) {
@@ -528,7 +539,9 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
             mappingCount += bottomUpDfs(child);
             node.postLCA = Tree.getLCA(node.postLCA, child.postLCA);
 
-            Log.finer("after calculate %s, postLCA of %s is %s", child, node, node.postLCA);
+            if (Log.isLoggable(Level.FINER)) {
+                Log.finer("after calculate %s, postLCA of %s is %s", child, node, node.postLCA);
+            }
         }
 
         // container mapping
@@ -554,35 +567,51 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
 
                     Tree candidate = node.postLCA;
 
-                    Log.finer("postLCA of %s is %s", node, node.postLCA);
+                    if (Log.isLoggable(Level.FINER)) {
+                        Log.finer("postLCA of %s is %s", node, node.postLCA);
+                    }
 
                     while (candidate != null &&
                         (matched2to1[candidate.dfsIndex] != 0
                             || node.label != candidate.label
                             || homonymy2to1[candidate.dfsIndex] != 0 && homonymy2to1[candidate.dfsIndex] != node.dfsIndex)) {
                         if (matched2to1[candidate.dfsIndex] != 0)
-                            Log.finer("possible candidate %s is matched", candidate);
+                            if (Log.isLoggable(Level.FINER)) {
+                                Log.finer("possible candidate %s is matched", candidate);
+                            }
                         else if (node.label != candidate.label)
-                            Log.finer("possible candidate %s has a different label", candidate);
+                            if (Log.isLoggable(Level.FINER)) {
+                                Log.finer("possible candidate %s has a different label", candidate);
+                            }
                         else if (homonymy2to1[candidate.dfsIndex] != 0 && homonymy2to1[candidate.dfsIndex] != node.dfsIndex)
-                            Log.finer("possible candidate %s has a homonymy buddy", candidate);
+                            if (Log.isLoggable(Level.FINER)) {
+                                Log.finer("possible candidate %s has a homonymy buddy", candidate);
+                            }
 
                         candidate = candidate.parent;
                     }
 
                     if (candidate != null) {
-                        Log.finer("candidate of %s is %s", node, candidate);
+                        if (Log.isLoggable(Level.FINER)) {
+                            Log.finer("candidate of %s is %s", node, candidate);
+                        }
                     } else {
-                        Log.finer("candidate of %s is null", node);
+                        if (Log.isLoggable(Level.FINER)) {
+                            Log.finer("candidate of %s is null", node);
+                        }
                     }
 
                     if (candidate != null && checkMapping(node, candidate, MappingType.container)) {
                         // get the candidate!
                         // let's check the dice!
 
-                        Log.finer("Jaccad Similarity = %f, Dice Similarity = %f, mappingCount = %d, minDice = %f", Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size), Similarities.diceSimilarity(mappingCount, node.size, candidate.size), mappingCount, minDiceSim);
+                        if (Log.isLoggable(Level.FINER)) {
+                            Log.finer("Jaccad Similarity = %f, Dice Similarity = %f, mappingCount = %d, minDice = %f", Similarities.jaccardSimilarity(mappingCount, node.size, candidate.size), Similarities.diceSimilarity(mappingCount, node.size, candidate.size), mappingCount, minDiceSim);
+                        }
                         if (node.size < sepSize || candidate.size < sepSize)
-                            Log.finer("code similarity = %f", Similarities.codeSimilarity(node, candidate));
+                            if (Log.isLoggable(Level.FINER)) {
+                                Log.finer("code similarity = %f", Similarities.codeSimilarity(node, candidate));
+                            }
 
                         // If one of subtree is small enough, we consider the code similarity rather than mapping similarity.
                         // This heuristic is inspired by dubbo/99256faf8-dubbo-config-dubbo-config-spring-src-main-java-org-apache-dubbo-config-spring-ReferenceBean
@@ -621,7 +650,9 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
                     if (matched1to2[child1.dfsIndex] == 0)
                         child1.preInterval = node.preInterval;
 
-                    Log.finer("compulsory to check: %s <-> %s", child1, child2);
+                    if (Log.isLoggable(Level.FINER)) {
+                        Log.finer("compulsory to check: %s <-> %s", child1, child2);
+                    }
 
                     if (checkMapping(child1, child2, MappingType.compulsory)) {
                         match(child1, child2, MappingType.compulsory);
@@ -786,7 +817,9 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
                         Tree tSrc = zsSrc.tree(row);
                         Tree tDst = zsDst.tree(col);
 
-                        Log.finer("ZS: rename %s <-> %s", tSrc, tDst);
+                        if (Log.isLoggable(Level.FINER)) {
+                            Log.finer("ZS: rename %s <-> %s", tSrc, tDst);
+                        }
 
                         if (tSrc.label == tDst.label) tSrc.recoveryBuddy = tDst;
                         else throw new RuntimeException("Should not map incompatible nodes.");

@@ -54,7 +54,9 @@ public final class Driver {
             else {
                 Log.setup(config.logLevel, config.logColorful);
             }
-            Log.config("logger setup");
+            if (Log.isLoggable(Level.CONFIG)) {
+                Log.config("logger setup");
+            }
 
             if (config.mode == Config.Mode.check) {
                 // Parse AST from source code
@@ -209,8 +211,12 @@ public final class Driver {
                     Tree sp = mapping.second.parent;
                     if (fp != null && sp != null) {
                         if (mappings.hasSrc(fp) && mappings.getDst(fp) != sp) {
-                            Log.config("beneath %s <-> %s\n", fp, mappings.getDst(fp));
-                            Log.config("shifted code %s <-> %s\n", mapping.first, mapping.second);
+                            if (Log.isLoggable(Level.CONFIG)) {
+                                Log.config("beneath %s <-> %s\n", fp, mappings.getDst(fp));
+                            }
+                            if (Log.isLoggable(Level.CONFIG)) {
+                                Log.config("shifted code %s <-> %s\n", mapping.first, mapping.second);
+                            }
 
                             shifted_code += 1;
                             continue;
@@ -222,7 +228,9 @@ public final class Driver {
             }
             // Everything is done.
             // Valar Morghulis
-            Log.fine("done");
+            if (Log.isLoggable(Level.FINE)) {
+                Log.fine("done");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

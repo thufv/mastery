@@ -6,6 +6,7 @@ import mastery.util.Interval;
 import mastery.util.log.Log;
 
 import java.util.Map;
+import java.util.logging.Level;
 
 public abstract class TwoWayMatcher {
     public TwoWayMatcher() {}
@@ -68,7 +69,9 @@ public abstract class TwoWayMatcher {
     public boolean checkMonotonicity(Tree tree1, Tree tree2) {
         // the dfs ordering and intervals of tree2 are assumed to have been calculated here
         for (Tree node: tree2.preOrder())
-            Log.fine("interval of `%s` is [%d, %d]", node.toReadableString(), node.interval.l, node.interval.r);
+            if (Log.isLoggable(Level.FINE)) {
+                Log.fine("interval of `%s` is [%d, %d]", node.toReadableString(), node.interval.l, node.interval.r);
+            }
 
         for (Tree node: tree1.preOrder()) {
             if (node.parent == null)
@@ -81,10 +84,18 @@ public abstract class TwoWayMatcher {
                     }
                     else {
                         // Log.fine(String.format("failed monotonicity check: %s [%d, %d] is the subinterval of %s [%d, %d]", dst, dst.interval.l, dst.interval.r, node.parent, node.parent.preInterval.l, node.parent.preInterval.r));
-                        Log.fine("failed monotonicity check:");
-                        Log.fine("  node: %s (assignment %d)", node.toReadableString(), node.assignment);
-                        Log.fine("  dst: %s [%d, %d] (assignment %d)", dst.toReadableString(), dst.interval.l, dst.interval.r, dst.assignment);
-                        Log.fine("  preInterval of %s (assignment %d) is [%d, %d]", node.parent.toReadableString(), node.parent.assignment, node.parent.preInterval.l, node.parent.preInterval.r);
+                        if (Log.isLoggable(Level.FINE)) {
+                            Log.fine("failed monotonicity check:");
+                        }
+                        if (Log.isLoggable(Level.FINE)) {
+                            Log.fine("  node: %s (assignment %d)", node.toReadableString(), node.assignment);
+                        }
+                        if (Log.isLoggable(Level.FINE)) {
+                            Log.fine("  dst: %s [%d, %d] (assignment %d)", dst.toReadableString(), dst.interval.l, dst.interval.r, dst.assignment);
+                        }
+                        if (Log.isLoggable(Level.FINE)) {
+                            Log.fine("  preInterval of %s (assignment %d) is [%d, %d]", node.parent.toReadableString(), node.parent.assignment, node.parent.preInterval.l, node.parent.preInterval.r);
+                        }
                         return false;
                     }
                 }
