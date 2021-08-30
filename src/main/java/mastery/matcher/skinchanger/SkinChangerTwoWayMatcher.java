@@ -179,7 +179,7 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
             Log.finer("Sort!");
         }
 
-        fotileTree = new FotileTree(matched1to2, matched2to1);
+        mappings = new PersistentSegmentTree(matched1to2, matched2to1);
 
         // Log.finer("collected %d node pairs before any checking.", cartesianProducts.size());
         // for (int i = cartesianProducts.size() - 1; i >= 0; --i)
@@ -382,34 +382,48 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
         }
     }
 
-    FotileTree fotileTree;
+    PersistentSegmentTree mappings;
 
     public double calcSimilarity(Tree node1, Tree node2) {
-        int mappingCount = fotileTree.query(fotileTree.roots[node1.interval.l - 1], fotileTree.roots[node1.interval.r], 1, fotileTree.size2, node2.interval.l, node2.interval.r);
+//        int mappingCount = mappings.query(mappings.roots[node1.interval.l - 1], mappings.roots[node1.interval.r], 1, mappings.size2, node2.interval.l, node2.interval.r);
+        int mappingCount = mappings.query(node1.interval.l, node1.interval.r, node2.interval.l, node2.interval.r);
         return Similarities.diceSimilarity(mappingCount, node1.size, node2.size);
     }
 
     /**
-     * The fotile tree (persistent segment tree) is used to calculate the number of mappings between two subtrees.
+     * The persistent segment tree is used to calculate the number of mappings between two subtrees.
      * We consider a plane, where point (x, y) indicates
      * there's a mapping between a node of dfs index x in tree 1 and a node of dfs index y in tree 2.
      * Thus, to count the mappings between two subtrees is to count the number of points in a matrix of the plane.
-     * This is a classical problem in competitive programming, which could be solved by the fotile tree.
+     * This is a classical problem in competitive programming, which could be solved by the persistent segment tree.
      */
-    private static final class FotileTree {
-        int size1, size2;
-        int[] counts, leftsons, rightsons;
-        public int[] roots;
-        int tot = 0;
+    private static final class PersistentSegmentTree {
+        private static final class Node {
+            public int size;
+            public Node left, right;
 
-        public FotileTree(int[] matched1to2, int[] matched2to1) {
-            size1 = matched1to2.length - 1;
+            public Node() {
+                size = 0;
+                left = this;
+                right = this;
+            }
+
+            public Node(int size, Node left, Node right) {
+                this.size = size;
+                this.left = left;
+                this.right = right;
+            }
+        }
+
+        private final int size2;
+        private final Node[] roots;
+
+        public PersistentSegmentTree(int[] matched1to2, int[] matched2to1) {
+            int size1 = matched1to2.length - 1;
             size2 = matched2to1.length - 1;
 
-            counts = new int[size1 * (int) (Math.ceil(Math.log(size2) / Math.log(2) + 1)) + 5];
-            leftsons = new int[size1 * (int) (Math.ceil(Math.log(size2) / Math.log(2) + 1)) + 5];
-            rightsons = new int[size1 * (int) (Math.ceil(Math.log(size2) / Math.log(2) + 1)) + 5];
-            roots = new int[size1 + 1];
+            roots = new Node[size1 + 1];
+            roots[0] = new Node();
 
             for (int i = 1; i <= size1; ++i) {
                 if (matched1to2[i] == 0)
@@ -419,30 +433,38 @@ public class SkinChangerTwoWayMatcher extends TwoWayMatcher {
             }
         }
 
-        public int insert(int k, int l, int r, int node) {
-            int dir = ++tot;
-            leftsons[dir] = leftsons[node];
-            rightsons[dir] = rightsons[node];
-            counts[dir] = counts[node] + 1;
-            if (l == r) return dir;
-            int mid = l + r >> 1;
-            if (k <= mid)
-                leftsons[k] = insert(k, l, mid, leftsons[node]);
-            else
-                rightsons[k] = insert(k, mid + 1, r, rightsons[node]);
-            return dir;
+        private Node insert(int k, int l, int r, Node prev) {
+            Node cur = new Node(prev.size + 1, prev.left, prev.right);
+            if (l != r) {
+                int m = l + r >> 1;
+                if (k <= m) {
+                    cur.left = insert(k, l, m, cur.left);
+                } else {
+                    cur.right = insert(k, m + 1, r, cur.right);
+                }
+            }
+            return cur;
         }
 
-        public int query(int u, int v, int l, int r, int L, int R) {
-            if (L <= l && r <= R) return counts[v] - counts[u];
-            if (counts[v] - counts[u] == 0) return 0;
-            int ans = 0;
-            int mid = l + r >> 1;
-            if (L <= mid)
-                ans += query(leftsons[u], leftsons[v], l, mid, L, R);
-            if (R > mid)
-                ans += query(rightsons[u], rightsons[v], mid + 1, r, L, R);
-            return ans;
+        private int query(int u, int v, int l, int r, Node a, Node b) {
+            if (u == l && r == v) {
+                return b.size - a.size;
+            }
+            if (b.size - a.size == 0) {
+                return 0;
+            }
+            int m = l + r >> 1;
+            if (v <= m) {
+                return query(u, v, l, m, a.left, b.left);
+            }
+            if (u > m) {
+                return query(u, v, m + 1, r, a.right, b.right);
+            }
+            return query(u, m, l, m, a.left, b.left) + query(m + 1, v, m + 1, r, a.right, b.right);
+        }
+
+        public int query(int a, int b, int u, int v) {
+            return query(u, v, 1, size2, roots[a - 1], roots[b]);
         }
     }
 
