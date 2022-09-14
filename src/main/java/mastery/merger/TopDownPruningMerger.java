@@ -52,8 +52,8 @@ public final class TopDownPruningMerger extends Merger {
 
             // non-trivial merge scenario
             scenarios.push(base.accept(this));
-            base.children.forEach(this::visit);
         }
+        base.children.forEach(this::visit);
     }
 
     private Map<Tree, Tree> targets = new HashMap<>();
