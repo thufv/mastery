@@ -30,3 +30,7 @@ For more extensive usage information:
 ```bash
 java -jar mastery.jar -h
 ```
+
+## Evaluation Artifact
+
+We pack our evaluation (reproducible environment, benchmark, executable tools) as a docker image at [here](https://zenodo.org/record/5507555).
