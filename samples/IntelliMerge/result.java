@@ -2,13 +2,13 @@ public class IntelliMerge {
   public void saveAll(Path root) {
     for (Map.Entry<Path, ParseResult<CompilationUnit>> cu : content.entrySet()) {
       final Path path = root.resolve(cu.getKey()); 
-<<<<<<< sample/IntelliMerge/left.java
+<<<<<<< samples/IntelliMerge/left.java
       try (PrintWriter out = new PrintWriter(path.toFile(), StandardCharsets.UTF_8)) {
         out.println(code);
       } 
 =======
       save(cu.getValue().getResult().get(), path); 
->>>>>>> sample/IntelliMerge/right.java
+>>>>>>> samples/IntelliMerge/right.java
     }
   }
   private void save(CompilationUnit cu, Path path) {

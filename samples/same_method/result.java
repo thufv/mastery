@@ -1,11 +1,11 @@
 public class A {
   public void fun() {
     double 
-<<<<<<< sample/same_method/left.java
+<<<<<<< samples/same_method/left.java
         left
 =======
         right
->>>>>>> sample/same_method/right.java
+>>>>>>> samples/same_method/right.java
         ;
   }
 

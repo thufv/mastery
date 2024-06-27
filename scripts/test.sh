@@ -15,7 +15,7 @@ for d in samples/* ; do
         echo "$d"
         rm output.log 2> /dev/null
         if [ $1 ] ; then
-            java -ea -jar build/libs/mastery-1.0-SNAPSHOT.jar merge $d/left.java $d/base.java $d/right.java --log-level off --formatter $1
+            java -ea -jar build/libs/mastery-1.0-SNAPSHOT.jar merge $d/left.java $d/base.java $d/right.java --output output.java --log-level off --formatter $1
         else
             java -ea -jar build/libs/mastery-1.0-SNAPSHOT.jar merge $d/left.java $d/base.java $d/right.java --output output.java --log-level off --formatter clang-format
         fi

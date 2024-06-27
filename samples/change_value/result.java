@@ -1,11 +1,11 @@
 public class A {
   public String foo(int i) {
     int x = 
-<<<<<<< sample/change_value/left.java
+<<<<<<< samples/change_value/left.java
         2
 =======
         3
->>>>>>> sample/change_value/right.java
+>>>>>>> samples/change_value/right.java
         ;
   }
 }
